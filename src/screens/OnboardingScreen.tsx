@@ -70,7 +70,6 @@ export function OnboardingScreen({
     }));
   };
 
-  // Validate date
   function isValidDate(date: string) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
       return false;
@@ -84,18 +83,15 @@ export function OnboardingScreen({
     );
   }
 
-  // Validate time
   function isValidTime(time: string) {
     return /^([01]\d|2[0-3]):[0-5]\d$/.test(time);
   }
 
-  // Save profile
   async function save() {
     if (busy) return;
 
     setError("");
 
-    // Check empty fields
     if (
       !values.full_name.trim() ||
       !values.date_of_birth.trim() ||
@@ -103,28 +99,23 @@ export function OnboardingScreen({
       !values.birth_place.trim() ||
       !values.current_location.trim()
     ) {
-      setError(
-        "Please complete all fields to personalize your Panchangam."
-      );
+      setError("Please complete all fields.");
       return;
     }
 
-    // Validate date
     if (!isValidDate(values.date_of_birth.trim())) {
-      setError("Please enter a valid date in YYYY-MM-DD format.");
+      setError("Enter a valid date in YYYY-MM-DD format.");
       return;
     }
 
-    // Validate time
     if (!isValidTime(values.time_of_birth.trim())) {
-      setError("Please enter a valid time, for example 06:30.");
+      setError("Enter time in 24-hour format, for example 06:30.");
       return;
     }
 
     setBusy(true);
 
     try {
-      // Get authenticated session
       const {
         data: { session },
         error: sessionError,
@@ -135,73 +126,85 @@ export function OnboardingScreen({
       }
 
       if (!session?.user) {
-        throw new Error(
-          "Your session has expired. Please sign in again."
-        );
+        throw new Error("Session expired. Please sign in again.");
       }
 
-      // Prepare profile data
       const profile = {
         id: session.user.id,
         email: session.user.email ?? null,
-
         full_name: values.full_name.trim(),
-
         date_of_birth: values.date_of_birth.trim(),
-
         time_of_birth: values.time_of_birth.trim(),
-
         birth_place: values.birth_place.trim(),
-
         current_location: values.current_location.trim(),
-
         preferred_language: values.preferred_language,
-
         panchangam_tradition: "Telugu Drik",
-
         onboarding_complete: true,
       };
 
-      console.log("KAALAM: Saving profile...");
+      console.log("KAALAM: Starting profile save");
+      console.log("User ID:", session.user.id);
 
-      // Save to Supabase
-      const { error: saveError } = await supabase
+      const { data, error: saveError } = await supabase
         .from("profiles")
         .upsert(profile, {
           onConflict: "id",
-        });
+        })
+        .select()
+        .single();
 
       if (saveError) {
-        throw saveError;
+        console.error("SUPABASE PROFILE ERROR:", saveError);
+
+        const details = [
+          saveError.message,
+          saveError.details,
+          saveError.hint,
+          saveError.code ? `Error code: ${saveError.code}` : "",
+        ]
+          .filter(Boolean)
+          .join("\n\n");
+
+        throw new Error(details || "Unknown Supabase database error.");
       }
 
-      console.log("KAALAM: Profile saved successfully.");
+      if (!data) {
+        throw new Error("Supabase did not return the saved profile.");
+      }
+
+      console.log("KAALAM: Profile saved successfully", data);
 
       Alert.alert(
         "Profile Saved",
-        "Your KAALAM profile has been created successfully.",
+        "Your KAALAM profile has been saved successfully.",
         [
           {
             text: "Continue",
-            onPress: () => onComplete(),
+            onPress: onComplete,
           },
         ]
       );
 
-    } catch (e) {
+    } catch (e: unknown) {
+      const err = e as {
+        message?: string;
+        details?: string;
+        hint?: string;
+        code?: string;
+      };
+
       const message =
-        e instanceof Error
-          ? e.message
-          : "Could not save your profile.";
+        err.message ||
+        err.details ||
+        err.hint ||
+        JSON.stringify(e) ||
+        "Unknown profile saving error.";
 
       console.error("KAALAM PROFILE SAVE ERROR:", e);
 
       setError(message);
 
-      Alert.alert(
-        "Profile Save Failed",
-        message
-      );
+      Alert.alert("Profile Save Failed", message);
 
     } finally {
       setBusy(false);
@@ -216,16 +219,13 @@ export function OnboardingScreen({
     >
       <Text style={styles.brand}>KAALAM</Text>
 
-      <Text style={styles.title}>
-        Your details
-      </Text>
+      <Text style={styles.title}>Your details</Text>
 
       <Text style={styles.subtitle}>
         These details are used to personalize your horoscope
         and date recommendations.
       </Text>
 
-      {/* Full Name */}
       <TextInput
         value={values.full_name}
         onChangeText={(v) => update("full_name", v)}
@@ -235,12 +235,9 @@ export function OnboardingScreen({
         autoCapitalize="words"
       />
 
-      {/* Other Fields */}
       {fields.map((field) => (
         <View key={field.key}>
-          <Text style={styles.label}>
-            {field.label}
-          </Text>
+          <Text style={styles.label}>{field.label}</Text>
 
           <TextInput
             value={values[field.key]}
@@ -254,15 +251,11 @@ export function OnboardingScreen({
                 ? "numbers-and-punctuation"
                 : "default"
             }
-            autoCapitalize="words"
           />
         </View>
       ))}
 
-      {/* Language */}
-      <Text style={styles.label}>
-        Preferred language
-      </Text>
+      <Text style={styles.label}>Preferred language</Text>
 
       <View style={styles.pills}>
         {["Telugu", "English", "Hindi"].map((language) => {
@@ -293,37 +286,26 @@ export function OnboardingScreen({
         })}
       </View>
 
-      {/* Panchangam Tradition */}
-      <Text style={styles.label}>
-        Panchangam tradition
-      </Text>
+      <Text style={styles.label}>Panchangam tradition</Text>
 
       <View style={styles.pills}>
-        <View
-          style={[
-            styles.pill,
-            styles.pillSelected,
-          ]}
-        >
-          <Text
-            style={[
-              styles.pillText,
-              styles.pillTextSelected,
-            ]}
-          >
+        <View style={[styles.pill, styles.pillSelected]}>
+          <Text style={[styles.pillText, styles.pillTextSelected]}>
             Telugu Drik
           </Text>
         </View>
       </View>
 
-      {/* Error */}
       {error ? (
-        <Text style={styles.error}>
-          {error}
-        </Text>
+        <View style={styles.errorBox}>
+          <Text style={styles.errorTitle}>
+            Unable to save profile
+          </Text>
+
+          <Text style={styles.error}>{error}</Text>
+        </View>
       ) : null}
 
-      {/* Save Button */}
       <TouchableOpacity
         disabled={busy}
         onPress={save}
@@ -336,10 +318,7 @@ export function OnboardingScreen({
         {busy ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator color="#FFFFFF" />
-
-            <Text style={styles.buttonText}>
-              Saving...
-            </Text>
+            <Text style={styles.buttonText}>Saving...</Text>
           </View>
         ) : (
           <Text style={styles.buttonText}>
@@ -347,7 +326,6 @@ export function OnboardingScreen({
           </Text>
         )}
       </TouchableOpacity>
-
     </ScrollView>
   );
 }
@@ -464,9 +442,26 @@ const styles = StyleSheet.create({
     gap: 10,
   },
 
-  error: {
-    color: colors.maroon,
-    fontSize: 12,
-    marginBottom: 10,
+  errorBox: {
+    backgroundColor: "rgba(150, 30, 30, 0.08)",
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#B65B5B",
+    padding: 12,
+    marginBottom: 12,
   },
+
+  errorTitle: {
+    color: "#9B2525",
+    fontSize: 13,
+    fontWeight: "700",
+    marginBottom: 5,
+  },
+
+  error: {
+    color: "#9B2525",
+    fontSize: 12,
+    lineHeight: 18,
+  },
+
 });
