@@ -1,6 +1,6 @@
 # KAALAM Mobile
 
-A minimal React Native + Expo starter for the KAALAM Hindu Panchangam and Muhurtham app.
+A minimal React Native + Expo SDK 58 starter for the KAALAM Hindu Panchangam and Muhurtham app.
 
 ## Included
 
@@ -11,6 +11,10 @@ A minimal React Native + Expo starter for the KAALAM Hindu Panchangam and Muhurt
 - Profile screen placeholder
 - Ivory, deep maroon and muted gold visual system
 - No n8n dependency
+
+## Expo SDK
+
+This project targets Expo SDK 58, React Native 0.88.1 and React 19.3.0. SDK 58 requires Node.js 22.13+ (or a supported newer Node line). After cloning or extracting, run `npm install`, then `npx expo install --fix` and `npx expo-doctor` to verify the installed dependency set.
 
 ## Stack
 
@@ -46,6 +50,8 @@ Copy root `.env.example` to `.env` and set `EXPO_PUBLIC_API_BASE_URL` to the bac
 ```bash
 npx expo start
 ```
+
+If using a physical device, install an SDK 58-compatible Expo Go build when available, or use an Expo development build. SDK 58 recommends development builds for production workflows.
 
 Scan the QR code with Expo Go. Restart Expo after changing `.env`.
 
