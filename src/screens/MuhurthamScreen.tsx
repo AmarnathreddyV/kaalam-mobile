@@ -9,7 +9,10 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Platform,
 } from "react-native";
+
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 import { Screen, PageHeading, Panel } from "../components/Screen";
 import { colors } from "../theme/colors";
@@ -52,9 +55,35 @@ function formatDate(date: Date) {
   return `${year}-${month}-${day}`;
 }
 
+function displayDate(date: Date) {
+  return date.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
+}
+
 function addDays(date: Date, days: number) {
   const result = new Date(date);
   result.setDate(result.getDate() + days);
+  return result;
+}
+
+function addMonths(date: Date, months: number) {
+  const result = new Date(date);
+  const originalDay = result.getDate();
+
+  result.setDate(1);
+  result.setMonth(result.getMonth() + months);
+
+  const lastDay = new Date(
+    result.getFullYear(),
+    result.getMonth() + 1,
+    0
+  ).getDate();
+
+  result.setDate(Math.min(originalDay, lastDay));
+
   return result;
 }
 
@@ -65,13 +94,15 @@ export function MuhurthamScreen() {
 
   const [selectedPeriod, setSelectedPeriod] = useState("3 Months");
 
-  const [startDate, setStartDate] = useState(
-    formatDate(new Date())
-  );
+  const [startDate, setStartDate] = useState(new Date());
 
   const [endDate, setEndDate] = useState(
-    formatDate(addDays(new Date(), 90))
+    addMonths(new Date(), 3)
   );
+
+  const [showStartPicker, setShowStartPicker] = useState(false);
+
+  const [showEndPicker, setShowEndPicker] = useState(false);
 
   const [results, setResults] = useState<PanchangResult[]>([]);
 
@@ -84,27 +115,77 @@ export function MuhurthamScreen() {
 
     if (label !== "Custom") {
       const start = new Date();
-      const end = addDays(start, days);
 
-      setStartDate(formatDate(start));
-      setEndDate(formatDate(end));
+      let end: Date;
+
+      switch (label) {
+        case "1 Month":
+          end = addMonths(start, 1);
+          break;
+
+        case "3 Months":
+          end = addMonths(start, 3);
+          break;
+
+        case "6 Months":
+          end = addMonths(start, 6);
+          break;
+
+        case "1 Year":
+          end = addMonths(start, 12);
+          break;
+
+        default:
+          end = addDays(start, days);
+      }
+
+      setStartDate(start);
+      setEndDate(end);
     }
 
     setResults([]);
     setError("");
   }
 
-  function validDate(value: string) {
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-      return false;
+  function handleStartDateChange(
+    event: any,
+    selectedDate?: Date
+  ) {
+    setShowStartPicker(false);
+
+    if (event.type === "dismissed" || !selectedDate) {
+      return;
     }
 
-    const date = new Date(`${value}T00:00:00`);
+    setStartDate(selectedDate);
+    setSelectedPeriod("Custom");
+    setResults([]);
+    setError("");
 
-    return (
-      !isNaN(date.getTime()) &&
-      date.toISOString().slice(0, 10) === value
-    );
+    if (selectedDate > endDate) {
+      setEndDate(selectedDate);
+    }
+  }
+
+  function handleEndDateChange(
+    event: any,
+    selectedDate?: Date
+  ) {
+    setShowEndPicker(false);
+
+    if (event.type === "dismissed" || !selectedDate) {
+      return;
+    }
+
+    if (selectedDate < startDate) {
+      setError("End date cannot be earlier than start date.");
+      return;
+    }
+
+    setEndDate(selectedDate);
+    setSelectedPeriod("Custom");
+    setResults([]);
+    setError("");
   }
 
   async function searchMuhurtham() {
@@ -118,25 +199,18 @@ export function MuhurthamScreen() {
       return;
     }
 
-    if (!validDate(startDate) || !validDate(endDate)) {
-      setError("Enter valid dates in YYYY-MM-DD format.");
-      return;
-    }
-
     if (endDate < startDate) {
       setError("End date cannot be earlier than start date.");
       return;
     }
 
-    const days =
+    const totalDays =
       Math.floor(
-        (
-          new Date(`${endDate}T00:00:00`).getTime() -
-          new Date(`${startDate}T00:00:00`).getTime()
-        ) / 86400000
+        (endDate.getTime() - startDate.getTime()) /
+          86400000
       ) + 1;
 
-    if (days > 366) {
+    if (totalDays > 366) {
       setError("Please select a period of 366 days or less.");
       return;
     }
@@ -150,15 +224,13 @@ export function MuhurthamScreen() {
         `${API_BASE_URL}/api/muhurtham/search`,
         {
           method: "POST",
-
           headers: {
             "Content-Type": "application/json",
           },
-
           body: JSON.stringify({
             occasion,
-            start_date: startDate,
-            end_date: endDate,
+            start_date: formatDate(startDate),
+            end_date: formatDate(endDate),
             latitude: 17.385,
             longitude: 78.4867,
             timezone: 5.5,
@@ -180,7 +252,6 @@ export function MuhurthamScreen() {
       if (!body.results?.length) {
         setError("No Panchangam records were returned.");
       }
-
     } catch (e) {
       const message =
         e instanceof Error
@@ -190,7 +261,6 @@ export function MuhurthamScreen() {
       setError(message);
 
       Alert.alert("Search Failed", message);
-
     } finally {
       setLoading(false);
     }
@@ -219,10 +289,8 @@ export function MuhurthamScreen() {
       >
         <PageHeading
           title="Find Muhurtham"
-          subtitle="Explore Telugu Drik Panchangam for your occasion."
+          subtitle="Choose an occasion and search period."
         />
-
-        {/* Occasion */}
 
         <Text style={styles.label}>SELECT OCCASION</Text>
 
@@ -270,8 +338,6 @@ export function MuhurthamScreen() {
           </>
         )}
 
-        {/* Search Period */}
-
         <Text style={styles.label}>
           SELECT SEARCH PERIOD
         </Text>
@@ -302,47 +368,63 @@ export function MuhurthamScreen() {
           ))}
         </View>
 
-        {/* Date Range */}
-
-        <Text style={styles.label}>
-          DATE RANGE
-        </Text>
+        <Text style={styles.label}>CHOOSE DATE RANGE</Text>
 
         <Panel>
-          <Text style={styles.dateLabel}>
-            FROM DATE
-          </Text>
+          <Text style={styles.dateLabel}>FROM DATE</Text>
 
-          <TextInput
-            value={startDate}
-            onChangeText={setStartDate}
-            editable={selectedPeriod === "Custom"}
-            placeholder="YYYY-MM-DD"
-            placeholderTextColor={colors.muted}
-            style={styles.input}
-          />
+          <TouchableOpacity
+            style={styles.dateButton}
+            onPress={() => setShowStartPicker(true)}
+          >
+            <Text style={styles.dateText}>
+              {displayDate(startDate)}
+            </Text>
 
-          <Text style={styles.dateLabel}>
-            TO DATE
-          </Text>
+            <Text style={styles.calendarIcon}>▦</Text>
+          </TouchableOpacity>
 
-          <TextInput
-            value={endDate}
-            onChangeText={setEndDate}
-            editable={selectedPeriod === "Custom"}
-            placeholder="YYYY-MM-DD"
-            placeholderTextColor={colors.muted}
-            style={styles.input}
-          />
+          <Text style={styles.dateLabel}>TO DATE</Text>
+
+          <TouchableOpacity
+            style={styles.dateButton}
+            onPress={() => setShowEndPicker(true)}
+          >
+            <Text style={styles.dateText}>
+              {displayDate(endDate)}
+            </Text>
+
+            <Text style={styles.calendarIcon}>▦</Text>
+          </TouchableOpacity>
 
           <Text style={styles.rangeHint}>
             {selectedPeriod === "Custom"
-              ? "Enter dates in YYYY-MM-DD format."
-              : `Searching period: ${selectedPeriod}`}
+              ? "Custom date range selected."
+              : `${selectedPeriod} search period selected.`}
           </Text>
         </Panel>
 
-        {/* Search Button */}
+        {showStartPicker && (
+          <DateTimePicker
+            value={startDate}
+            mode="date"
+            display={Platform.OS === "ios" ? "spinner" : "calendar"}
+            minimumDate={new Date(2000, 0, 1)}
+            maximumDate={new Date(2100, 11, 31)}
+            onChange={handleStartDateChange}
+          />
+        )}
+
+        {showEndPicker && (
+          <DateTimePicker
+            value={endDate}
+            mode="date"
+            display={Platform.OS === "ios" ? "spinner" : "calendar"}
+            minimumDate={startDate}
+            maximumDate={addDays(startDate, 365)}
+            onChange={handleEndDateChange}
+          />
+        )}
 
         <TouchableOpacity
           style={styles.button}
@@ -364,17 +446,11 @@ export function MuhurthamScreen() {
           )}
         </TouchableOpacity>
 
-        {/* Error */}
-
         {error ? (
           <Panel style={styles.result}>
-            <Text style={styles.error}>
-              {error}
-            </Text>
+            <Text style={styles.error}>{error}</Text>
           </Panel>
         ) : null}
-
-        {/* Results */}
 
         {results.length > 0 && (
           <>
@@ -383,82 +459,44 @@ export function MuhurthamScreen() {
             </Text>
 
             <Text style={styles.resultSubtitle}>
-              {results.length} daily records retrieved.
-              These are Panchangam snapshots, not verified
-              Muhurtham recommendations.
+              {results.length} daily Panchangam records retrieved.
+              These are not yet verified Muhurtham recommendations.
             </Text>
 
             {results.map((item) => (
-              <Panel
-                key={item.date}
-                style={styles.result}
-              >
+              <Panel key={item.date} style={styles.result}>
                 <Text style={styles.resultTitle}>
                   {item.date}
                 </Text>
 
-                <View style={styles.resultRow}>
-                  <Text style={styles.resultLabel}>
-                    Tithi
-                  </Text>
+                {[
+                  ["Tithi", "tithi"],
+                  ["Nakshatra", "nakshatra"],
+                  ["Yoga", "yoga"],
+                  ["Karana", "karana"],
+                  ["Weekday", "weekday"],
+                ].map(([label, key]) => (
+                  <View key={key} style={styles.resultRow}>
+                    <Text style={styles.resultLabel}>
+                      {label}
+                    </Text>
 
-                  <Text style={styles.resultValue}>
-                    {getField(item.data, "tithi")}
-                  </Text>
-                </View>
-
-                <View style={styles.resultRow}>
-                  <Text style={styles.resultLabel}>
-                    Nakshatra
-                  </Text>
-
-                  <Text style={styles.resultValue}>
-                    {getField(item.data, "nakshatra")}
-                  </Text>
-                </View>
-
-                <View style={styles.resultRow}>
-                  <Text style={styles.resultLabel}>
-                    Yoga
-                  </Text>
-
-                  <Text style={styles.resultValue}>
-                    {getField(item.data, "yoga")}
-                  </Text>
-                </View>
-
-                <View style={styles.resultRow}>
-                  <Text style={styles.resultLabel}>
-                    Karana
-                  </Text>
-
-                  <Text style={styles.resultValue}>
-                    {getField(item.data, "karana")}
-                  </Text>
-                </View>
-
-                <View style={styles.resultRow}>
-                  <Text style={styles.resultLabel}>
-                    Weekday
-                  </Text>
-
-                  <Text style={styles.resultValue}>
-                    {getField(item.data, "weekday")}
-                  </Text>
-                </View>
+                    <Text style={styles.resultValue}>
+                      {getField(item.data, key)}
+                    </Text>
+                  </View>
+                ))}
               </Panel>
             ))}
           </>
         )}
 
         <Text style={styles.disclaimer}>
-          KAALAM uses Navamsha for Telugu Drik Panchangam
-          data. Daily snapshots do not establish an
-          auspicious Muhurtham. Verified timings and
-          occasion-specific traditional rules are required
-          before recommending a date.
+          KAALAM uses Telugu Drik Panchangam data from Navamsha.
+          Daily Panchangam snapshots are not confirmed auspicious
+          timings. Occasion-specific Muhurtham calculations
+          are still required.
         </Text>
-
       </ScrollView>
     </Screen>
   );
@@ -478,7 +516,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 9,
-    marginBottom: 15,
   },
 
   option: {
@@ -539,8 +576,30 @@ const styles = StyleSheet.create({
     color: colors.muted,
     fontSize: 10,
     fontWeight: "700",
-    marginBottom: 7,
-    marginTop: 8,
+    marginBottom: 8,
+    marginTop: 10,
+  },
+
+  dateButton: {
+    backgroundColor: "rgba(255, 248, 234, 0.96)",
+    borderColor: colors.line,
+    borderWidth: 1,
+    borderRadius: 11,
+    padding: 15,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+
+  dateText: {
+    color: colors.text,
+    fontSize: 13,
+    fontWeight: "600",
+  },
+
+  calendarIcon: {
+    color: colors.maroon,
+    fontSize: 20,
   },
 
   input: {
@@ -548,8 +607,7 @@ const styles = StyleSheet.create({
     borderColor: colors.line,
     borderWidth: 1,
     borderRadius: 11,
-    paddingHorizontal: 14,
-    paddingVertical: 13,
+    padding: 14,
     color: colors.text,
     fontSize: 13,
     marginBottom: 12,
@@ -558,6 +616,7 @@ const styles = StyleSheet.create({
   rangeHint: {
     color: colors.muted,
     fontSize: 11,
+    marginTop: 12,
   },
 
   button: {
