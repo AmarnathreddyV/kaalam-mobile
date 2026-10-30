@@ -1,0 +1,22 @@
+{
+  "expo": {
+    "name": "KAALAM",
+    "slug": "kaalam-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#F7F3EB"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.kaalam.app"
+    },
+    "android": {
+      "package": "com.kaalam.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#F7F3EB"
+      }
+    }
+  }
+}
