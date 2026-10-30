@@ -12,7 +12,7 @@ export type PanchangamResponse = {
   };
 };
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL?.replace(/\/$/, "");
+const API_BASE_URL = (process.env.EXPO_PUBLIC_API_BASE_URL || "https://kaalam-mobile.onrender.com").replace(/\/$/, "");
 
 export async function fetchPanchangam(date = new Date()): Promise<PanchangamResponse> {
   if (!API_BASE_URL) {

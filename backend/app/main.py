@@ -2,6 +2,8 @@ import os
 from datetime import date as date_type
 from typing import Any
 
+from pydantic import BaseModel, Field
+
 import httpx
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Query
@@ -21,7 +23,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=False,
-    allow_methods=["GET"],
+    allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
 
@@ -94,4 +96,89 @@ async def get_panchang(
             "timezone": timezone,
         },
         "data": data["output"],
+    }
+
+
+class OccasionAnalysisRequest(BaseModel):
+    occasion: str = Field(min_length=3, max_length=160)
+    location: str = Field(default="Not provided", max_length=120)
+    tradition: str = Field(default="Telugu Drik Panchangam", max_length=80)
+    language: str = Field(default="English", max_length=30)
+
+
+@app.post("/api/occasion/analyze")
+async def analyze_custom_occasion(request: OccasionAnalysisRequest) -> dict[str, Any]:
+    """
+    Uses Gemini to understand a user-entered occasion and outline the traditional
+    Muhurtham factors to evaluate. It deliberately does NOT invent dates or timings.
+    """
+    gemini_key = os.getenv("GEMINI_API_KEY", "").strip()
+    model = os.getenv("GEMINI_MODEL", "gemini-3.8-flash").strip()
+
+    if not gemini_key:
+        raise HTTPException(
+            status_code=503,
+            detail="AI is not configured yet. Add GEMINI_API_KEY to the KAALAM backend environment variables.",
+        )
+
+    prompt = f"""
+You are KAALAM, a careful assistant for Hindu Panchangam and Muhurtham traditions.
+A user entered an occasion that was not in the preset list.
+
+Occasion: {request.occasion}
+Location: {request.location}
+Tradition: {request.tradition}
+Response language: {request.language}
+
+Analyze what the occasion means and identify the relevant traditional Muhurtham considerations.
+Return a concise response in {request.language} using exactly these headings:
+1. Occasion understood
+2. Relevant traditional considerations
+3. Details needed (if any)
+4. What KAALAM should check before suggesting a date
+
+Rules:
+- Do not invent auspicious dates, Panchangam values, planetary positions, or time windows.
+- Do not claim that a date is auspicious without verified location-specific Panchangam data and event-specific rules.
+- If customs differ by region or family tradition, say so.
+- Treat astrology as traditional/cultural guidance, not a guarantee.
+- If the occasion is unclear, ask one focused clarification.
+- Keep the answer concise and practical.
+"""
+
+    try:
+        async with httpx.AsyncClient(timeout=35.0) as client:
+            response = await client.post(
+                f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
+                headers={
+                    "x-goog-api-key": gemini_key,
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "contents": [{"parts": [{"text": prompt}]}],
+                    "generationConfig": {"temperature": 0.2, "maxOutputTokens": 700},
+                },
+            )
+        response.raise_for_status()
+        result = response.json()
+        answer = "\n".join(
+            part.get("text", "")
+            for candidate in result.get("candidates", [])
+            for part in candidate.get("content", {}).get("parts", [])
+            if part.get("text")
+        ).strip()
+        if not answer:
+            raise ValueError("Gemini returned an empty response.")
+    except httpx.HTTPStatusError as exc:
+        raise HTTPException(
+            status_code=502,
+            detail=f"AI provider returned HTTP {exc.response.status_code}. Check GEMINI_API_KEY and GEMINI_MODEL.",
+        ) from exc
+    except (httpx.RequestError, ValueError, KeyError) as exc:
+        raise HTTPException(status_code=502, detail="Could not analyze this occasion with the AI service.") from exc
+
+    return {
+        "occasion": request.occasion,
+        "analysis": answer,
+        "next_step": "After this analysis, KAALAM must evaluate candidate dates using verified Panchangam data and event-specific rules.",
     }

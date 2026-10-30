@@ -1,99 +1,76 @@
 # KAALAM Mobile
 
-A minimal React Native + Expo SDK 58 starter for the KAALAM Hindu Panchangam and Muhurtham app.
+KAALAM is a minimal React Native + Expo app with email registration, user onboarding and a Navamsha Panchangam data connection.
 
-## Included
+## Branding
 
-- Home dashboard
-- Panchangam screen connected to the Navamsha full Panchang API through a FastAPI backend
-- Muhurtham occasion selection UI
-- Horoscope screen placeholder
-- Profile screen placeholder
-- Ivory, deep maroon and muted gold visual system
-- No n8n dependency
+The KAALAM logo is included at `assets/kaalam-logo.png` and configured as the app icon, splash image and Android adaptive icon. It is also shown on the email authentication screen. After changing app icons/splash assets, create a new native app build to see the changes on an installed app.
 
-## Expo SDK
+## User flow
 
-This project targets Expo SDK 58, React Native 0.88.1 and React 19.3.0. SDK 58 requires Node.js 22.13+ (or a supported newer Node line). After cloning or extracting, run `npm install`, then `npx expo install --fix` and `npx expo-doctor` to verify the installed dependency set.
+1. Register with email, name and password.
+2. Verify email if confirmation is enabled in Supabase.
+3. Sign in.
+4. Complete birth details, birthplace, current location, language and Panchangam tradition.
+5. Enter the app.
 
-## Stack
+There is no sample user profile or hardcoded Panchangam value presented as live data.
 
-- Mobile: React Native + Expo + TypeScript
-- Backend: Python + FastAPI
-- Panchangam provider: Navamsha API
-- Database/auth: Supabase (planned)
-- AI: Gemini or OpenAI for language and interpretation (planned)
-- Notifications: Firebase Cloud Messaging (planned)
+## Configure Supabase
 
-## Run the backend
+See [SUPABASE_SETUP.md](SUPABASE_SETUP.md).
 
-See [backend/README.md](backend/README.md).
+Set these Expo app environment variables:
+- `EXPO_PUBLIC_SUPABASE_URL`
+- `EXPO_PUBLIC_SUPABASE_ANON_KEY`
 
-1. `cd backend`
-2. `python -m venv .venv`
-3. Activate the environment.
-4. `pip install -r requirements.txt`
-5. Copy `.env.example` to `.env`.
-6. Add your Navamsha API key as `NAVAMSHA_API_KEY`.
-7. Run `uvicorn app.main:app --reload --host 0.0.0.0 --port 8000`.
+Optional:
+- `EXPO_PUBLIC_API_BASE_URL` (defaults to `https://kaalam-mobile.onrender.com`)
 
-## Run the mobile app
+Run `supabase/schema.sql` in Supabase SQL Editor. Never use the Supabase service-role key in the mobile app.
 
-From the project root:
+## Run
 
 ```bash
 npm install
+npx expo install --fix
+npx expo start -c
 ```
 
-Copy root `.env.example` to `.env` and set `EXPO_PUBLIC_API_BASE_URL` to the backend address. For a physical phone, use your computer's LAN IP. Then:
+## Backend
+
+FastAPI backend and Navamsha proxy are in `backend/`. See `backend/README.md`. Keep `NAVAMSHA_API_KEY` in Render environment variables.
+
+## Current limitations
+
+The app now requires a real Supabase account and completed profile before showing the main tabs. Panchangam live integration currently fetches tithi, nakshatra, yoga, karana and weekday. Daily timing calculations, full horoscope, and event-specific Muhurtham search are still to be implemented and validated; the app must not invent those values.
+
+No n8n dependency is used.
+
+
+## Custom occasion analysis with AI
+
+When a user chooses **Other**, they can type an occasion in their own words. The app sends it to the FastAPI endpoint `/api/occasion/analyze`, which uses Gemini on the server to explain the occasion and identify traditional factors to check.
+
+Add `GEMINI_API_KEY` to the Render backend's Environment settings. Optionally set `GEMINI_MODEL` (default: `gemini-3.8-flash`). Redeploy the backend after adding the variables and pushing the code.
+
+The AI analysis is not itself a Muhurtham calculation. KAALAM must still evaluate candidate dates against verified local Panchangam data and the applicable event-specific rules before recommending dates.
+
+
+## KAALAM moving mandala background
+
+The app now uses the supplied devotional mandala video as a muted, looping full-screen background. The video is compressed to a mobile-friendly 720p asset at `assets/kaalam-mandala-background.mp4`. The palette is coordinated with the saffron/amber video using warm ivory panels, deep brown typography, antique-gold accents, and Georgia serif display headings.
+
+Install the Expo-compatible video package for the project's SDK version:
 
 ```bash
-npx expo start
+npx expo install expo-video
 ```
 
-If using a physical device, install an SDK 58-compatible Expo Go build when available, or use an Expo development build. SDK 58 recommends development builds for production workflows.
-
-Scan the QR code with Expo Go. Restart Expo after changing `.env`.
-
-## Navamsha API integration
-
-The backend calls:
-
-`POST https://api.navamsha.in/api/v1/panchang/full`
-
-It sends the API key in the `X-API-Key` header and passes date, latitude, longitude and timezone. The API key is never embedded in the mobile app.
-
-The mobile Panchangam screen currently displays live:
-- Tithi
-- Nakshatra
-- Yoga
-- Karana
-- Weekday (Vara)
-
-The initial mobile request uses Hyderabad coordinates and IST. User-selected location support is not implemented yet.
-
-## Important limitations
-
-This is an early integration, not a production-ready astrology product.
-
-- Sunrise/sunset and inauspicious-period endpoints are not yet connected to the UI.
-- Durmuhurtham and Subha Gadiyalu are not currently calculated by this integration.
-- The Muhurtham screen is only a UI flow; it does not yet produce verified event dates.
-- Horoscope and birth-chart calculations are not connected.
-- Add user authentication, database storage, rate limiting, caching, request validation and monitoring before public release.
-- Confirm Navamsha's current plan terms for commercial use directly with the provider before launch. The API's published free developer allowance and commercial licensing are separate questions.
-
-Never display sample or missing values as verified Panchangam timings.
-
-## GitHub
+Then restart Expo with a clean cache:
 
 ```bash
-git init
-git add .
-git commit -m "Add KAALAM mobile app with Navamsha Panchangam integration"
-git branch -M main
-git remote add origin https://github.com/YOUR-USERNAME/kaalam-mobile.git
-git push -u origin main
+npx expo start -c
 ```
 
-Do not commit `.env` files or API keys.
+The background video is bundled locally; it does not need an internet connection at runtime.

@@ -24,7 +24,7 @@ export function HoroscopeScreen() {
 }
 const styles = StyleSheet.create({
   eyebrow: { color: colors.gold, fontSize: 9, letterSpacing: 1.4, fontWeight: "700" },
-  title: { color: colors.maroonDark, fontSize: 21, fontWeight: "600", marginTop: 11 },
+  title: { color: colors.maroonDark, fontSize: 23, fontWeight: "600", fontFamily: "Georgia", marginTop: 11 },
   body: { color: colors.muted, fontSize: 12, lineHeight: 19, marginTop: 9 },
   heading: { color: colors.text, fontSize: 15, fontWeight: "700", marginTop: 25, marginBottom: 13 },
   footnote: { color: colors.muted, fontSize: 11, lineHeight: 17, marginTop: 17 },

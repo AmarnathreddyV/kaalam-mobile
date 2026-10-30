@@ -49,3 +49,14 @@ For production, deploy this backend over HTTPS and set `EXPO_PUBLIC_API_BASE_URL
 The backend currently calls Navamsha's documented `POST /api/v1/panchang/full` endpoint. The mobile Panchangam screen displays tithi, nakshatra, yoga, karana and weekday from the live response.
 
 Rahu Kaal, Yamaganda, Gulika, sunrise/sunset, Abhijit and other timing routes are not yet wired into the UI. Durmuhurtham and Subha Gadiyalu must be confirmed against the provider's endpoint coverage and the selected regional tradition before displaying them as calculated values.
+
+
+## Custom occasion AI analysis
+
+The app's "Other" occasion option sends the user's text to `POST /api/occasion/analyze`.
+Set these Render backend environment variables:
+
+- `GEMINI_API_KEY` — Google AI Studio API key
+- `GEMINI_MODEL` — optional; defaults to `gemini-3.8-flash`
+
+The endpoint classifies the occasion and explains which traditional factors should be checked. It does not generate auspicious dates or timings. Actual date recommendations must be computed from verified Panchangam data and event-specific rules.

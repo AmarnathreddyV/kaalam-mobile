@@ -6,6 +6,8 @@
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "splash": {
+      "image": "./assets/kaalam-logo.png",
+      "resizeMode": "contain",
       "backgroundColor": "#F7F3EB"
     },
     "ios": {
@@ -15,8 +17,10 @@
     "android": {
       "package": "com.kaalam.app",
       "adaptiveIcon": {
+        "foregroundImage": "./assets/kaalam-logo.png",
         "backgroundColor": "#F7F3EB"
       }
-    }
+    },
+    "icon": "./assets/kaalam-logo.png"
   }
 }
