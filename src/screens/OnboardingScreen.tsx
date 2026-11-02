@@ -71,16 +71,21 @@ export function OnboardingScreen({
   };
 
   function isValidDate(date: string) {
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    // Validate calendar components directly. Avoid toISOString(), which can
+    // shift the date to the previous day in time zones such as Asia/Kolkata.
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date);
+    if (!match) return false;
+
+    const year = Number(match[1]);
+    const month = Number(match[2]);
+    const day = Number(match[3]);
+
+    if (year < 1 || month < 1 || month > 12 || day < 1) {
       return false;
     }
 
-    const parsed = new Date(`${date}T00:00:00`);
-
-    return (
-      !isNaN(parsed.getTime()) &&
-      parsed.toISOString().slice(0, 10) === date
-    );
+    const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+    return day <= daysInMonth;
   }
 
   function isValidTime(time: string) {
