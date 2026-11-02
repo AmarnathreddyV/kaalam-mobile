@@ -15,6 +15,10 @@ type Profile = {
   nakshatra?: string | null;
   pada?: number | null;
   preferred_language?: string | null;
+  current_latitude?: number | null;
+  current_longitude?: number | null;
+  current_timezone?: string | null;
+  birth_chart_summary?: { rashi?: string; nakshatra?: string; pada?: number; lagna?: string } | null;
 };
 
 function todayLabel() {
@@ -37,7 +41,7 @@ export function HomeScreen({ onOpenMuhurtham }: { onOpenMuhurtham: () => void })
       const [{ data: auth }, { data: profileData, error: pError }] = await Promise.all([
         supabase.auth.getUser(),
         supabase.from("profiles")
-          .select("full_name,date_of_birth,time_of_birth,birth_place,current_location,preferred_language")
+          .select("full_name,date_of_birth,time_of_birth,birth_place,current_location,preferred_language,current_latitude,current_longitude,current_timezone,birth_chart_summary")
           .maybeSingle(),
       ]);
       if (pError) setProfileError(pError.message);
@@ -47,7 +51,7 @@ export function HomeScreen({ onOpenMuhurtham }: { onOpenMuhurtham: () => void })
       if (!profileData && typeof userName === "string") {
         setProfile({ full_name: userName });
       }
-      setResult(await fetchDailyPanchangam());
+      if (!profileData?.current_latitude || !profileData?.current_longitude || !profileData?.current_timezone) {\n        throw new Error("Your current location has not been resolved yet. Please update your profile details.");\n      }\n      setResult(await fetchDailyPanchangam(new Date(), {\n        latitude: profileData.current_latitude,\n        longitude: profileData.current_longitude,\n        timezone: profileData.current_timezone,\n      }));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to load today's Panchangam.");
     } finally {
@@ -64,12 +68,12 @@ export function HomeScreen({ onOpenMuhurtham }: { onOpenMuhurtham: () => void })
   const karana = p?.karana?.name || "—";
   const name = profile?.full_name?.trim() || "there";
   const daily = result?.data;
-  const timeText = (value?: string) => {
+  const userTimezone = profile?.current_timezone || "UTC";\n  const timeText = (value?: string) => {
     if (!value) return "Unavailable";
     const parsed = new Date(value);
     if (Number.isNaN(parsed.getTime())) return "Unavailable";
     return new Intl.DateTimeFormat("en-IN", {
-      hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Asia/Kolkata",
+      hour: "numeric", minute: "2-digit", hour12: true, timeZone: userTimezone,
     }).format(parsed);
   };
   const timeRange = (period?: { start?: string; end?: string }) =>
@@ -123,7 +127,7 @@ export function HomeScreen({ onOpenMuhurtham }: { onOpenMuhurtham: () => void })
         )}
       </Panel>
 
-      <SectionTitle>DAILY TIMINGS · HYDERABAD</SectionTitle>
+      <SectionTitle>DAILY TIMINGS · {profile?.current_location?.toUpperCase() || "YOUR LOCATION"}</SectionTitle>
       <Panel>
         <LabelValue label="Sunrise" value={timeText(sunrise)} />
         <LabelValue label="Sunset" value={timeText(sunset)} />
@@ -144,7 +148,7 @@ export function HomeScreen({ onOpenMuhurtham }: { onOpenMuhurtham: () => void })
           </View>
         )}
         <Text style={styles.smallNote}>
-          Timings are provider calculations for Hyderabad in IST. Choghadiya and Abhijit are general daily indicators, not a substitute for event-specific Muhurtham.
+          Timings are provider calculations for your saved current location and its local time zone. Choghadiya and Abhijit are general daily indicators, not a substitute for event-specific Muhurtham.
         </Text>
         {!!result?.unavailable && Object.keys(result.unavailable).length > 0 && (
           <Text style={styles.smallNote}>Some timing categories could not be loaded: {Object.keys(result.unavailable).join(", ")}.</Text>
@@ -154,7 +158,7 @@ export function HomeScreen({ onOpenMuhurtham }: { onOpenMuhurtham: () => void })
       <SectionTitle>YOUR DAILY SUGGESTION</SectionTitle>
       <Panel>
         <Text style={styles.suggestionTitle}>Personal guidance</Text>
-        <Text style={styles.horoscope}>Rashi-based suggestions such as a temple visit, a preferred colour or a simple daily observance will appear after your birth Rashi is calculated from your birth details. No generic suggestion is presented as personalized astrology.</Text>
+        <Text style={styles.horoscope}>Your birth-chart summary is now linked to your account. Daily guidance will be enabled after the Panchangam-based interpretation rules are validated. No generic suggestion is presented as personalized astrology.</Text>
       </Panel>
 
       <TouchableOpacity style={styles.cta} onPress={onOpenMuhurtham}>
