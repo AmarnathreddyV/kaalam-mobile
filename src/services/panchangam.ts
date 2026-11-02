@@ -43,3 +43,58 @@ export async function fetchPanchangam(date = new Date()): Promise<PanchangamResp
   }
   return response.json() as Promise<PanchangamResponse>;
 }
+
+
+export type DailyTimePeriod = {
+  name?: string;
+  lord?: string;
+  start?: string;
+  end?: string;
+};
+
+export type DailyPanchangamResponse = {
+  provider: string;
+  tradition: string;
+  date: string;
+  data: {
+    panchang?: PanchangamResponse["data"];
+    sun_times?: {
+      rise?: { local_datetime?: string };
+      set?: { local_datetime?: string };
+    };
+    inauspicious_periods?: {
+      rahu_kaal?: DailyTimePeriod;
+      gulika_kaal?: DailyTimePeriod;
+      yamaganda?: DailyTimePeriod;
+    };
+    choghadiya?: { day?: DailyTimePeriod[]; night?: DailyTimePeriod[] };
+    hora?: { day?: DailyTimePeriod[]; night?: DailyTimePeriod[] };
+    abhijit_muhurat?: {
+      interval?: { name?: string; period?: Array<{ start?: string; end?: string }> };
+    };
+  };
+  unavailable?: Record<string, string>;
+  data_complete?: boolean;
+  recommendations_ready?: boolean;
+};
+
+export async function fetchDailyPanchangam(date = new Date()): Promise<DailyPanchangamResponse> {
+  const dateString = [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, "0"),
+    String(date.getDate()).padStart(2, "0"),
+  ].join("-");
+  const params = new URLSearchParams({
+    day: dateString,
+    latitude: "17.385",
+    longitude: "78.4867",
+    timezone: "5.5",
+  });
+  const response = await fetch(`${API_BASE_URL}/api/panchang/daily?${params.toString()}`);
+  if (!response.ok) {
+    const body = await response.json().catch(() => null);
+    const detail = typeof body?.detail === "string" ? body.detail : JSON.stringify(body?.detail || body);
+    throw new Error(detail || `Daily Panchangam request failed (${response.status}).`);
+  }
+  return response.json() as Promise<DailyPanchangamResponse>;
+}
