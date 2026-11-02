@@ -692,3 +692,142 @@ Rules:
         "occasion": request.occasion,
         "analysis": answer,
     }
+
+
+# --------------------------------------------------
+# USER-SPECIFIC BIRTH PLACE RESOLUTION AND BIRTH CHART
+# --------------------------------------------------
+
+from datetime import datetime
+from zoneinfo import ZoneInfo
+from timezonefinder import TimezoneFinder
+
+NAVAMSHA_KUNDALI_BASIC_URL = "https://api.navamsha.in/api/v1/kundali/basic"
+_timezone_finder = TimezoneFinder()
+
+
+class LocationResolveRequest(BaseModel):
+    place: str = Field(min_length=2, max_length=180)
+
+
+class BirthChartRequest(BaseModel):
+    date_of_birth: date_type
+    time_of_birth: str = Field(pattern=r"^([01]\\d|2[0-3]):[0-5]\\d$")
+    latitude: float = Field(ge=-90, le=90)
+    longitude: float = Field(ge=-180, le=180)
+    timezone: str = Field(min_length=1, max_length=80)
+
+
+@app.post("/api/location/resolve")
+async def resolve_location(request: LocationResolveRequest) -> dict[str, Any]:
+    """Resolve a user-entered place to coordinates and an IANA timezone."""
+    query = request.place.strip()
+    try:
+        async with httpx.AsyncClient(
+            timeout=15.0,
+            headers={"User-Agent": "KAALAM/1.0 (location lookup)"},
+        ) as client:
+            response = await client.get(
+                "https://nominatim.openstreetmap.org/search",
+                params={"q": query, "format": "jsonv2", "limit": 5},
+            )
+            response.raise_for_status()
+            matches = response.json()
+    except (httpx.RequestError, httpx.HTTPStatusError, ValueError) as exc:
+        raise HTTPException(status_code=502, detail="Location lookup is temporarily unavailable.") from exc
+
+    if not matches:
+        raise HTTPException(status_code=404, detail=f"Could not find the place: {query}")
+
+    if len(matches) > 1:
+        # Use the highest-ranked exact provider result, but return its full label
+        # so the app can show the resolved location to the user for confirmation.
+        match = matches[0]
+    else:
+        match = matches[0]
+
+    latitude = float(match["lat"])
+    longitude = float(match["lon"])
+    timezone_name = _timezone_finder.timezone_at(lat=latitude, lng=longitude)
+    if not timezone_name:
+        raise HTTPException(status_code=422, detail="Could not determine the time zone for this location.")
+
+    return {
+        "query": query,
+        "display_name": match.get("display_name", query),
+        "latitude": latitude,
+        "longitude": longitude,
+        "timezone": timezone_name,
+    }
+
+
+@app.post("/api/kundali/basic")
+async def calculate_basic_kundali(request: BirthChartRequest) -> dict[str, Any]:
+    """Calculate a Vedic basic chart using the authenticated user's supplied birth inputs."""
+    if not NAVAMSHA_API_KEY:
+        raise HTTPException(status_code=503, detail="Navamsha API key is not configured.")
+
+    try:
+        zone = ZoneInfo(request.timezone)
+        local_birth = datetime.combine(
+            request.date_of_birth,
+            datetime.strptime(request.time_of_birth, "%H:%M").time(),
+        ).replace(tzinfo=zone)
+        offset_seconds = local_birth.utcoffset().total_seconds()
+        offset_hours = offset_seconds / 3600
+    except (ValueError, KeyError) as exc:
+        raise HTTPException(status_code=422, detail="Invalid IANA time zone or birth time.") from exc
+
+    # Navamsha's Kundali endpoint accepts a numeric UTC offset.
+    payload = {
+        "year": request.date_of_birth.year,
+        "month": request.date_of_birth.month,
+        "date": request.date_of_birth.day,
+        "hours": int(request.time_of_birth[:2]),
+        "minutes": int(request.time_of_birth[3:]),
+        "latitude": request.latitude,
+        "longitude": request.longitude,
+        "timezone": offset_hours,
+    }
+
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.post(
+                NAVAMSHA_KUNDALI_BASIC_URL,
+                headers={"X-API-Key": NAVAMSHA_API_KEY, "Content-Type": "application/json"},
+                json=payload,
+            )
+            response.raise_for_status()
+            body = response.json()
+    except httpx.HTTPStatusError as exc:
+        status = 429 if exc.response.status_code == 429 else 502
+        detail = "Navamsha rate limit reached. Please wait and retry." if status == 429 else f"Navamsha returned HTTP {exc.response.status_code} for the birth chart."
+        raise HTTPException(status_code=status, detail=detail) from exc
+    except (httpx.RequestError, ValueError) as exc:
+        raise HTTPException(status_code=502, detail="Could not calculate the birth chart.") from exc
+
+    output = body.get("output") if isinstance(body, dict) else None
+    if not isinstance(output, dict):
+        raise HTTPException(status_code=502, detail="Navamsha returned an unexpected birth-chart response.")
+
+    moon = (output.get("planets") or {}).get("Moon") or {}
+    ascendant = output.get("ascendant") or {}
+    return {
+        "provider": "Navamsha",
+        "calculation": "Vedic sidereal (Lahiri)",
+        "birth_inputs": {
+            "date": request.date_of_birth.isoformat(),
+            "time": request.time_of_birth,
+            "latitude": request.latitude,
+            "longitude": request.longitude,
+            "timezone": request.timezone,
+            "utc_offset_hours": offset_hours,
+        },
+        "chart": output,
+        "summary": {
+            "rashi": moon.get("zodiac_sign_name"),
+            "nakshatra": moon.get("nakshatra_name"),
+            "pada": moon.get("nakshatra_pada"),
+            "lagna": ascendant.get("zodiac_sign_name"),
+        },
+    }
