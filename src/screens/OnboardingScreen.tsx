@@ -129,7 +129,7 @@ export function OnboardingScreen({
         throw new Error("Session expired. Please sign in again.");
       }
 
-      const apiBase = (process.env.EXPO_PUBLIC_API_BASE_URL || "https://kaalam-mobile.onrender.com").replace(/\\/$/, "");
+      const apiBase = (process.env.EXPO_PUBLIC_API_BASE_URL || "https://kaalam-mobile.onrender.com").replace(/\/$/, "");
 
       async function resolvePlace(place: string) {
         const response = await fetch(`${apiBase}/api/location/resolve`, {
