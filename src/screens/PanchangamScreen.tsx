@@ -2,10 +2,10 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Text, StyleSheet, ActivityIndicator, TouchableOpacity, View } from "react-native";
 import { Screen, PageHeading, Panel, LabelValue } from "../components/Screen";
 import { colors } from "../theme/colors";
-import { fetchPanchangam, PanchangamResponse } from "../services/panchangam";
+import { fetchDailyPanchangam, DailyPanchangamResponse } from "../services/panchangam";
 
 export function PanchangamScreen() {
-  const [result, setResult] = useState<PanchangamResponse | null>(null);
+  const [result, setResult] = useState<DailyPanchangamResponse | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -13,7 +13,7 @@ export function PanchangamScreen() {
     setLoading(true);
     setError("");
     try {
-      setResult(await fetchPanchangam());
+      setResult(await fetchDailyPanchangam());
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to load Panchangam.");
     } finally {
@@ -23,10 +23,10 @@ export function PanchangamScreen() {
 
   useEffect(() => { load(); }, [load]);
 
-  const p = result?.data;
+  const p = result?.data?.panchang;\n  const d = result?.data;\n  const formatTime = (value?: string) => {\n    if (!value) return "Unavailable";\n    const parsed = new Date(value);\n    if (Number.isNaN(parsed.getTime())) return "Unavailable";\n    return new Intl.DateTimeFormat("en-IN", { hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Asia/Kolkata" }).format(parsed);\n  };\n  const range = (period?: { start?: string; end?: string }) => period?.start && period?.end ? formatTime(period.start) + " – " + formatTime(period.end) : "Unavailable";
   return (
     <Screen>
-      <PageHeading title="Panchangam" subtitle={result ? `${result.date} · Hyderabad` : "Daily calendar"} />
+      <PageHeading title="Panchangam" subtitle={result ? `${result.date} · Hyderabad · Telugu Drik` : "Daily calendar"} />
       {loading ? (
         <Panel><ActivityIndicator color={colors.maroon} /><Text style={styles.status}>Loading Panchangam…</Text></Panel>
       ) : error ? (
@@ -49,16 +49,26 @@ export function PanchangamScreen() {
           </View>
         </>
       )}
-      <Text style={styles.heading}>Daily timings</Text>
+      <Text style={styles.heading}>Sun timings</Text>
       <Panel>
-        <LabelValue label="Sunrise / Sunset" value="Timing endpoint integration pending" />
-        <LabelValue label="Rahu Kalam" value="Timing endpoint integration pending" />
-        <LabelValue label="Yamagandam" value="Timing endpoint integration pending" />
-        <LabelValue label="Gulika Kalam" value="Timing endpoint integration pending" />
-        <LabelValue label="Durmuhurtham" value="Not included in current API integration" />
-        <LabelValue label="Subha Gadiyalu" value="Requires selected tradition's rules" last />
+        <LabelValue label="Sunrise" value={formatTime(d?.sun_times?.rise?.local_datetime)} />
+        <LabelValue label="Sunset" value={formatTime(d?.sun_times?.set?.local_datetime)} last />
       </Panel>
-      <Text style={styles.footnote}>Initial location is Hyderabad. User-selected location and the remaining timing endpoints will be added next. Verify regional Panchangam conventions before relying on ritual timings.</Text>
+      <Text style={styles.heading}>Avoidable periods</Text>
+      <Panel>
+        <LabelValue label="Rahu Kalam" value={range(d?.inauspicious_periods?.rahu_kaal)} />
+        <LabelValue label="Yamagandam" value={range(d?.inauspicious_periods?.yamaganda)} />
+        <LabelValue label="Gulika Kalam" value={range(d?.inauspicious_periods?.gulika_kaal)} last />
+      </Panel>
+      <Text style={styles.heading}>Other daily windows</Text>
+      <Panel>
+        <LabelValue label="Abhijit Muhurat" value={range(d?.abhijit_muhurat?.interval?.period?.[0])} last />
+        <Text style={styles.footnote}>Choghadiya day slots</Text>
+        {(d?.choghadiya?.day || []).map((slot, index) => (
+          <LabelValue key={String(slot.name) + index} label={slot.name || "Choghadiya"} value={range(slot)} last={index === (d?.choghadiya?.day?.length || 0) - 1} />
+        ))}
+      </Panel>
+      <Text style={styles.footnote}>Times are displayed in Hyderabad local time (IST). Abhijit and Choghadiya are general daily indicators, not event-specific Muhurtham approval. Missing categories are shown as unavailable.</Text>
     </Screen>
   );
 }
