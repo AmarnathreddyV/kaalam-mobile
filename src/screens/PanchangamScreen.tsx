@@ -23,7 +23,7 @@ export function PanchangamScreen() {
         .maybeSingle();
       if (profileError) throw profileError;
       const location = profile as LocationProfile | null;
-      if (!location?.current_latitude || !location?.current_longitude || !location?.current_timezone) {
+      if (location?.current_latitude == null || location?.current_longitude == null || !location?.current_timezone) {
         throw new Error("Your current location has not been resolved. Complete or update your profile first.");
       }
       setPlace(location.current_location || "Saved location");
