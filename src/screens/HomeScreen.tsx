@@ -51,7 +51,7 @@ export function HomeScreen({ onOpenMuhurtham }: { onOpenMuhurtham: () => void })
       if (!profileData && typeof userName === "string") {
         setProfile({ full_name: userName });
       }
-      if (!profileData?.current_latitude || !profileData?.current_longitude || !profileData?.current_timezone) {
+      if (profileData?.current_latitude == null || profileData?.current_longitude == null || !profileData?.current_timezone) {
         throw new Error("Your current location has not been resolved yet. Please update your profile details.");
       }
       setResult(await fetchDailyPanchangam(new Date(), {
