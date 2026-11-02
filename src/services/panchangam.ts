@@ -18,7 +18,7 @@ export type PanchangamResponse = {
   };
 };
 
-const API_BASE_URL = (process.env.EXPO_PUBLIC_API_BASE_URL || "https://kaalam-mobile.onrender.com").replace(/\\/$/, "");
+const API_BASE_URL = (process.env.EXPO_PUBLIC_API_BASE_URL || "https://kaalam-mobile.onrender.com").replace(/\/$/, "");
 
 function dateParam(date: Date) {
   return [
