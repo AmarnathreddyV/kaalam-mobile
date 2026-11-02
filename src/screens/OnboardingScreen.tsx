@@ -222,7 +222,7 @@ export function OnboardingScreen({
           saveError.code ? `Error code: ${saveError.code}` : "",
         ]
           .filter(Boolean)
-          .join("\\n\\n");
+          .join("\n\n");
 
         throw new Error(details || "Unknown Supabase database error.");
       }
