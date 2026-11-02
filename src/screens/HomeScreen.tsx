@@ -37,7 +37,7 @@ export function HomeScreen({ onOpenMuhurtham }: { onOpenMuhurtham: () => void })
       const [{ data: auth }, { data: profileData, error: pError }] = await Promise.all([
         supabase.auth.getUser(),
         supabase.from("profiles")
-          .select("full_name,date_of_birth,time_of_birth,birth_place,current_location,rashi,nakshatra,pada,preferred_language")
+          .select("full_name,date_of_birth,time_of_birth,birth_place,current_location,preferred_language")
           .maybeSingle(),
       ]);
       if (pError) setProfileError(pError.message);
