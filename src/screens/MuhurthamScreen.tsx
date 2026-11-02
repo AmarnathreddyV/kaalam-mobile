@@ -6,6 +6,7 @@ import {
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Screen, PageHeading, Panel } from "../components/Screen";
 import { colors } from "../theme/colors";
+import { supabase } from "../auth/supabase";
 
 const API_BASE_URL = (process.env.EXPO_PUBLIC_API_BASE_URL || "https://kaalam-mobile.onrender.com").replace(/\/$/, "");
 
@@ -40,6 +41,14 @@ function addMonths(date: Date, months: number) {
   result.setMonth(result.getMonth() + months);
   result.setDate(Math.min(day, new Date(result.getFullYear(), result.getMonth() + 1, 0).getDate()));
   return result;
+}
+function offsetForTimezone(timezone: string, date: Date) {
+  const parts = new Intl.DateTimeFormat("en-US", { timeZone: timezone, timeZoneName: "longOffset" }).formatToParts(date);
+  const value = parts.find(part => part.type === "timeZoneName")?.value || "GMT+00:00";
+  const match = value.match(/GMT([+-])(\\d{2}):(\\d{2})/);
+  if (!match) return 0;
+  const sign = match[1] === "-" ? -1 : 1;
+  return sign * (Number(match[2]) + Number(match[3]) / 60);
 }
 function addDays(date: Date, days: number) {
   const result = new Date(date);
@@ -109,6 +118,14 @@ export function MuhurthamScreen() {
     setResults([]);
     setActiveResult(0);
     try {
+      const { data: profile, error: profileError } = await supabase.from("profiles")
+        .select("current_location,current_latitude,current_longitude,current_timezone")
+        .maybeSingle();
+      if (profileError) throw profileError;
+      if (!profile?.current_latitude || !profile?.current_longitude || !profile?.current_timezone) {
+        throw new Error("Your current location has not been resolved. Complete or update your profile first.");
+      }
+      const timezone = offsetForTimezone(profile.current_timezone, startDate);
       const response = await fetch(`${API_BASE_URL}/api/muhurtham/search`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -116,9 +133,9 @@ export function MuhurthamScreen() {
           occasion,
           start_date: formatDate(startDate),
           end_date: formatDate(endDate),
-          latitude: 17.385,
-          longitude: 78.4867,
-          timezone: 5.5,
+          latitude: profile.current_latitude,
+          longitude: profile.current_longitude,
+          timezone,
           tradition: "Telugu Drik",
         }),
       });
