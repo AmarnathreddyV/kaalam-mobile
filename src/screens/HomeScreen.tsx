@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
 import { Screen, SectionTitle, Panel, LabelValue } from "../components/Screen";
 import { colors } from "../theme/colors";
-import { fetchPanchangam, PanchangamResponse } from "../services/panchangam";
+import { fetchDailyPanchangam, DailyPanchangamResponse } from "../services/panchangam";
 import { supabase } from "../auth/supabase";
 
 type Profile = {
@@ -24,7 +24,7 @@ function todayLabel() {
 }
 
 export function HomeScreen({ onOpenMuhurtham }: { onOpenMuhurtham: () => void }) {
-  const [result, setResult] = useState<PanchangamResponse | null>(null);
+  const [result, setResult] = useState<DailyPanchangamResponse | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [error, setError] = useState("");
   const [profileError, setProfileError] = useState("");
@@ -47,7 +47,7 @@ export function HomeScreen({ onOpenMuhurtham }: { onOpenMuhurtham: () => void })
       if (!profileData && typeof userName === "string") {
         setProfile({ full_name: userName });
       }
-      setResult(await fetchPanchangam());
+      setResult(await fetchDailyPanchangam());
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to load today's Panchangam.");
     } finally {
@@ -57,12 +57,28 @@ export function HomeScreen({ onOpenMuhurtham }: { onOpenMuhurtham: () => void })
 
   useEffect(() => { load(); }, [load]);
 
-  const p = result?.data;
+  const p = result?.data?.panchang;
   const tithi = [p?.tithi?.name, p?.tithi?.paksha].filter(Boolean).join(" · ") || "—";
   const nakshatra = p?.nakshatra?.name || "—";
   const yoga = p?.yoga?.name || "—";
   const karana = p?.karana?.name || "—";
   const name = profile?.full_name?.trim() || "there";
+  const daily = result?.data;
+  const timeText = (value?: string) => {
+    if (!value) return "Unavailable";
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return "Unavailable";
+    return new Intl.DateTimeFormat("en-IN", {
+      hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Asia/Kolkata",
+    }).format(parsed);
+  };
+  const timeRange = (period?: { start?: string; end?: string }) =>
+    period?.start && period?.end ? `${timeText(period.start)} – ${timeText(period.end)}` : "Unavailable";
+  const sunrise = daily?.sun_times?.rise?.local_datetime;
+  const sunset = daily?.sun_times?.set?.local_datetime;
+  const choghadiyaGood = (daily?.choghadiya?.day || []).filter(x =>
+    ["Amrit", "Shubh", "Labh", "Char"].includes(x.name || "")
+  );
   const basicDetails = useMemo(() => [
     ["Rashi", profile?.rashi || "Birth-chart calculation pending"],
     ["Janma Nakshatra", profile?.nakshatra || "Birth-chart calculation pending"],
@@ -107,14 +123,32 @@ export function HomeScreen({ onOpenMuhurtham }: { onOpenMuhurtham: () => void })
         )}
       </Panel>
 
-      <SectionTitle>GOOD & AVOIDABLE TIMES</SectionTitle>
+      <SectionTitle>DAILY TIMINGS · HYDERABAD</SectionTitle>
       <Panel>
-        <LabelValue label="Subha Gadiyalu" value="Awaiting verified timing data" />
-        <LabelValue label="Rahu Kalam" value="Awaiting timing data" />
-        <LabelValue label="Yamagandam" value="Awaiting timing data" />
-        <LabelValue label="Gulika Kalam" value="Awaiting timing data" />
-        <LabelValue label="Durmuhurtham" value="Awaiting timing data" last />
-        <Text style={styles.smallNote}>We will show exact time windows only after the relevant Drik calculations and provider fields are validated.</Text>
+        <LabelValue label="Sunrise" value={timeText(sunrise)} />
+        <LabelValue label="Sunset" value={timeText(sunset)} />
+        <LabelValue label="Rahu Kalam" value={timeRange(daily?.inauspicious_periods?.rahu_kaal)} />
+        <LabelValue label="Yamagandam" value={timeRange(daily?.inauspicious_periods?.yamaganda)} />
+        <LabelValue label="Gulika Kalam" value={timeRange(daily?.inauspicious_periods?.gulika_kaal)} />
+        <LabelValue
+          label="Abhijit Muhurat"
+          value={timeRange(daily?.abhijit_muhurat?.interval?.period?.[0])}
+          last={!choghadiyaGood.length}
+        />
+        {!!choghadiyaGood.length && (
+          <View style={styles.timingList}>
+            <Text style={styles.gridLabel}>FAVOURABLE CHOGHADIYA WINDOWS</Text>
+            {choghadiyaGood.map((slot, index) => (
+              <LabelValue key={`${slot.name}-${index}`} label={slot.name || "Choghadiya"} value={timeRange(slot)} last={index === choghadiyaGood.length - 1} />
+            ))}
+          </View>
+        )}
+        <Text style={styles.smallNote}>
+          Timings are provider calculations for Hyderabad in IST. Choghadiya and Abhijit are general daily indicators, not a substitute for event-specific Muhurtham.
+        </Text>
+        {!!result?.unavailable && Object.keys(result.unavailable).length > 0 && (
+          <Text style={styles.smallNote}>Some timing categories could not be loaded: {Object.keys(result.unavailable).join(", ")}.</Text>
+        )}
       </Panel>
 
       <SectionTitle>YOUR DAILY SUGGESTION</SectionTitle>
@@ -144,7 +178,7 @@ const styles = StyleSheet.create({
   gridItem: { width: "50%", paddingVertical: 12 },
   gridLabel: { color: colors.muted, fontSize: 9, letterSpacing: 1.3, marginBottom: 7 },
   gridValue: { color: colors.text, fontSize: 15, fontWeight: "600" },
-  state: { alignItems: "center", paddingVertical: 18, gap: 9 },
+  state: { alignItems: "center", paddingVertical: 18, gap: 9 },\n  timingList: { marginTop: 14 },
   stateText: { color: colors.muted, fontSize: 12 },
   error: { color: colors.maroon, fontSize: 12, lineHeight: 18 },
   retry: { color: colors.gold, fontSize: 12, fontWeight: "700", marginTop: 10 },
