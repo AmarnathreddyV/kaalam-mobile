@@ -700,10 +700,8 @@ Rules:
 
 from datetime import datetime
 from zoneinfo import ZoneInfo
-from timezonefinder import TimezoneFinder
 
 NAVAMSHA_KUNDALI_BASIC_URL = "https://api.navamsha.in/api/v1/kundali/basic"
-_timezone_finder = TimezoneFinder()
 
 
 class LocationResolveRequest(BaseModel):
@@ -748,9 +746,26 @@ async def resolve_location(request: LocationResolveRequest) -> dict[str, Any]:
 
     latitude = float(match["lat"])
     longitude = float(match["lon"])
-    timezone_name = _timezone_finder.timezone_at(lat=latitude, lng=longitude)
-    if not timezone_name:
-        raise HTTPException(status_code=422, detail="Could not determine the time zone for this location.")
+    # Resolve IANA timezone through TimeAPI instead of compiling timezonefinder/h3
+    # during Render deployment. The returned IANA zone also handles historical DST.
+    try:
+        async with httpx.AsyncClient(timeout=12.0) as client:
+            timezone_response = await client.get(
+                "https://timeapi.io/api/TimeZone/coordinate",
+                params={"latitude": latitude, "longitude": longitude},
+            )
+            timezone_response.raise_for_status()
+            timezone_body = timezone_response.json()
+        timezone_name = (
+            timezone_body.get("timeZone")
+            or timezone_body.get("timeZoneId")
+            or timezone_body.get("ianaTimeId")
+        )
+    except (httpx.RequestError, httpx.HTTPStatusError, ValueError) as exc:
+        raise HTTPException(status_code=502, detail="Could not resolve the time zone for this location.") from exc
+
+    if not isinstance(timezone_name, str) or "/" not in timezone_name:
+        raise HTTPException(status_code=502, detail="Time zone provider returned an invalid IANA time zone.")
 
     return {
         "query": query,
