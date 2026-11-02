@@ -129,6 +129,55 @@ export function OnboardingScreen({
         throw new Error("Session expired. Please sign in again.");
       }
 
+      const apiBase = (process.env.EXPO_PUBLIC_API_BASE_URL || "https://kaalam-mobile.onrender.com").replace(/\\/$/, "");
+
+      async function resolvePlace(place: string) {
+        const response = await fetch(`${apiBase}/api/location/resolve`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ place }),
+        });
+        const body = await response.json();
+        if (!response.ok) {
+          throw new Error(body?.detail || `Could not resolve location: ${place}`);
+        }
+        return body as {
+          latitude: number;
+          longitude: number;
+          timezone: string;
+          display_name: string;
+        };
+      }
+
+      const [birthLocation, currentLocation] = await Promise.all([
+        resolvePlace(values.birth_place.trim()),
+        resolvePlace(values.current_location.trim()),
+      ]);
+
+      const chartResponse = await fetch(`${apiBase}/api/kundali/basic`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          date_of_birth: values.date_of_birth.trim(),
+          time_of_birth: values.time_of_birth.trim(),
+          latitude: birthLocation.latitude,
+          longitude: birthLocation.longitude,
+          timezone: birthLocation.timezone,
+        }),
+      });
+      const chartBody = await chartResponse.json();
+      if (!chartResponse.ok) {
+        throw new Error(chartBody?.detail || "Birth-chart calculation failed.");
+      }
+
+      const chartInputHash = [
+        values.date_of_birth.trim(),
+        values.time_of_birth.trim(),
+        birthLocation.latitude,
+        birthLocation.longitude,
+        birthLocation.timezone,
+      ].join("|");
+
       const profile = {
         id: session.user.id,
         email: session.user.email ?? null,
@@ -137,6 +186,16 @@ export function OnboardingScreen({
         time_of_birth: values.time_of_birth.trim(),
         birth_place: values.birth_place.trim(),
         current_location: values.current_location.trim(),
+        birth_latitude: birthLocation.latitude,
+        birth_longitude: birthLocation.longitude,
+        birth_timezone: birthLocation.timezone,
+        current_latitude: currentLocation.latitude,
+        current_longitude: currentLocation.longitude,
+        current_timezone: currentLocation.timezone,
+        birth_chart: chartBody.chart,
+        birth_chart_summary: chartBody.summary,
+        birth_chart_input_hash: chartInputHash,
+        birth_chart_calculated_at: new Date().toISOString(),
         preferred_language: values.preferred_language,
         panchangam_tradition: "Telugu Drik",
         onboarding_complete: true,
