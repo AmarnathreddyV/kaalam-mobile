@@ -97,22 +97,43 @@ async def fetch_panchang(
 
     try:
 
-        response = await client.post(
-            NAVAMSHA_URL,
-
-            headers={
-                "X-API-Key": NAVAMSHA_API_KEY,
-                "Content-Type": "application/json",
-            },
-
-            json=payload,
-        )
+        # Navamsha may apply request-rate limits. Retry 429 responses
+        # with exponential backoff and honour Retry-After when present.
+        response = None
+        for attempt in range(4):
+            response = await client.post(
+                NAVAMSHA_URL,
+                headers={
+                    "X-API-Key": NAVAMSHA_API_KEY,
+                    "Content-Type": "application/json",
+                },
+                json=payload,
+            )
+            if response.status_code != 429:
+                break
+            if attempt == 3:
+                break
+            retry_after = response.headers.get("Retry-After")
+            try:
+                wait_seconds = float(retry_after) if retry_after else (2 ** (attempt + 1))
+            except ValueError:
+                wait_seconds = 2 ** (attempt + 1)
+            await asyncio.sleep(min(max(wait_seconds, 1), 30))
 
         response.raise_for_status()
-
         data = response.json()
 
     except httpx.HTTPStatusError as exc:
+        if exc.response.status_code == 429:
+            raise HTTPException(
+                status_code=429,
+                detail=(
+                    f"Navamsha rate limit reached while checking {day.isoformat()}. "
+                    "KAALAM paused the search to avoid sending more requests. "
+                    "Wait before retrying, or ask Navamsha to increase the API quota."
+                ),
+                headers={"Retry-After": exc.response.headers.get("Retry-After", "60")},
+            ) from exc
 
         raise HTTPException(
             status_code=502,
@@ -445,14 +466,15 @@ async def search_muhurtham(
         for i in range(total_days)
     ]
 
-    semaphore = asyncio.Semaphore(4)
+    # Keep provider traffic gentle: one request at a time.\n    semaphore = asyncio.Semaphore(1)
 
     async with httpx.AsyncClient(timeout=30.0) as client:
 
         async def fetch_one(day):
 
             async with semaphore:
-
+                # Small spacing between date requests reduces burst 429s.
+                await asyncio.sleep(1.0)
                 return await fetch_panchang(
                     client=client,
                     day=day,
@@ -472,8 +494,9 @@ async def search_muhurtham(
                 ]
             )
 
-        except HTTPException:
-
+        except HTTPException as exc:
+            if exc.status_code == 429:
+                raise
             raise
 
         except Exception as exc:
