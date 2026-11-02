@@ -710,7 +710,7 @@ class LocationResolveRequest(BaseModel):
 
 class BirthChartRequest(BaseModel):
     date_of_birth: date_type
-    time_of_birth: str = Field(pattern=r"^([01]\\d|2[0-3]):[0-5]\\d$")
+    time_of_birth: str = Field(pattern=r"^([01]\d|2[0-3]):[0-5]\d$")
     latitude: float = Field(ge=-90, le=90)
     longitude: float = Field(ge=-180, le=180)
     timezone: str = Field(min_length=1, max_length=80)
