@@ -11,9 +11,6 @@ type Profile = {
   time_of_birth?: string | null;
   birth_place?: string | null;
   current_location?: string | null;
-  rashi?: string | null;
-  nakshatra?: string | null;
-  pada?: number | null;
   preferred_language?: string | null;
   current_latitude?: number | null;
   current_longitude?: number | null;
@@ -92,8 +89,8 @@ export function HomeScreen({ onOpenMuhurtham }: { onOpenMuhurtham: () => void })
     ["Amrit", "Shubh", "Labh", "Char"].includes(x.name || "")
   );
   const basicDetails = useMemo(() => [
-    ["Rashi", profile?.rashi || "Birth-chart calculation pending"],
-    ["Janma Nakshatra", profile?.nakshatra || "Birth-chart calculation pending"],
+    ["Rashi", profile?.birth_chart_summary?.rashi || "Not calculated"],
+    ["Janma Nakshatra", profile?.birth_chart_summary?.nakshatra || "Not calculated"],
     ["Birth date", profile?.date_of_birth || "Not provided"],
     ["Birth place", profile?.birth_place || "Not provided"],
   ], [profile]);
@@ -110,7 +107,7 @@ export function HomeScreen({ onOpenMuhurtham }: { onOpenMuhurtham: () => void })
           <LabelValue key={label} label={label} value={value} last={index === basicDetails.length - 1} />
         ))}
         {!!profileError && <Text style={styles.smallNote}>Profile details could not be loaded: {profileError}</Text>}
-        <Text style={styles.smallNote}>Rashi and Janma Nakshatra will appear after a verified birth-chart calculation is connected. We do not infer them from the current day's Nakshatra.</Text>
+        <Text style={styles.smallNote}>Birth-chart details are shown from the calculation saved to your profile. If your birth details change, update them and recalculate your chart.</Text>
       </Panel>
 
       <SectionTitle>THIS DAY'S PANCHANGAM</SectionTitle>
