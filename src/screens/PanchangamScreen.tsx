@@ -3,9 +3,14 @@ import { Text, StyleSheet, ActivityIndicator, TouchableOpacity, View } from "rea
 import { Screen, PageHeading, Panel, LabelValue } from "../components/Screen";
 import { colors } from "../theme/colors";
 import { fetchDailyPanchangam, DailyPanchangamResponse } from "../services/panchangam";
+import { supabase } from "../auth/supabase";
+
+type LocationProfile = { current_location?: string; current_latitude?: number; current_longitude?: number; current_timezone?: string };
 
 export function PanchangamScreen() {
   const [result, setResult] = useState<DailyPanchangamResponse | null>(null);
+  const [place, setPlace] = useState("");
+  const [timezone, setTimezone] = useState("UTC");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -13,7 +18,21 @@ export function PanchangamScreen() {
     setLoading(true);
     setError("");
     try {
-      setResult(await fetchDailyPanchangam());
+      const { data: profile, error: profileError } = await supabase.from("profiles")
+        .select("current_location,current_latitude,current_longitude,current_timezone")
+        .maybeSingle();
+      if (profileError) throw profileError;
+      const location = profile as LocationProfile | null;
+      if (!location?.current_latitude || !location?.current_longitude || !location?.current_timezone) {
+        throw new Error("Your current location has not been resolved. Complete or update your profile first.");
+      }
+      setPlace(location.current_location || "Saved location");
+      setTimezone(location.current_timezone);
+      setResult(await fetchDailyPanchangam(new Date(), {
+        latitude: location.current_latitude,
+        longitude: location.current_longitude,
+        timezone: location.current_timezone,
+      }));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to load Panchangam.");
     } finally {
@@ -30,35 +49,19 @@ export function PanchangamScreen() {
     const parsed = new Date(value);
     if (Number.isNaN(parsed.getTime())) return "Unavailable";
     return new Intl.DateTimeFormat("en-IN", {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-      timeZone: "Asia/Kolkata",
+      hour: "numeric", minute: "2-digit", hour12: true, timeZone: timezone,
     }).format(parsed);
   };
   const range = (period?: { start?: string; end?: string }) =>
-    period?.start && period?.end
-      ? formatTime(period.start) + " – " + formatTime(period.end)
-      : "Unavailable";
+    period?.start && period?.end ? formatTime(period.start) + " – " + formatTime(period.end) : "Unavailable";
 
   return (
     <Screen>
-      <PageHeading
-        title="Panchangam"
-        subtitle={result ? `${result.date} · Hyderabad · Telugu Drik` : "Daily calendar"}
-      />
+      <PageHeading title="Panchangam" subtitle={result ? `${result.date} · ${place} · Telugu Drik` : "Daily calendar"} />
       {loading ? (
-        <Panel>
-          <ActivityIndicator color={colors.maroon} />
-          <Text style={styles.status}>Loading Panchangam…</Text>
-        </Panel>
+        <Panel><ActivityIndicator color={colors.maroon} /><Text style={styles.status}>Loading Panchangam…</Text></Panel>
       ) : error ? (
-        <Panel>
-          <Text style={styles.error}>{error}</Text>
-          <TouchableOpacity onPress={load} style={styles.retry}>
-            <Text style={styles.retryText}>Try again</Text>
-          </TouchableOpacity>
-        </Panel>
+        <Panel><Text style={styles.error}>{error}</Text><TouchableOpacity onPress={load} style={styles.retry}><Text style={styles.retryText}>Try again</Text></TouchableOpacity></Panel>
       ) : (
         <>
           <Panel>
@@ -70,43 +73,30 @@ export function PanchangamScreen() {
           </Panel>
           <View style={styles.providerRow}>
             <Text style={styles.provider}>DATA: NAVAMSHA</Text>
-            <TouchableOpacity onPress={load}>
-              <Text style={styles.refresh}>REFRESH</Text>
-            </TouchableOpacity>
+            <TouchableOpacity onPress={load}><Text style={styles.refresh}>REFRESH</Text></TouchableOpacity>
           </View>
         </>
       )}
-
       <Text style={styles.heading}>Sun timings</Text>
       <Panel>
         <LabelValue label="Sunrise" value={formatTime(d?.sun_times?.rise?.local_datetime)} />
         <LabelValue label="Sunset" value={formatTime(d?.sun_times?.set?.local_datetime)} last />
       </Panel>
-
       <Text style={styles.heading}>Avoidable periods</Text>
       <Panel>
         <LabelValue label="Rahu Kalam" value={range(d?.inauspicious_periods?.rahu_kaal)} />
         <LabelValue label="Yamagandam" value={range(d?.inauspicious_periods?.yamaganda)} />
         <LabelValue label="Gulika Kalam" value={range(d?.inauspicious_periods?.gulika_kaal)} last />
       </Panel>
-
       <Text style={styles.heading}>Other daily windows</Text>
       <Panel>
         <LabelValue label="Abhijit Muhurat" value={range(d?.abhijit_muhurat?.interval?.period?.[0])} last />
         <Text style={styles.footnote}>Choghadiya day slots</Text>
         {(d?.choghadiya?.day || []).map((slot, index) => (
-          <LabelValue
-            key={String(slot.name) + index}
-            label={slot.name || "Choghadiya"}
-            value={range(slot)}
-            last={index === (d?.choghadiya?.day?.length || 0) - 1}
-          />
+          <LabelValue key={String(slot.name) + index} label={slot.name || "Choghadiya"} value={range(slot)} last={index === (d?.choghadiya?.day?.length || 0) - 1} />
         ))}
       </Panel>
-
-      <Text style={styles.footnote}>
-        Times are displayed in Hyderabad local time (IST). Abhijit and Choghadiya are general daily indicators, not event-specific Muhurtham approval. Missing categories are shown as unavailable.
-      </Text>
+      <Text style={styles.footnote}>Times are displayed in the local time zone of your saved current location. Abhijit and Choghadiya are general daily indicators, not event-specific Muhurtham approval. Missing categories are shown as unavailable.</Text>
     </Screen>
   );
 }
