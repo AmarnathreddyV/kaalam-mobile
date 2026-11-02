@@ -51,7 +51,14 @@ export function HomeScreen({ onOpenMuhurtham }: { onOpenMuhurtham: () => void })
       if (!profileData && typeof userName === "string") {
         setProfile({ full_name: userName });
       }
-      if (!profileData?.current_latitude || !profileData?.current_longitude || !profileData?.current_timezone) {\n        throw new Error("Your current location has not been resolved yet. Please update your profile details.");\n      }\n      setResult(await fetchDailyPanchangam(new Date(), {\n        latitude: profileData.current_latitude,\n        longitude: profileData.current_longitude,\n        timezone: profileData.current_timezone,\n      }));
+      if (!profileData?.current_latitude || !profileData?.current_longitude || !profileData?.current_timezone) {
+        throw new Error("Your current location has not been resolved yet. Please update your profile details.");
+      }
+      setResult(await fetchDailyPanchangam(new Date(), {
+        latitude: profileData.current_latitude,
+        longitude: profileData.current_longitude,
+        timezone: profileData.current_timezone,
+      }));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to load today's Panchangam.");
     } finally {
@@ -68,7 +75,8 @@ export function HomeScreen({ onOpenMuhurtham }: { onOpenMuhurtham: () => void })
   const karana = p?.karana?.name || "—";
   const name = profile?.full_name?.trim() || "there";
   const daily = result?.data;
-  const userTimezone = profile?.current_timezone || "UTC";\n  const timeText = (value?: string) => {
+  const userTimezone = profile?.current_timezone || "UTC";
+  const timeText = (value?: string) => {
     if (!value) return "Unavailable";
     const parsed = new Date(value);
     if (Number.isNaN(parsed.getTime())) return "Unavailable";
