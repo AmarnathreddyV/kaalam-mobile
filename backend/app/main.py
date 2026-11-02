@@ -466,7 +466,8 @@ async def search_muhurtham(
         for i in range(total_days)
     ]
 
-    # Keep provider traffic gentle: one request at a time.\n    semaphore = asyncio.Semaphore(1)
+    # Keep provider traffic gentle: one request at a time.
+    semaphore = asyncio.Semaphore(1)
 
     async with httpx.AsyncClient(timeout=30.0) as client:
 
