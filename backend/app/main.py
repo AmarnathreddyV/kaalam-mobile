@@ -208,6 +208,152 @@ async def get_panchang(
 
 
 # --------------------------------------------------
+# DAILY PANCHANGAM WITH TIMING WINDOWS
+# --------------------------------------------------
+
+NAVAMSHA_BASE_URL = "https://api.navamsha.in/api/v1"
+
+
+async def fetch_navamsha_route(
+    client: httpx.AsyncClient,
+    route: str,
+    day: date_type,
+    latitude: float,
+    longitude: float,
+    timezone: float,
+    hours: int = 12,
+    minutes: int = 0,
+) -> dict[str, Any]:
+    """
+    Fetch one documented Navamsha Panchang route.
+    Keep the provider key on the backend only.
+    """
+    if not NAVAMSHA_API_KEY:
+        raise HTTPException(
+            status_code=503,
+            detail="Navamsha API key is not configured."
+        )
+
+    payload = {
+        "year": day.year,
+        "month": day.month,
+        "date": day.day,
+        "hours": hours,
+        "minutes": minutes,
+        "latitude": latitude,
+        "longitude": longitude,
+        "timezone": timezone,
+    }
+
+    response = await client.post(
+        f"{NAVAMSHA_BASE_URL}/{route.lstrip('/')}",
+        headers={
+            "X-API-Key": NAVAMSHA_API_KEY,
+            "Content-Type": "application/json",
+        },
+        json=payload,
+    )
+    response.raise_for_status()
+
+    body = response.json()
+    if not isinstance(body, dict) or "output" not in body:
+        raise ValueError(
+            f"Unexpected Navamsha response for {route}."
+        )
+
+    return body["output"]
+
+
+@app.get("/api/panchang/daily")
+async def get_daily_panchang_with_timings(
+    day: date_type = Query(default_factory=date_type.today),
+    latitude: float = Query(17.3850, ge=-90, le=90),
+    longitude: float = Query(78.4867, ge=-180, le=180),
+    timezone: float = Query(5.5, ge=-12, le=14),
+) -> dict[str, Any]:
+    """
+    Aggregates real Navamsha Panchang and daily timing routes.
+    This endpoint reports source data; it does not certify
+    event-specific Muhurtham suitability.
+    """
+    routes = {
+        "panchang": "panchang/full",
+        "sun_times": "panchang/sun-times",
+        "inauspicious_periods": "panchang/inauspicious-periods",
+        "choghadiya": "panchang/choghadiya",
+        "hora": "panchang/hora",
+        "abhijit_muhurat": "panchang/abhijit-muhurat",
+    }
+
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        tasks = {
+            key: fetch_navamsha_route(
+                client=client,
+                route=route,
+                day=day,
+                latitude=latitude,
+                longitude=longitude,
+                timezone=timezone,
+                # Noon is after local sunrise and preserves the
+                # sunrise-based weekday for this calendar date.
+                hours=12,
+                minutes=0,
+            )
+            for key, route in routes.items()
+        }
+
+        results = await asyncio.gather(
+            *tasks.values(),
+            return_exceptions=True,
+        )
+
+    data: dict[str, Any] = {}
+    unavailable: dict[str, str] = {}
+
+    for key, result in zip(tasks.keys(), results):
+        if isinstance(result, Exception):
+            if isinstance(result, httpx.HTTPStatusError):
+                unavailable[key] = (
+                    f"Navamsha HTTP {result.response.status_code}"
+                )
+            elif isinstance(result, httpx.RequestError):
+                unavailable[key] = "Navamsha request failed"
+            else:
+                unavailable[key] = str(result)[:240]
+        else:
+            data[key] = result
+
+    if "panchang" not in data:
+        raise HTTPException(
+            status_code=502,
+            detail={
+                "message": "Could not retrieve core Panchangam data.",
+                "unavailable": unavailable,
+            },
+        )
+
+    return {
+        "provider": "Navamsha",
+        "tradition": "Telugu Drik",
+        "date": day.isoformat(),
+        "location": {
+            "latitude": latitude,
+            "longitude": longitude,
+            "timezone": timezone,
+        },
+        "data": data,
+        "unavailable": unavailable,
+        "data_complete": len(data) == len(routes),
+        "recommendations_ready": False,
+        "message": (
+            "Daily Panchangam and timing data retrieved. "
+            "These timings are not, by themselves, an "
+            "event-specific Muhurtham recommendation."
+        ),
+    }
+
+
+# --------------------------------------------------
 # MUHURTHAM SEARCH
 # --------------------------------------------------
 
