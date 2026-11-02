@@ -122,7 +122,7 @@ export function MuhurthamScreen() {
         .select("current_location,current_latitude,current_longitude,current_timezone")
         .maybeSingle();
       if (profileError) throw profileError;
-      if (!profile?.current_latitude || !profile?.current_longitude || !profile?.current_timezone) {
+      if (profile?.current_latitude == null || profile?.current_longitude == null || !profile?.current_timezone) {
         throw new Error("Your current location has not been resolved. Complete or update your profile first.");
       }
       const timezone = offsetForTimezone(profile.current_timezone, startDate);
