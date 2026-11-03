@@ -154,68 +154,49 @@ export function HomeScreen({ onOpenMuhurtham }: { onOpenMuhurtham: () => void })
         )}
       </Panel>
 
+
+      <SectionTitle>FAVOURABLE TIMINGS</SectionTitle>
+      <Panel>
+        {loading ? <Text style={styles.horoscope}>Loading favourable periods…</Text> : (
+          <>
+            {choghadiyaGood.map((slot,index)=>(<LabelValue key={String(slot.name)+index} label={slot.name || "Choghadiya"} value={timeRange(slot)} />))}
+            <LabelValue label="Abhijit Muhurat" value={timeRange(daily?.abhijit_muhurat?.interval?.period?.[0])} last />
+            {!choghadiyaGood.length && <Text style={styles.smallNote}>No favourable Choghadiya windows were returned for today.</Text>}
+          </>
+        )}
+        <Text style={styles.smallNote}>General daily indicators only; these do not certify a ceremony-specific Muhurtham.</Text>
+      </Panel>
+
+      <SectionTitle>INAUSPICIOUS TIMINGS</SectionTitle>
+      <Panel>
+        <LabelValue label="Rahu Kalam" value={timeRange(daily?.inauspicious_periods?.rahu_kaal)} />
+        <LabelValue label="Yamagandam" value={timeRange(daily?.inauspicious_periods?.yamaganda)} />
+        <LabelValue label="Gulika Kalam" value={timeRange(daily?.inauspicious_periods?.gulika_kaal)} last />
+        <Text style={styles.smallNote}>Traditional periods to be mindful of; interpretations and practices vary.</Text>
+      </Panel>
+
       <SectionTitle>TODAY'S SPIRITUAL GUIDANCE</SectionTitle>
       <Panel>
-        {loading ? (
-          <View style={styles.state}><ActivityIndicator color={colors.maroon} /><Text style={styles.stateText}>Preparing today's spiritual guidance…</Text></View>
-        ) : error ? (
-          <Text style={styles.horoscope}>Spiritual guidance will appear when today's Panchangam is available.</Text>
-        ) : (
+        {loading ? <View style={styles.state}><ActivityIndicator color={colors.maroon} /><Text style={styles.stateText}>Preparing today's spiritual guidance…</Text></View> : error ? <Text style={styles.horoscope}>Spiritual guidance will appear when today's Panchangam is available.</Text> : (
           <>
             <Text style={styles.suggestionTitle}>{spiritualGuidance.deity}</Text>
-            <Text style={styles.guidanceLabel}>TEMPLE SUGGESTION</Text>
-            <Text style={styles.horoscope}>{spiritualGuidance.temple}</Text>
-            <Text style={styles.guidanceLabel}>PRAYER OR ACTIVITY</Text>
-            <Text style={styles.horoscope}>{spiritualGuidance.practice}</Text>
-            {!!spiritualGuidance.tithiNote && (
-              <>
-                <Text style={styles.guidanceLabel}>PANCHANGAM NOTE</Text>
-                <Text style={styles.horoscope}>{spiritualGuidance.tithiNote}</Text>
-              </>
-            )}
-            <Text style={styles.guidanceLabel}>A THOUGHT FOR TODAY</Text>
-            <Text style={styles.horoscope}>Try to avoid harsh words and rushed decisions. Make space for patience, kindness and thoughtful action.</Text>
-            <Text style={styles.smallNote}>Based on common weekday devotional associations and the returned Tithi. Traditions vary by family and region; this is general spiritual inspiration, not a prescribed religious rule or personal prediction.</Text>
+            <Text style={styles.guidanceLabel}>TEMPLE SUGGESTION</Text><Text style={styles.horoscope}>{spiritualGuidance.temple}</Text>
+            <Text style={styles.guidanceLabel}>PRAYER OR ACTIVITY</Text><Text style={styles.horoscope}>{spiritualGuidance.practice}</Text>
+            {!!spiritualGuidance.tithiNote && <><Text style={styles.guidanceLabel}>PANCHANGAM NOTE</Text><Text style={styles.horoscope}>{spiritualGuidance.tithiNote}</Text></>}
+            <Text style={styles.guidanceLabel}>A THOUGHT FOR TODAY</Text><Text style={styles.horoscope}>Try to avoid harsh words and rushed decisions. Make space for patience, kindness and thoughtful action.</Text>
+            <Text style={styles.smallNote}>General spiritual inspiration based on common weekday devotional associations and returned Tithi. Traditions vary by family and region.</Text>
           </>
         )}
       </Panel>
 
-      <SectionTitle>DAILY TIMINGS · {profile?.current_location?.toUpperCase() || "YOUR LOCATION"}</SectionTitle>
+      <SectionTitle>SUNRISE & SUNSET · {profile?.current_location?.toUpperCase() || "YOUR LOCATION"}</SectionTitle>
       <Panel>
         <LabelValue label="Sunrise" value={timeText(sunrise)} />
-        <LabelValue label="Sunset" value={timeText(sunset)} />
-        <LabelValue label="Rahu Kalam" value={timeRange(daily?.inauspicious_periods?.rahu_kaal)} />
-        <LabelValue label="Yamagandam" value={timeRange(daily?.inauspicious_periods?.yamaganda)} />
-        <LabelValue label="Gulika Kalam" value={timeRange(daily?.inauspicious_periods?.gulika_kaal)} />
-        <LabelValue
-          label="Abhijit Muhurat"
-          value={timeRange(daily?.abhijit_muhurat?.interval?.period?.[0])}
-          last={!choghadiyaGood.length}
-        />
-        {!!choghadiyaGood.length && (
-          <View style={styles.timingList}>
-            <Text style={styles.gridLabel}>FAVOURABLE CHOGHADIYA WINDOWS</Text>
-            {choghadiyaGood.map((slot, index) => (
-              <LabelValue key={`${slot.name}-${index}`} label={slot.name || "Choghadiya"} value={timeRange(slot)} last={index === choghadiyaGood.length - 1} />
-            ))}
-          </View>
-        )}
-        <Text style={styles.smallNote}>
-          Timings are provider calculations for your saved current location and its local time zone. Choghadiya and Abhijit are general daily indicators, not a substitute for event-specific Muhurtham.
-        </Text>
-        {!!result?.unavailable && Object.keys(result.unavailable).length > 0 && (
-          <Text style={styles.smallNote}>Some timing categories could not be loaded: {Object.keys(result.unavailable).join(", ")}.</Text>
-        )}
+        <LabelValue label="Sunset" value={timeText(sunset)} last />
+        <Text style={styles.smallNote}>Calculated for your saved location and local time zone.</Text>
+        {!!result?.unavailable && Object.keys(result.unavailable).length > 0 && <Text style={styles.smallNote}>Some timing categories could not be loaded: {Object.keys(result.unavailable).join(", ")}.</Text>}
       </Panel>
 
-      <TouchableOpacity style={styles.cta} onPress={onOpenMuhurtham}>
-        <Text style={styles.ctaEyebrow}>PLAN AN IMPORTANT EVENT</Text>
-        <View style={styles.ctaRow}>
-          <Text style={styles.ctaTitle}>Check a date for an event</Text>
-          <Text style={styles.arrow}>→</Text>
-        </View>
-        <Text style={styles.ctaDescription}>Marriage, Gruhapravesam, registration, joining, meetings and more.</Text>
-      </TouchableOpacity>
       <Text style={styles.note}>Panchangam data is provided by Navamsha using your saved location. General daily indicators are not a guarantee of personal outcomes and do not replace event-specific Telugu Drik Muhurtham analysis.</Text>
     </Screen>
   );
@@ -238,11 +219,5 @@ const styles = StyleSheet.create({
   suggestionTitle: { color: colors.maroonDark, fontFamily: "Georgia", fontSize: 17, fontWeight: "600", marginBottom: 8 },
   guidanceLabel: { color: colors.muted, fontSize: 9, letterSpacing: 1.2, fontWeight: "700", marginTop: 12, marginBottom: 5 },
   smallNote: { color: colors.muted, fontSize: 10, lineHeight: 16, marginTop: 10 },
-  cta: { backgroundColor: "#71370F", borderRadius: 15, padding: 19, marginTop: 25 },
-  ctaEyebrow: { color: "#D9C3A2", fontSize: 9, letterSpacing: 1.5, fontWeight: "700" },
-  ctaRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 10 },
-  ctaTitle: { color: "#FFFDFA", fontSize: 17, fontWeight: "600" },
-  ctaDescription: { color: "#E7D4B6", fontSize: 11, lineHeight: 16, marginTop: 8 },
-  arrow: { color: "#E7D4B6", fontSize: 24 },
   note: { color: colors.muted, fontSize: 10, lineHeight: 15, marginTop: 15 },
 });
