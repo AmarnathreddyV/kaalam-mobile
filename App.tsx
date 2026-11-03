@@ -8,14 +8,14 @@ import { AuthScreen } from "./src/screens/AuthScreen";
 import { OnboardingScreen } from "./src/screens/OnboardingScreen";
 import { HomeScreen } from "./src/screens/HomeScreen";
 import { PanchangamScreen } from "./src/screens/PanchangamScreen";
-import { MuhurthamScreen } from "./src/screens/MuhurthamScreen";
+import { PoojaItemsScreen } from "./src/screens/PoojaItemsScreen";
 import { HoroscopeScreen } from "./src/screens/HoroscopeScreen";
 import { ProfileScreen } from "./src/screens/ProfileScreen";
 import { colors } from "./src/theme/colors";
 import { AppBackground } from "./src/components/AppBackground";
 
-type TabName = "Home" | "Panchangam" | "Muhurtham" | "Horoscope" | "Profile";
-const tabs: TabName[] = ["Home", "Panchangam", "Muhurtham", "Horoscope", "Profile"];
+type TabName = "Home" | "Panchangam" | "Pooja Items" | "Horoscope" | "Profile";
+const tabs: TabName[] = ["Home", "Panchangam", "Pooja Items", "Horoscope", "Profile"];
 
 export default function App() {
   const [session, setSession] = useState<Session | null>(null);
@@ -84,7 +84,7 @@ export default function App() {
   const renderScreen = () => {
     switch (activeTab) {
       case "Panchangam": return <PanchangamScreen />;
-      case "Muhurtham": return <MuhurthamScreen />;
+      case "Pooja Items": return <PoojaItemsScreen />;
       case "Horoscope": return <HoroscopeScreen />;
       case "Profile": return <ProfileScreen />;
       default: return <HomeScreen onOpenMuhurtham={() => setActiveTab("Muhurtham")} />;
