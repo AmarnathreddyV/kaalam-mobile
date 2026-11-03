@@ -4,7 +4,7 @@ import {
   View, Platform, TextInput,
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { Screen, PageHeading, Panel } from "../components/Screen";
+import { PageHeading, Panel } from "../components/Screen";
 import { colors } from "../theme/colors";
 import { supabase } from "../auth/supabase";
 
@@ -169,7 +169,7 @@ export function MuhurthamScreen() {
 
   const active = results[activeResult];
   return (
-    <Screen>
+    <View style={{ flex: 1 }}>
       <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         <PageHeading title="Check a date for an event" subtitle="Choose an event and date range. Verified Telugu Drik occasion rules are not active yet, so KAALAM will not guess auspicious dates." />
         <Panel style={styles.noticePanel}><Text style={styles.noticeTitle}>Telugu Drik validation status</Text><Text style={styles.noticeText}>KAALAM can retrieve daily Panchangam data, but event-specific Muhurtham rules are not yet validated. The search will not mark dates auspicious until those rules and exact time intervals are verified.</Text></Panel>
@@ -236,7 +236,7 @@ export function MuhurthamScreen() {
         )}
         <Text style={styles.disclaimer}>Only a validated Telugu Drik Muhurtha calculation can mark a date and time as suitable. Daily Panchangam snapshots alone are not sufficient.</Text>
       </ScrollView>
-    </Screen>
+    </View>
   );
 }
 
