@@ -172,7 +172,8 @@ export function MuhurthamScreen() {
     <Screen>
       <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         <PageHeading title="Check a date for an event" subtitle="Choose an event and date range. Verified Telugu Drik occasion rules are not active yet, so KAALAM will not guess auspicious dates." />
-        <Panel style={styles.noticePanel}><Text style={styles.noticeTitle}>Telugu Drik validation status</Text><Text style={styles.noticeText}>KAALAM can retrieve daily Panchangam data, but event-specific Muhurtham rules are not yet validated. The search will not mark dates auspicious until those rules and exact time intervals are verified.</Text></Panel>\n        <Text style={styles.label}>SELECT YOUR EVENT</Text>
+        <Panel style={styles.noticePanel}><Text style={styles.noticeTitle}>Telugu Drik validation status</Text><Text style={styles.noticeText}>KAALAM can retrieve daily Panchangam data, but event-specific Muhurtham rules are not yet validated. The search will not mark dates auspicious until those rules and exact time intervals are verified.</Text></Panel>
+        <Text style={styles.label}>SELECT YOUR EVENT</Text>
         {occasionGroups.map(group => (
           <View key={group.title} style={styles.group}>
             <Text style={styles.groupTitle}>{group.title}</Text>
