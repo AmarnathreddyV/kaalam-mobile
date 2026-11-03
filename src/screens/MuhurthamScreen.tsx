@@ -142,7 +142,7 @@ export function MuhurthamScreen() {
       const body = await response.json();
       if (!response.ok) throw new Error(body?.detail || "Unable to search the selected dates.");
       if (body.recommendations_ready !== true || body.result_type !== "verified_muhurtham_candidates") {
-        throw new Error("The Panchangam service returned daily snapshots, not verified occasion-specific Muhurtham recommendations. KAALAM will not label these dates auspicious until the Telugu Drik rules and time windows are validated.");
+        throw new Error("Daily Panchangam data was retrieved, but event-specific Telugu Drik Muhurtham rules are not yet validated. No date can be recommended as auspicious from these snapshots alone.");
       }
       const candidates = Array.isArray(body.recommendations) ? body.recommendations : [];
       if (!candidates.length) throw new Error("No verified suitable dates were found in this range.");
@@ -158,7 +158,7 @@ export function MuhurthamScreen() {
   return (
     <Screen>
       <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-        <PageHeading title="Check a date for an event" subtitle="Choose your occasion and date range. KAALAM will show suitable candidates only when verified rules are available." />
+        <PageHeading title="Check a date for an event" subtitle="Choose an event and date range. Verified Telugu Drik occasion rules are not active yet, so KAALAM will not guess auspicious dates." />
         <Text style={styles.label}>SELECT YOUR EVENT</Text>
         {occasionGroups.map(group => (
           <View key={group.title} style={styles.group}>
@@ -254,5 +254,5 @@ const styles = StyleSheet.create({
   navText: { color: colors.maroonDark, fontSize: 11, fontWeight: "700" },
   disabled: { opacity: 0.35 },
   error: { color: colors.maroon, fontSize: 12, lineHeight: 18 },
-  disclaimer: { color: colors.muted, fontSize: 10, lineHeight: 16, marginTop: 18, marginBottom: 25 },
+  disclaimer: { color: "#3F210D", backgroundColor: "rgba(255, 246, 226, 0.96)", borderColor: "rgba(113, 55, 15, 0.24)", borderWidth: 1, borderRadius: 12, padding: 14, fontSize: 12, lineHeight: 19, marginTop: 18, marginBottom: 25 },
 });
