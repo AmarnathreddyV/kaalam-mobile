@@ -172,7 +172,7 @@ export function MuhurthamScreen() {
     <Screen>
       <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         <PageHeading title="Check a date for an event" subtitle="Choose an event and date range. Verified Telugu Drik occasion rules are not active yet, so KAALAM will not guess auspicious dates." />
-        <Text style={styles.label}>SELECT YOUR EVENT</Text>
+        <Panel style={styles.noticePanel}><Text style={styles.noticeTitle}>Telugu Drik validation status</Text><Text style={styles.noticeText}>KAALAM can retrieve daily Panchangam data, but event-specific Muhurtham rules are not yet validated. The search will not mark dates auspicious until those rules and exact time intervals are verified.</Text></Panel>\n        <Text style={styles.label}>SELECT YOUR EVENT</Text>
         {occasionGroups.map(group => (
           <View key={group.title} style={styles.group}>
             <Text style={styles.groupTitle}>{group.title}</Text>
@@ -241,7 +241,7 @@ export function MuhurthamScreen() {
 
 const styles = StyleSheet.create({
   label: { color: colors.muted, fontSize: 10, letterSpacing: 1.4, fontWeight: "700", marginBottom: 11, marginTop: 19 },
-  group: { marginBottom: 8 },
+  noticePanel: { marginTop: 14, borderColor: "rgba(113, 55, 15, 0.28)", borderWidth: 1 },\n  noticeTitle: { color: colors.maroonDark, fontSize: 13, fontWeight: "700", marginBottom: 7 },\n  noticeText: { color: "#4A2B16", fontSize: 12, lineHeight: 19 },\n  group: { marginBottom: 8 },
   groupTitle: { color: colors.maroonDark, fontSize: 13, fontWeight: "700", marginBottom: 9 },
   options: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   option: { borderWidth: 1, borderColor: colors.line, borderRadius: 22, paddingHorizontal: 13, paddingVertical: 9, backgroundColor: "rgba(255, 247, 230, 0.94)" },
