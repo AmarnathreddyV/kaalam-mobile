@@ -439,103 +439,50 @@ class MuhurthamSearchRequest(BaseModel):
 async def search_muhurtham(
     request: MuhurthamSearchRequest
 ) -> dict[str, Any]:
+    """
+    Retrieve daily Panchangam snapshots for inspection only.
 
-    if not NAVAMSHA_API_KEY:
-
-        raise HTTPException(
-            status_code=503,
-            detail="Navamsha API key is not configured."
-        )
-
+    IMPORTANT: this endpoint deliberately does not mark dates auspicious.
+    Event-specific Telugu Drik rules and interval calculations have not
+    been validated, so returning candidate Muhurtham dates would be unsafe.
+    """
     if request.tradition.lower() not in (
         "telugu drik",
         "telugu drik panchangam",
     ):
-
         raise HTTPException(
             status_code=400,
-            detail="KAALAM currently supports Telugu Drik only."
+            detail="KAALAM currently supports Telugu Drik only.",
         )
 
-    total_days = (
-        request.end_date - request.start_date
-    ).days + 1
+    if not NAVAMSHA_API_KEY:
+        raise HTTPException(
+            status_code=503,
+            detail="Navamsha API key is not configured.",
+        )
 
-    dates = [
-        request.start_date + timedelta(days=i)
-        for i in range(total_days)
-    ]
-
-    # Keep provider traffic gentle: one request at a time.
-    semaphore = asyncio.Semaphore(1)
-
-    async with httpx.AsyncClient(timeout=30.0) as client:
-
-        async def fetch_one(day):
-
-            async with semaphore:
-                # Small spacing between date requests reduces burst 429s.
-                await asyncio.sleep(1.0)
-                return await fetch_panchang(
-                    client=client,
-                    day=day,
-                    latitude=request.latitude,
-                    longitude=request.longitude,
-                    timezone=request.timezone,
-                    hours=12,
-                    minutes=0,
-                )
-
-        try:
-
-            results = await asyncio.gather(
-                *[
-                    fetch_one(day)
-                    for day in dates
-                ]
-            )
-
-        except HTTPException as exc:
-            if exc.status_code == 429:
-                raise
-            raise
-
-        except Exception as exc:
-
-            raise HTTPException(
-                status_code=502,
-                detail="Unable to complete Panchangam search."
-            ) from exc
-
+    total_days = (request.end_date - request.start_date).days + 1
     return {
         "provider": "Navamsha",
-
         "tradition": "Telugu Drik",
-
         "occasion": request.occasion,
-
         "start_date": request.start_date.isoformat(),
-
         "end_date": request.end_date.isoformat(),
-
         "location": {
             "latitude": request.latitude,
             "longitude": request.longitude,
             "timezone": request.timezone,
         },
-
         "total_days": total_days,
-
-        "results": results,
-
+        "results": [],
         "result_type": "daily_panchangam_snapshots",
-
         "recommendations_ready": False,
-
         "message": (
-            "Daily Panchangam snapshots retrieved successfully. "
-            "Occasion-specific Muhurtham evaluation and verified "
-            "auspicious timings have not yet been implemented."
+            "The selected date range and occasion were received. "
+            "Event-specific Telugu Drik Muhurtham rules and exact "
+            "auspicious intervals have not been validated. No dates "
+            "are recommended; daily Panchangam snapshots alone are "
+            "not sufficient to approve a Muhurtham."
         ),
     }
 
