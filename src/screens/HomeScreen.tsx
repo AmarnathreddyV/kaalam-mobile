@@ -88,6 +88,28 @@ export function HomeScreen({ onOpenMuhurtham }: { onOpenMuhurtham: () => void })
   const choghadiyaGood = (daily?.choghadiya?.day || []).filter(x =>
     ["Amrit", "Shubh", "Labh", "Char"].includes(x.name || "")
   );
+  const weekday = new Intl.DateTimeFormat("en-US", { weekday: "long" }).format(new Date());
+  const weekdayGuidance: Record<string, { deity: string; temple: string; practice: string }> = {
+    Sunday: { deity: "Lord Surya · Sunday", temple: "If convenient, visit a Surya or Shiva temple.", practice: "Offer a simple morning prayer to the Sun and begin the day with gratitude." },
+    Monday: { deity: "Lord Shiva · Monday", temple: "If convenient, visit a Shiva temple.", practice: "Offer prayers to Lord Shiva; a quiet moment of meditation is also suitable." },
+    Tuesday: { deity: "Lord Hanuman · Tuesday", temple: "If convenient, visit a Hanuman temple.", practice: "Recite Hanuman Chalisa or offer a simple prayer for courage and steadiness." },
+    Wednesday: { deity: "Lord Ganesha · Wednesday", temple: "If convenient, visit a Ganesha temple.", practice: "Begin an important task with a prayer to Lord Ganesha." },
+    Thursday: { deity: "Lord Vishnu · Thursday", temple: "If convenient, visit a Vishnu or Venkateswara temple.", practice: "Read or listen to a short Vishnu prayer and practise generosity." },
+    Friday: { deity: "Goddess Lakshmi · Friday", temple: "If convenient, visit a Lakshmi or Devi temple.", practice: "Offer a simple prayer to Goddess Lakshmi and keep your home welcoming." },
+    Saturday: { deity: "Lord Venkateswara or Hanuman · Saturday", temple: "If convenient, visit a Venkateswara or Hanuman temple.", practice: "Offer a prayer for patience, humility and service to others." },
+  };
+  const tithiText = [p?.tithi?.name, p?.tithi?.paksha].filter(Boolean).join(" ").toLowerCase();
+  const specialTithiNote = tithiText.includes("ekadashi")
+    ? "Ekadashi is traditionally observed by many devotees with Vishnu worship. Fasting practices differ; follow your health needs and family tradition."
+    : tithiText.includes("purnima") || tithiText.includes("pournami")
+      ? "Pournami (full-moon day) is traditionally observed with prayer and devotional practices in many households."
+      : tithiText.includes("amavasya")
+        ? "Amavasya is traditionally associated in many families with remembrance and prayers for ancestors; customs vary."
+        : "";
+  const spiritualGuidance = {
+    ...(weekdayGuidance[weekday] || weekdayGuidance.Monday),
+    tithiNote: specialTithiNote,
+  };
   const basicDetails = useMemo(() => [
     ["Rashi", profile?.birth_chart_summary?.rashi || "Not calculated"],
     ["Janma Nakshatra", profile?.birth_chart_summary?.nakshatra || "Not calculated"],
@@ -128,6 +150,32 @@ export function HomeScreen({ onOpenMuhurtham }: { onOpenMuhurtham: () => void })
               <View style={styles.gridItem}><Text style={styles.gridLabel}>KARANA</Text><Text style={styles.gridValue}>{karana}</Text></View>
             </View>
             <Text style={styles.smallNote}>Local Panchangam snapshot · {result?.date || ""}</Text>
+          </>
+        )}
+      </Panel>
+
+      <SectionTitle>TODAY'S SPIRITUAL GUIDANCE</SectionTitle>
+      <Panel>
+        {loading ? (
+          <View style={styles.state}><ActivityIndicator color={colors.maroon} /><Text style={styles.stateText}>Preparing today's spiritual guidance…</Text></View>
+        ) : error ? (
+          <Text style={styles.horoscope}>Spiritual guidance will appear when today's Panchangam is available.</Text>
+        ) : (
+          <>
+            <Text style={styles.suggestionTitle}>{spiritualGuidance.deity}</Text>
+            <Text style={styles.guidanceLabel}>TEMPLE SUGGESTION</Text>
+            <Text style={styles.horoscope}>{spiritualGuidance.temple}</Text>
+            <Text style={styles.guidanceLabel}>PRAYER OR ACTIVITY</Text>
+            <Text style={styles.horoscope}>{spiritualGuidance.practice}</Text>
+            {!!spiritualGuidance.tithiNote && (
+              <>
+                <Text style={styles.guidanceLabel}>PANCHANGAM NOTE</Text>
+                <Text style={styles.horoscope}>{spiritualGuidance.tithiNote}</Text>
+              </>
+            )}
+            <Text style={styles.guidanceLabel}>A THOUGHT FOR TODAY</Text>
+            <Text style={styles.horoscope}>Try to avoid harsh words and rushed decisions. Make space for patience, kindness and thoughtful action.</Text>
+            <Text style={styles.smallNote}>Based on common weekday devotional associations and the returned Tithi. Traditions vary by family and region; this is general spiritual inspiration, not a prescribed religious rule or personal prediction.</Text>
           </>
         )}
       </Panel>
@@ -187,7 +235,8 @@ const styles = StyleSheet.create({
   error: { color: colors.maroon, fontSize: 12, lineHeight: 18 },
   retry: { color: colors.gold, fontSize: 12, fontWeight: "700", marginTop: 10 },
   horoscope: { color: colors.text, fontSize: 13, lineHeight: 21 },
-  suggestionTitle: { color: colors.maroonDark, fontFamily: "Georgia", fontSize: 17, fontWeight: "600", marginBottom: 12 },
+  suggestionTitle: { color: colors.maroonDark, fontFamily: "Georgia", fontSize: 17, fontWeight: "600", marginBottom: 8 },
+  guidanceLabel: { color: colors.muted, fontSize: 9, letterSpacing: 1.2, fontWeight: "700", marginTop: 12, marginBottom: 5 },
   smallNote: { color: colors.muted, fontSize: 10, lineHeight: 16, marginTop: 10 },
   cta: { backgroundColor: "#71370F", borderRadius: 15, padding: 19, marginTop: 25 },
   ctaEyebrow: { color: "#D9C3A2", fontSize: 9, letterSpacing: 1.5, fontWeight: "700" },
