@@ -160,10 +160,42 @@ export function HomeScreen({ onOpenMuhurtham }: { onOpenMuhurtham: () => void })
         )}
       </Panel>
 
-      <SectionTitle>YOUR DAILY SUGGESTION</SectionTitle>
+      <SectionTitle>DAILY GUIDANCE · TELUGU DRIK</SectionTitle>
       <Panel>
-        <Text style={styles.suggestionTitle}>Personal guidance</Text>
-        <Text style={styles.horoscope}>Your birth-chart summary is now linked to your account. Daily guidance will be enabled after the Panchangam-based interpretation rules are validated. No generic suggestion is presented as personalized astrology.</Text>
+        <Text style={styles.suggestionTitle}>Today's timing guidance</Text>
+        {loading ? (
+          <Text style={styles.horoscope}>Preparing guidance from today's Panchangam…</Text>
+        ) : error ? (
+          <Text style={styles.horoscope}>Daily guidance is unavailable until Panchangam data loads successfully.</Text>
+        ) : (
+          <>
+            {choghadiyaGood.length > 0 ? (
+              <>
+                <Text style={styles.guidanceLabel}>GENERAL FAVOURABLE INDICATORS</Text>
+                <Text style={styles.horoscope}>The following daytime Choghadiya periods are traditionally classed as Amrit, Shubh, Labh or Char:</Text>
+                {choghadiyaGood.map((slot, index) => (
+                  <LabelValue key={`guidance-good-${slot.name}-${index}`} label={slot.name || "Choghadiya"} value={timeRange(slot)} last={index === choghadiyaGood.length - 1} />
+                ))}
+                <Text style={styles.smallNote}>These are general Panchangam indicators for routine planning, not confirmation that a specific ceremony or major decision is auspicious.</Text>
+              </>
+            ) : (
+              <Text style={styles.horoscope}>No favourable daytime Choghadiya windows were returned by the provider for today. KAALAM will not invent a time window.</Text>
+            )}
+            <View style={styles.guidanceDivider} />
+            <Text style={styles.guidanceLabel}>PERIODS TO BE MINDFUL OF</Text>
+            {[
+              ["Rahu Kalam", daily?.inauspicious_periods?.rahu_kaal],
+              ["Yamagandam", daily?.inauspicious_periods?.yamaganda],
+              ["Gulika Kalam", daily?.inauspicious_periods?.gulika_kaal],
+            ].filter(([, period]) => !!period?.start && !!period?.end).map(([label, period], index, rows) => (
+              <LabelValue key={String(label)} label={String(label)} value={timeRange(period as DailyTimePeriod)} last={index === rows.length - 1} />
+            ))}
+            {!daily?.inauspicious_periods?.rahu_kaal?.start && !daily?.inauspicious_periods?.yamaganda?.start && !daily?.inauspicious_periods?.gulika_kaal?.start && (
+              <Text style={styles.horoscope}>The provider did not return the inauspicious-period timings. Check again later.</Text>
+            )}
+            <Text style={styles.smallNote}>Rule-based guidance using the returned Telugu Drik Panchangam timing data. It is not personalized horoscope advice or an event-specific Muhurtham approval.</Text>
+          </>
+        )}
       </Panel>
 
       <TouchableOpacity style={styles.cta} onPress={onOpenMuhurtham}>
@@ -193,7 +225,9 @@ const styles = StyleSheet.create({
   error: { color: colors.maroon, fontSize: 12, lineHeight: 18 },
   retry: { color: colors.gold, fontSize: 12, fontWeight: "700", marginTop: 10 },
   horoscope: { color: colors.text, fontSize: 13, lineHeight: 21 },
-  suggestionTitle: { color: colors.maroonDark, fontFamily: "Georgia", fontSize: 17, fontWeight: "600", marginBottom: 8 },
+  suggestionTitle: { color: colors.maroonDark, fontFamily: "Georgia", fontSize: 17, fontWeight: "600", marginBottom: 12 },
+  guidanceLabel: { color: colors.muted, fontSize: 9, letterSpacing: 1.2, fontWeight: "700", marginTop: 8, marginBottom: 5 },
+  guidanceDivider: { height: 1, backgroundColor: colors.line, marginVertical: 13 },
   smallNote: { color: colors.muted, fontSize: 10, lineHeight: 16, marginTop: 10 },
   cta: { backgroundColor: "#71370F", borderRadius: 15, padding: 19, marginTop: 25 },
   ctaEyebrow: { color: "#D9C3A2", fontSize: 9, letterSpacing: 1.5, fontWeight: "700" },
