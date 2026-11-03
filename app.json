@@ -21,6 +21,7 @@
         "backgroundColor": "#F7F3EB"
       }
     },
-    "icon": "./assets/kaalam-logo.png"
+    "icon": "./assets/kaalam-logo.png",
+    "scheme": "kaalam"
   }
 }
