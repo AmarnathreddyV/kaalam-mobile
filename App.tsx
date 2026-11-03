@@ -87,7 +87,7 @@ export default function App() {
       case "Pooja Items": return <PoojaItemsScreen />;
       case "Horoscope": return <HoroscopeScreen />;
       case "Profile": return <ProfileScreen />;
-      default: return <HomeScreen onOpenMuhurtham={() => setActiveTab("Muhurtham")} />;
+      default: return <HomeScreen />;
     }
   };
 
