@@ -21,6 +21,7 @@ export default function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [authReady, setAuthReady] = useState(false);
   const [profileReady, setProfileReady] = useState(false);
+  const [recoveryMode, setRecoveryMode] = useState(false);
   const [profileLoading, setProfileLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<TabName>("Home");
 
@@ -30,9 +31,10 @@ export default function App() {
       setSession(data.session);
       setAuthReady(true);
     });
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+    const { data: listener } = supabase.auth.onAuthStateChange((event, nextSession) => {
       setSession(nextSession);
-      if (!nextSession) setProfileReady(false);
+      if (event === "PASSWORD_RECOVERY") setRecoveryMode(true);
+      if (!nextSession) { setProfileReady(false); setRecoveryMode(false); }
     });
     return () => listener.subscription.unsubscribe();
   }, []);
@@ -71,8 +73,8 @@ export default function App() {
     );
   }
 
-  if (!session) {
-    return <SafeAreaProvider><AppBackground /><SafeAreaView style={styles.safe}><StatusBar style="dark" /><AuthScreen /></SafeAreaView></SafeAreaProvider>;
+  if (!session || recoveryMode) {
+    return <SafeAreaProvider><AppBackground /><SafeAreaView style={styles.safe}><StatusBar style="dark" /><AuthScreen recoveryMode={recoveryMode} onRecoveryComplete={() => setRecoveryMode(false)} /></SafeAreaView></SafeAreaProvider>;
   }
 
   if (!profileReady) {
