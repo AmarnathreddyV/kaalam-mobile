@@ -241,7 +241,10 @@ export function MuhurthamScreen() {
 
 const styles = StyleSheet.create({
   label: { color: colors.muted, fontSize: 10, letterSpacing: 1.4, fontWeight: "700", marginBottom: 11, marginTop: 19 },
-  noticePanel: { marginTop: 14, borderColor: "rgba(113, 55, 15, 0.28)", borderWidth: 1 },\n  noticeTitle: { color: colors.maroonDark, fontSize: 13, fontWeight: "700", marginBottom: 7 },\n  noticeText: { color: "#4A2B16", fontSize: 12, lineHeight: 19 },\n  group: { marginBottom: 8 },
+  noticePanel: { marginTop: 14, borderColor: "rgba(113, 55, 15, 0.28)", borderWidth: 1 },
+  noticeTitle: { color: colors.maroonDark, fontSize: 13, fontWeight: "700", marginBottom: 7 },
+  noticeText: { color: "#4A2B16", fontSize: 12, lineHeight: 19 },
+  group: { marginBottom: 8 },
   groupTitle: { color: colors.maroonDark, fontSize: 13, fontWeight: "700", marginBottom: 9 },
   options: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   option: { borderWidth: 1, borderColor: colors.line, borderRadius: 22, paddingHorizontal: 13, paddingVertical: 9, backgroundColor: "rgba(255, 247, 230, 0.94)" },
