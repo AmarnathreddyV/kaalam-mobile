@@ -24,7 +24,7 @@ function todayLabel() {
   }).format(new Date()).toUpperCase().replace(",", " ·");
 }
 
-export function HomeScreen({ onOpenMuhurtham }: { onOpenMuhurtham: () => void }) {
+export function HomeScreen() {
   const [result, setResult] = useState<DailyPanchangamResponse | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [error, setError] = useState("");
