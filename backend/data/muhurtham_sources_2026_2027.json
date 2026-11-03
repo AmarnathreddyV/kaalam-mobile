@@ -1,0 +1,394 @@
+{
+  "dataset": "KAALAM published Muhurtham reference data",
+  "version": 1,
+  "tradition_target": "Telugu Drik Panchangam",
+  "timezone": "Asia/Kolkata",
+  "location": {
+    "city": "Hyderabad",
+    "region": "Telangana",
+    "country": "India",
+    "latitude": 17.385,
+    "longitude": 78.4867
+  },
+  "coverage": {
+    "from": "2026-11-03",
+    "to": "2027-03-31",
+    "status": "partial_seed"
+  },
+  "important": [
+    "These are transcribed published listings, not KAALAM-calculated Muhurthams.",
+    "Different publishers can disagree on dates and interval boundaries. Keep each source record separate; do not silently merge conflicting values.",
+    "Do not display a record as verified or personalized. Confirm source, location, tradition and family-specific requirements before production recommendations.",
+    "A listing date can have an interval crossing midnight. The interval_start and interval_end retain the publisher's local date-time.",
+    "This seed intentionally contains only records whose date and time were visible in retrieved source material. It is not a complete annual calendar."
+  ],
+  "sources": [
+    {
+      "source_id": "jyothishamu_gruhapravesham_2026_2027",
+      "publisher": "Jyothishamu",
+      "url": "https://jyothishamu.com/muhurtham/gruhapravesham",
+      "retrieved_on": "2026-11-03",
+      "publisher_claim": "Dates and times computed for Hyderabad from Telugu panchangam and checked against published panchang lists.",
+      "source_type": "published_calendar_listing"
+    },
+    {
+      "source_id": "jyothishamu_vivah_2026",
+      "publisher": "Jyothishamu",
+      "url": "https://jyothishamu.com/vivah-muhurta-2026",
+      "retrieved_on": "2026-11-03",
+      "publisher_claim": "Dates and times computed for Hyderabad from Telugu panchangam and checked against Drik Panchang Hyderabad list.",
+      "source_type": "published_calendar_listing"
+    },
+    {
+      "source_id": "astrolal_vivah_hyderabad_2026_2027",
+      "publisher": "Astrolal",
+      "url": "https://www.astrolal.com/muhurat/marriage/india/hyderabad",
+      "retrieved_on": "2026-11-03",
+      "publisher_claim": "Hyderabad-local marriage windows, using nakshatra, tithi, yoga, karana and prohibited periods.",
+      "source_type": "published_calendar_listing"
+    },
+    {
+      "source_id": "hindutone_griha_2026_2027",
+      "publisher": "HinduTone",
+      "url": "https://hindutone.com/astrology/griha-pravesh-muhurat-2026-27-dates/",
+      "retrieved_on": "2026-11-03",
+      "publisher_claim": "Transcribed from Drik Panchang Hyderabad and New Delhi listings; exact times are stated as IST.",
+      "source_type": "secondary_transcription"
+    }
+  ],
+  "records": [
+    {
+      "id": "griha-2026-11-11-jyothishamu",
+      "occasion": "griha_pravesham",
+      "date": "2026-11-11",
+      "interval_start": "2026-11-11T06:19:00+05:30",
+      "interval_end": "2026-11-11T11:31:00+05:30",
+      "nakshatra": "Anuradha",
+      "tithi": "Shukla Paksha Dwitiya",
+      "rating": "Excellent",
+      "source_id": "jyothishamu_gruhapravesham_2026_2027",
+      "source_status": "published_unverified"
+    },
+    {
+      "id": "griha-2026-11-14-jyothishamu",
+      "occasion": "griha_pravesham",
+      "date": "2026-11-14",
+      "interval_start": "2026-11-14T20:33:00+05:30",
+      "interval_end": "2026-11-14T23:21:00+05:30",
+      "nakshatra": "Uttara Ashadha",
+      "tithi": "Shukla Paksha Panchami",
+      "rating": "Good",
+      "source_id": "jyothishamu_gruhapravesham_2026_2027",
+      "source_status": "published_unverified"
+    },
+    {
+      "id": "griha-2026-11-20-jyothishamu",
+      "occasion": "griha_pravesham",
+      "date": "2026-11-20",
+      "interval_start": "2026-11-20T07:00:00+05:30",
+      "interval_end": "2026-11-20T19:00:00+05:30",
+      "nakshatra": "Uttara Bhadrapada",
+      "tithi": "Shukla Paksha Dashami",
+      "rating": "Good",
+      "source_id": "jyothishamu_gruhapravesham_2026_2027",
+      "source_status": "published_unverified"
+    },
+    {
+      "id": "vivah-2026-11-24-astrolal",
+      "occasion": "vivaha",
+      "date": "2026-11-24",
+      "interval_start": "2026-11-24T23:25:00+05:30",
+      "interval_end": "2026-11-25T06:26:00+05:30",
+      "nakshatra": "Rohini",
+      "tithi": "Pratipada",
+      "source_id": "astrolal_vivah_hyderabad_2026_2027",
+      "source_status": "published_unverified"
+    },
+    {
+      "id": "vivah-2026-11-25-astrolal",
+      "occasion": "vivaha",
+      "date": "2026-11-25",
+      "interval_start": "2026-11-25T06:26:00+05:30",
+      "interval_end": "2026-11-26T06:27:00+05:30",
+      "nakshatra": "Rohini, Mrigashirsha",
+      "tithi": "Pratipada, Dwitiya",
+      "source_id": "astrolal_vivah_hyderabad_2026_2027",
+      "source_status": "published_unverified"
+    },
+    {
+      "id": "vivah-2026-11-26-astrolal",
+      "occasion": "vivaha",
+      "date": "2026-11-26",
+      "interval_start": "2026-11-26T06:27:00+05:30",
+      "interval_end": "2026-11-26T17:47:00+05:30",
+      "nakshatra": "Mrigashirsha",
+      "tithi": "Dwitiya, Tritiya",
+      "source_id": "astrolal_vivah_hyderabad_2026_2027",
+      "source_status": "published_unverified"
+    },
+    {
+      "id": "vivah-2026-12-02-astrolal",
+      "occasion": "vivaha",
+      "date": "2026-12-02",
+      "interval_start": "2026-12-02T08:55:00+05:30",
+      "interval_end": "2026-12-03T06:31:00+05:30",
+      "nakshatra": "Uttara Phalguni",
+      "tithi": "Navami, Dashami",
+      "source_id": "astrolal_vivah_hyderabad_2026_2027",
+      "source_status": "published_unverified"
+    },
+    {
+      "id": "vivah-2026-12-03-astrolal",
+      "occasion": "vivaha",
+      "date": "2026-12-03",
+      "interval_start": "2026-12-03T06:31:00+05:30",
+      "interval_end": "2026-12-03T10:54:00+05:30",
+      "nakshatra": "Uttara Phalguni, Hasta",
+      "tithi": "Dashami",
+      "source_id": "astrolal_vivah_hyderabad_2026_2027",
+      "source_status": "published_unverified"
+    },
+    {
+      "id": "vivah-2026-12-03-late-astrolal",
+      "occasion": "vivaha",
+      "date": "2026-12-03",
+      "interval_start": "2026-12-03T23:04:00+05:30",
+      "interval_end": "2026-12-04T06:32:00+05:30",
+      "nakshatra": "Hasta",
+      "tithi": "Ekadashi",
+      "source_id": "astrolal_vivah_hyderabad_2026_2027",
+      "source_status": "published_unverified"
+    },
+    {
+      "id": "vivah-2026-12-04-astrolal",
+      "occasion": "vivaha",
+      "date": "2026-12-04",
+      "interval_start": "2026-12-04T06:32:00+05:30",
+      "interval_end": "2026-12-04T10:23:00+05:30",
+      "nakshatra": "Hasta",
+      "tithi": "Ekadashi",
+      "source_id": "astrolal_vivah_hyderabad_2026_2027",
+      "source_status": "published_unverified"
+    },
+    {
+      "id": "vivah-2026-12-05-astrolal",
+      "occasion": "vivaha",
+      "date": "2026-12-05",
+      "interval_start": "2026-12-05T11:49:00+05:30",
+      "interval_end": "2026-12-06T06:33:00+05:30",
+      "nakshatra": "Swati",
+      "tithi": "Dwadashi, Trayodashi",
+      "source_id": "astrolal_vivah_hyderabad_2026_2027",
+      "source_status": "published_unverified"
+    },
+    {
+      "id": "vivah-2026-12-06-astrolal",
+      "occasion": "vivaha",
+      "date": "2026-12-06",
+      "interval_start": "2026-12-06T06:33:00+05:30",
+      "interval_end": "2026-12-06T07:42:00+05:30",
+      "nakshatra": "Swati",
+      "tithi": "Trayodashi",
+      "source_id": "astrolal_vivah_hyderabad_2026_2027",
+      "source_status": "published_unverified"
+    },
+    {
+      "id": "vivah-2026-12-11-astrolal",
+      "occasion": "vivaha",
+      "date": "2026-12-11",
+      "interval_start": "2026-12-11T03:05:00+05:30",
+      "interval_end": "2026-12-12T06:36:00+05:30",
+      "nakshatra": "Uttara Ashadha",
+      "tithi": "Tritiya",
+      "source_id": "astrolal_vivah_hyderabad_2026_2027",
+      "source_status": "published_unverified"
+    },
+    {
+      "id": "vivah-2026-12-12-astrolal",
+      "occasion": "vivaha",
+      "date": "2026-12-12",
+      "interval_start": "2026-12-12T06:36:00+05:30",
+      "interval_end": "2026-12-13T03:28:00+05:30",
+      "nakshatra": "Uttara Ashadha",
+      "tithi": "Tritiya, Chaturthi",
+      "source_id": "astrolal_vivah_hyderabad_2026_2027",
+      "source_status": "published_unverified"
+    },
+    {
+      "id": "griha-2027-01-01-hindutone",
+      "occasion": "griha_pravesham",
+      "date": "2027-01-01",
+      "interval_start": "2027-01-01T13:09:00+05:30",
+      "interval_end": "2027-01-01T17:29:00+05:30",
+      "nakshatra": "Chitra",
+      "tithi": "Dashami",
+      "source_id": "hindutone_griha_2026_2027",
+      "source_status": "secondary_transcription"
+    },
+    {
+      "id": "vivah-2027-01-15-astrolal",
+      "occasion": "vivaha",
+      "date": "2027-01-15",
+      "interval_start": "2027-01-15T06:49:00+05:30",
+      "interval_end": "2027-01-15T14:14:00+05:30",
+      "nakshatra": "Revati",
+      "tithi": "Saptami",
+      "source_id": "astrolal_vivah_hyderabad_2026_2027",
+      "source_status": "published_unverified"
+    },
+    {
+      "id": "vivah-2027-01-19-astrolal",
+      "occasion": "vivaha",
+      "date": "2027-01-19",
+      "interval_start": "2027-01-19T07:50:00+05:30",
+      "interval_end": "2027-01-20T06:50:00+05:30",
+      "nakshatra": "Rohini, Mrigashirsha",
+      "tithi": "Dwadashi, Trayodashi",
+      "source_id": "astrolal_vivah_hyderabad_2026_2027",
+      "source_status": "published_unverified"
+    },
+    {
+      "id": "vivah-2027-01-20-astrolal",
+      "occasion": "vivaha",
+      "date": "2027-01-20",
+      "interval_start": "2027-01-20T06:50:00+05:30",
+      "interval_end": "2027-01-20T16:17:00+05:30",
+      "nakshatra": "Mrigashirsha",
+      "tithi": "Trayodashi",
+      "source_id": "astrolal_vivah_hyderabad_2026_2027",
+      "source_status": "published_unverified"
+    },
+    {
+      "id": "vivah-2027-01-24-astrolal",
+      "occasion": "vivaha",
+      "date": "2027-01-24",
+      "interval_start": "2027-01-24T10:18:00+05:30",
+      "interval_end": "2027-01-24T21:30:00+05:30",
+      "nakshatra": "Magha",
+      "tithi": "Dwitiya, Tritiya",
+      "source_id": "astrolal_vivah_hyderabad_2026_2027",
+      "source_status": "published_unverified"
+    },
+    {
+      "id": "vivah-2027-01-26-astrolal",
+      "occasion": "vivaha",
+      "date": "2027-01-26",
+      "interval_start": "2027-01-26T20:18:00+05:30",
+      "interval_end": "2027-01-27T06:49:00+05:30",
+      "nakshatra": "Uttara Phalguni, Hasta",
+      "tithi": "Panchami, Shashthi",
+      "source_id": "astrolal_vivah_hyderabad_2026_2027",
+      "source_status": "published_unverified"
+    },
+    {
+      "id": "vivah-2027-01-27-astrolal",
+      "occasion": "vivaha",
+      "date": "2027-01-27",
+      "interval_start": "2027-01-27T06:49:00+05:30",
+      "interval_end": "2027-01-27T23:56:00+05:30",
+      "nakshatra": "Hasta",
+      "tithi": "Shashthi",
+      "source_id": "astrolal_vivah_hyderabad_2026_2027",
+      "source_status": "published_unverified"
+    },
+    {
+      "id": "vivah-2027-01-30-astrolal",
+      "occasion": "vivaha",
+      "date": "2027-01-30",
+      "interval_start": "2027-01-30T03:56:00+05:30",
+      "interval_end": "2027-01-31T06:48:00+05:30",
+      "nakshatra": "Anuradha",
+      "tithi": "Navami, Dashami",
+      "source_id": "astrolal_vivah_hyderabad_2026_2027",
+      "source_status": "published_unverified"
+    },
+    {
+      "id": "vivah-2027-01-31-astrolal",
+      "occasion": "vivaha",
+      "date": "2027-01-31",
+      "interval_start": "2027-01-31T06:48:00+05:30",
+      "interval_end": "2027-01-31T19:35:00+05:30",
+      "nakshatra": "Anuradha",
+      "tithi": "Dashami",
+      "source_id": "astrolal_vivah_hyderabad_2026_2027",
+      "source_status": "published_unverified"
+    },
+    {
+      "id": "vivah-2027-03-01-astrolal",
+      "occasion": "vivaha",
+      "date": "2027-03-01",
+      "interval_start": "2027-03-01T23:11:00+05:30",
+      "interval_end": "2027-03-02T06:34:00+05:30",
+      "nakshatra": "Mula",
+      "tithi": "Navami, Dashami",
+      "source_id": "astrolal_vivah_hyderabad_2026_2027",
+      "source_status": "published_unverified"
+    },
+    {
+      "id": "vivah-2027-03-02-astrolal",
+      "occasion": "vivaha",
+      "date": "2027-03-02",
+      "interval_start": "2027-03-02T06:34:00+05:30",
+      "interval_end": "2027-03-02T15:25:00+05:30",
+      "nakshatra": "Mula",
+      "tithi": "Dashami",
+      "source_id": "astrolal_vivah_hyderabad_2026_2027",
+      "source_status": "published_unverified"
+    },
+    {
+      "id": "vivah-2027-03-03-astrolal",
+      "occasion": "vivaha",
+      "date": "2027-03-03",
+      "interval_start": "2027-03-03T01:07:00+05:30",
+      "interval_end": "2027-03-04T06:33:00+05:30",
+      "nakshatra": "Uttara Ashadha",
+      "tithi": "Ekadashi",
+      "source_id": "astrolal_vivah_hyderabad_2026_2027",
+      "source_status": "published_unverified"
+    },
+    {
+      "id": "vivah-2027-03-04-astrolal",
+      "occasion": "vivaha",
+      "date": "2027-03-04",
+      "interval_start": "2027-03-04T06:33:00+05:30",
+      "interval_end": "2027-03-05T01:36:00+05:30",
+      "nakshatra": "Uttara Ashadha",
+      "tithi": "Ekadashi, Dwadashi",
+      "source_id": "astrolal_vivah_hyderabad_2026_2027",
+      "source_status": "published_unverified"
+    },
+    {
+      "id": "vivah-2027-03-09-astrolal",
+      "occasion": "vivaha",
+      "date": "2027-03-09",
+      "interval_start": "2027-03-09T09:58:00+05:30",
+      "interval_end": "2027-03-10T06:28:00+05:30",
+      "nakshatra": "Uttara Bhadrapada",
+      "tithi": "Pratipada, Dwitiya",
+      "source_id": "astrolal_vivah_hyderabad_2026_2027",
+      "source_status": "published_unverified"
+    },
+    {
+      "id": "vivah-2027-03-10-astrolal",
+      "occasion": "vivaha",
+      "date": "2027-03-10",
+      "interval_start": "2027-03-10T06:28:00+05:30",
+      "interval_end": "2027-03-11T05:16:00+05:30",
+      "nakshatra": "Uttara Bhadrapada, Revati",
+      "tithi": "Dwitiya, Tritiya",
+      "source_id": "astrolal_vivah_hyderabad_2026_2027",
+      "source_status": "published_unverified"
+    },
+    {
+      "id": "vivah-2027-03-14-astrolal",
+      "occasion": "vivaha",
+      "date": "2027-03-14",
+      "interval_start": "2027-03-14T10:24:00+05:30",
+      "interval_end": "2027-03-15T06:25:00+05:30",
+      "nakshatra": "Rohini",
+      "tithi": "Shashthi, Saptami",
+      "source_id": "astrolal_vivah_hyderabad_2026_2027",
+      "source_status": "published_unverified"
+    }
+  ]
+}
