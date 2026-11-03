@@ -174,7 +174,7 @@ export function HomeScreen({ onOpenMuhurtham }: { onOpenMuhurtham: () => void })
         </View>
         <Text style={styles.ctaDescription}>Marriage, Gruhapravesam, registration, joining, meetings and more.</Text>
       </TouchableOpacity>
-      <Text style={styles.note}>Panchangam data is provided by Navamsha. Daily timing and event-specific Muhurtham recommendations are being connected and validated.</Text>
+      <Text style={styles.note}>Panchangam data is provided by Navamsha using your saved location. General daily indicators are not a guarantee of personal outcomes and do not replace event-specific Telugu Drik Muhurtham analysis.</Text>
     </Screen>
   );
 }
