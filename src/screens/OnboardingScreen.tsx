@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import {
   Alert,
@@ -62,6 +62,18 @@ export function OnboardingScreen({
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    supabase.auth.getUser().then(({ data }) => {
+      if (!active || !data.user) return;
+      const metadataName = data.user.user_metadata?.full_name;
+      if (typeof metadataName === "string" && metadataName.trim()) {
+        setValues((current) => ({ ...current, full_name: current.full_name || metadataName.trim() }));
+      }
+    }).catch(() => undefined);
+    return () => { active = false; };
+  }, []);
 
   const update = (key: string, value: string) => {
     setValues((old) => ({
