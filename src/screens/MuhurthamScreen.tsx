@@ -149,14 +149,14 @@ export function MuhurthamScreen() {
       if (!response.ok) throw new Error(body?.detail || "Unable to validate the selected date range.");
 
       // Never interpret daily snapshots as an event-specific Muhurtham.
-      if (body.recommendations_ready !== true || body.result_type !== "verified_muhurtham_candidates") {
+      if (body.recommendations_ready !== true || !["verified_muhurtham_candidates", "published_muhurtham_listings"].includes(body.result_type)) {
         setError(body?.message || "Event-specific Telugu Drik Muhurtham calculations are not validated yet. No dates will be labelled auspicious.");
         return;
       }
 
       const candidates = Array.isArray(body.recommendations) ? body.recommendations : [];
       if (!candidates.length) {
-        setError("No verified suitable dates were found in this range.");
+        setError(body?.message || "No published dates were found in this range.");
         return;
       }
       setResults(candidates);
@@ -171,8 +171,8 @@ export function MuhurthamScreen() {
   return (
     <View style={{ flex: 1 }}>
       <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-        <PageHeading title="Check a date for an event" subtitle="Choose an event and date range. Verified Telugu Drik occasion rules are not active yet, so KAALAM will not guess auspicious dates." />
-        <Panel style={styles.noticePanel}><Text style={styles.noticeTitle}>Telugu Drik validation status</Text><Text style={styles.noticeText}>KAALAM can retrieve daily Panchangam data, but event-specific Muhurtham rules are not yet validated. The search will not mark dates auspicious until those rules and exact time intervals are verified.</Text></Panel>
+        <PageHeading title="Check a date for an event" subtitle="Choose an event and date range to find dates and timings from published calendars." />
+        <Panel style={styles.noticePanel}><Text style={styles.noticeTitle}>Published calendar data</Text><Text style={styles.noticeText}>KAALAM searches its collected, source-attributed Muhurtham calendars and displays their published dates and timings. These listings are not personalized; confirm the final Muhurtham with your family priest.</Text></Panel>
         <Text style={styles.label}>SELECT YOUR EVENT</Text>
         {occasionGroups.map(group => (
           <View key={group.title} style={styles.group}>
@@ -215,12 +215,12 @@ export function MuhurthamScreen() {
         {showStartPicker && <DateTimePicker value={startDate} mode="date" display={Platform.OS === "ios" ? "spinner" : "calendar"} onChange={onStartChange} />}
         {showEndPicker && <DateTimePicker value={endDate} mode="date" display={Platform.OS === "ios" ? "spinner" : "calendar"} minimumDate={startDate} maximumDate={addDays(startDate, 365)} onChange={onEndChange} />}
         <TouchableOpacity style={styles.button} onPress={search} disabled={loading}>
-          {loading ? <View style={styles.loading}><ActivityIndicator color="#FFF" /><Text style={styles.buttonText}>Checking Panchangam…</Text></View> : <Text style={styles.buttonText}>Find suitable dates</Text>}
+          {loading ? <View style={styles.loading}><ActivityIndicator color="#FFF" /><Text style={styles.buttonText}>Searching published dates…</Text></View> : <Text style={styles.buttonText}>Find suitable dates</Text>}
         </TouchableOpacity>
         {!!error && <Panel style={styles.result}><Text style={styles.error}>{error}</Text></Panel>}
         {!!active && (
           <Panel style={styles.result}>
-            <Text style={styles.resultEyebrow}>VERIFIED CANDIDATE {activeResult + 1} OF {results.length}</Text>
+            <Text style={styles.resultEyebrow}>PUBLISHED DATE {activeResult + 1} OF {results.length}</Text>
             <Text style={styles.resultDate}>{active.date}</Text>
             <Text style={styles.resultTime}>{active.start_time} – {active.end_time}</Text>
             {!!active.reason && <Text style={styles.reason}>{active.reason}</Text>}
