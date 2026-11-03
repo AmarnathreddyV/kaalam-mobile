@@ -109,9 +109,15 @@ export function MuhurthamScreen() {
       setError("Please describe your occasion in at least 3 characters.");
       return;
     }
-    if (endDate < startDate) { setError("End date cannot be earlier than start date."); return; }
+    if (endDate < startDate) {
+      setError("End date cannot be earlier than start date.");
+      return;
+    }
     const totalDays = Math.floor((endDate.getTime() - startDate.getTime()) / 86400000) + 1;
-    if (totalDays > 366) { setError("Choose a date range of no more than 366 days."); return; }
+    if (totalDays > 366) {
+      setError("Choose a date range of no more than 366 days.");
+      return;
+    }
 
     setLoading(true);
     setError("");
@@ -125,7 +131,7 @@ export function MuhurthamScreen() {
       if (profile?.current_latitude == null || profile?.current_longitude == null || !profile?.current_timezone) {
         throw new Error("Your current location has not been resolved. Complete or update your profile first.");
       }
-      const timezone = offsetForTimezone(profile.current_timezone, startDate);
+
       const response = await fetch(`${API_BASE_URL}/api/muhurtham/search`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -135,17 +141,24 @@ export function MuhurthamScreen() {
           end_date: formatDate(endDate),
           latitude: profile.current_latitude,
           longitude: profile.current_longitude,
-          timezone,
+          timezone: offsetForTimezone(profile.current_timezone, startDate),
           tradition: "Telugu Drik",
         }),
       });
       const body = await response.json();
-      if (!response.ok) throw new Error(body?.detail || "Unable to search the selected dates.");
+      if (!response.ok) throw new Error(body?.detail || "Unable to validate the selected date range.");
+
+      // Never interpret daily snapshots as an event-specific Muhurtham.
       if (body.recommendations_ready !== true || body.result_type !== "verified_muhurtham_candidates") {
-        throw new Error("Daily Panchangam data was retrieved, but event-specific Telugu Drik Muhurtham rules are not yet validated. No date can be recommended as auspicious from these snapshots alone.");
+        setError(body?.message || "Event-specific Telugu Drik Muhurtham calculations are not validated yet. No dates will be labelled auspicious.");
+        return;
       }
+
       const candidates = Array.isArray(body.recommendations) ? body.recommendations : [];
-      if (!candidates.length) throw new Error("No verified suitable dates were found in this range.");
+      if (!candidates.length) {
+        setError("No verified suitable dates were found in this range.");
+        return;
+      }
       setResults(candidates);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Unable to complete the Muhurtham search.");
