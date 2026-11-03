@@ -1,5 +1,7 @@
 import os
+import json
 import asyncio
+from pathlib import Path
 
 from datetime import date as date_type
 from datetime import timedelta
@@ -435,16 +437,47 @@ class MuhurthamSearchRequest(BaseModel):
         return self
 
 
+MUHURTHAM_DATA_FILE = Path(__file__).resolve().parent.parent / "data" / "muhurtham_sources_2026_2027.json"
+
+
+def load_muhurtham_dataset() -> dict[str, Any]:
+    try:
+        with MUHURTHAM_DATA_FILE.open("r", encoding="utf-8") as dataset_file:
+            dataset = json.load(dataset_file)
+        if not isinstance(dataset, dict) or not isinstance(dataset.get("records"), list):
+            raise ValueError("Dataset must contain a records array.")
+        return dataset
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=503, detail="Published Muhurtham dataset is not installed on the server.") from exc
+    except (json.JSONDecodeError, ValueError) as exc:
+        raise HTTPException(status_code=500, detail="Published Muhurtham dataset is invalid.") from exc
+
+
+def normalize_occasion(value: str) -> str:
+    normalized = " ".join(value.lower().replace("-", " ").replace("_", " ").split())
+    if any(term in normalized for term in ("gruhapraves", "griha praves", "house warming", "housewarming", "house warming ceremony")):
+        return "griha_pravesham"
+    if any(term in normalized for term in ("vivah", "marriage", "wedding")):
+        return "vivaha"
+    if any(term in normalized for term in ("annaprash", "anna prash")):
+        return "annaprashana"
+    if any(term in normalized for term in ("namakaran", "naming ceremony", "name giving")):
+        return "namakarana"
+    if any(term in normalized for term in ("upanayan", "upanayana")):
+        return "upanayana"
+    if any(term in normalized for term in ("vehicle", "car purchase", "bike purchase")):
+        return "vehicle_purchase"
+    return normalized.replace(" ", "_")
+
+
 @app.post("/api/muhurtham/search")
 async def search_muhurtham(
     request: MuhurthamSearchRequest
 ) -> dict[str, Any]:
     """
-    Retrieve daily Panchangam snapshots for inspection only.
-
-    IMPORTANT: this endpoint deliberately does not mark dates auspicious.
-    Event-specific Telugu Drik rules and interval calculations have not
-    been validated, so returning candidate Muhurtham dates would be unsafe.
+    Search source-attributed published Muhurtham records.
+    Results are presented as publisher listings, not as independently
+    certified or personalized auspicious recommendations.
     """
     if request.tradition.lower() not in (
         "telugu drik",
@@ -455,16 +488,59 @@ async def search_muhurtham(
             detail="KAALAM currently supports Telugu Drik only.",
         )
 
-    if not NAVAMSHA_API_KEY:
-        raise HTTPException(
-            status_code=503,
-            detail="Navamsha API key is not configured.",
-        )
+    dataset = load_muhurtham_dataset()
+    requested_occasion = normalize_occasion(request.occasion)
+    sources = {
+        source.get("source_id"): source
+        for source in dataset.get("sources", [])
+        if isinstance(source, dict)
+    }
 
+    matches = []
+    for record in dataset["records"]:
+        if not isinstance(record, dict):
+            continue
+        if record.get("occasion") != requested_occasion:
+            continue
+        record_date = record.get("date")
+        try:
+            parsed_date = date_type.fromisoformat(record_date)
+        except (TypeError, ValueError):
+            continue
+        if not (request.start_date <= parsed_date <= request.end_date):
+            continue
+
+        source = sources.get(record.get("source_id"), {})
+        start_value = record.get("interval_start", "")
+        end_value = record.get("interval_end", "")
+        start_time = start_value[11:16] if len(start_value) >= 16 else ""
+        end_time = end_value[11:16] if len(end_value) >= 16 else ""
+        crosses_midnight = bool(end_value[:10] and end_value[:10] != record_date)
+
+        matches.append({
+            "date": record_date,
+            "start_time": start_time,
+            "end_time": end_time,
+            "reason": "Published listing"
+                + (f" • {record.get('nakshatra')}" if record.get("nakshatra") else "")
+                + (f" • {record.get('tithi')}" if record.get("tithi") else "")
+                + (f" • {source.get('publisher', 'Source not specified')}" if source.get("publisher") else "")
+                + (" • ends next day" if crosses_midnight else ""),
+            "occasion": record.get("occasion"),
+            "nakshatra": record.get("nakshatra"),
+            "tithi": record.get("tithi"),
+            "source": source.get("publisher", "Source not specified"),
+            "source_url": source.get("url"),
+            "source_status": record.get("source_status", "published_unverified"),
+            "interval_start": start_value,
+            "interval_end": end_value,
+        })
+
+    matches.sort(key=lambda item: (item["date"], item["start_time"]))
     total_days = (request.end_date - request.start_date).days + 1
     return {
-        "provider": "Navamsha",
-        "tradition": "Telugu Drik",
+        "provider": "KAALAM published Muhurtham dataset",
+        "tradition": "Telugu Drik (source-attributed listings)",
         "occasion": request.occasion,
         "start_date": request.start_date.isoformat(),
         "end_date": request.end_date.isoformat(),
@@ -474,15 +550,18 @@ async def search_muhurtham(
             "timezone": request.timezone,
         },
         "total_days": total_days,
-        "results": [],
-        "result_type": "daily_panchangam_snapshots",
-        "recommendations_ready": False,
+        "recommendations": matches,
+        "results": matches,
+        "result_type": "published_muhurtham_listings",
+        "recommendations_ready": True,
+        "data_status": "published_unverified",
         "message": (
-            "The selected date range and occasion were received. "
-            "Event-specific Telugu Drik Muhurtham rules and exact "
-            "auspicious intervals have not been validated. No dates "
-            "are recommended; daily Panchangam snapshots alone are "
-            "not sufficient to approve a Muhurtham."
+            f"Found {len(matches)} published {request.occasion} listing(s). "
+            "These are source-attributed calendar entries, not independently "
+            "verified or personalized Muhurtham approvals. Confirm the final "
+            "timing with your family priest."
+            if matches else
+            f"No published {request.occasion} entries were found in this date range."
         ),
     }
 
