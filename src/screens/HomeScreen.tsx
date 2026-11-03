@@ -183,11 +183,11 @@ export function HomeScreen({ onOpenMuhurtham }: { onOpenMuhurtham: () => void })
             )}
             <View style={styles.guidanceDivider} />
             <Text style={styles.guidanceLabel}>PERIODS TO BE MINDFUL OF</Text>
-            {[
+            {([
               ["Rahu Kalam", daily?.inauspicious_periods?.rahu_kaal],
               ["Yamagandam", daily?.inauspicious_periods?.yamaganda],
               ["Gulika Kalam", daily?.inauspicious_periods?.gulika_kaal],
-            ].filter(([, period]) => !!period?.start && !!period?.end).map(([label, period], index, rows) => (
+            ] as Array<[string, DailyTimePeriod | undefined]>).filter(([, period]) => !!period?.start && !!period?.end).map(([label, period], index, rows) => (
               <LabelValue key={String(label)} label={String(label)} value={timeRange(period as DailyTimePeriod)} last={index === rows.length - 1} />
             ))}
             {!daily?.inauspicious_periods?.rahu_kaal?.start && !daily?.inauspicious_periods?.yamaganda?.start && !daily?.inauspicious_periods?.gulika_kaal?.start && (
