@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
+import { setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
 import { PageHeading, Panel } from "../components/Screen";
 import { colors } from "../theme/colors";
 import { useLanguage } from "../i18n";
@@ -19,7 +19,10 @@ export function DevotionalSongsScreen() {
   const player = useAudioPlayer(null);
   const status = useAudioPlayerStatus(player);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
-  useEffect(() => () => { player.pause(); }, [player]);
+  useEffect(() => {
+    setAudioModeAsync({ playsInSilentMode: true, shouldPlayInBackground: false }).catch(() => {});
+    return () => { player.pause(); };
+  }, [player]);
 
   const playSong = (index: number) => {
     if (activeIndex === index) {
@@ -28,8 +31,12 @@ export function DevotionalSongsScreen() {
       return;
     }
     setActiveIndex(index);
-    player.replace(songs[index].source);
-    player.play();
+    try {
+      player.replace(songs[index].source);
+      player.play();
+    } catch (error) {
+      console.error("KAALAM devotional audio playback failed:", error);
+    }
   };
 
   return (
@@ -42,12 +49,13 @@ export function DevotionalSongsScreen() {
       {songs.map((song, index) => {
         const selected = activeIndex === index;
         return (
-          <TouchableOpacity key={song.file} activeOpacity={0.82} onPress={() => playSong(index)} style={[styles.song, selected && styles.songActive]}>
+          <TouchableOpacity key={song.title} activeOpacity={0.82} onPress={() => playSong(index)} style={[styles.song, selected && styles.songActive]}>
             <View style={styles.musicIcon}><Text style={styles.musicGlyph}>♫</Text></View>
             <View style={styles.songInfo}>
               <Text style={styles.songTitle}>{t(song.title)}</Text>
               <Text style={styles.deity}>{t(song.deity)}</Text>
               {selected && status.isBuffering && <Text style={styles.state}>{t("Loading audio…")}</Text>}
+              {selected && status.error && <Text style={styles.errorText}>{String(status.error)}</Text>}
             </View>
             <View style={styles.playButton}><Text style={styles.playGlyph}>{selected && status.playing ? "Ⅱ" : "▶"}</Text></View>
           </TouchableOpacity>
@@ -66,6 +74,6 @@ const styles = StyleSheet.create({
   musicIcon: { width: 44, height: 44, borderRadius: 22, backgroundColor: "rgba(113,55,15,0.10)", alignItems: "center", justifyContent: "center" },
   musicGlyph: { color: colors.maroon, fontSize: 24 }, songInfo: { flex: 1, paddingHorizontal: 12 },
   songTitle: { color: colors.text, fontSize: 13, fontWeight: "700" }, deity: { color: colors.muted, fontSize: 11, marginTop: 4 },
-  state: { color: colors.gold, fontSize: 10, marginTop: 3 }, playButton: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.maroon, alignItems: "center", justifyContent: "center" },
+  state: { color: colors.gold, fontSize: 10, marginTop: 3 }, errorText: { color: "#B00020", fontSize: 10, marginTop: 3 }, playButton: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.maroon, alignItems: "center", justifyContent: "center" },
   playGlyph: { color: "#FFFFFF", fontSize: 15, fontWeight: "700" }, footer: { color: colors.muted, fontSize: 10, lineHeight: 16, marginTop: 8, paddingHorizontal: 3 },
 });
