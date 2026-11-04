@@ -24,7 +24,7 @@ function todayLabel() {
   }).format(new Date()).toUpperCase().replace(",", " ·");
 }
 
-export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void }) {
+export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void }) {\n  const { t } = useLanguage();
   const [result, setResult] = useState<DailyPanchangamResponse | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [error, setError] = useState("");
@@ -120,15 +120,15 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
   return (
     <Screen>
       <Text style={styles.date}>{todayLabel()}</Text>
-      <Text style={styles.greeting}>Namaskaram, {name}</Text>
-      <Text style={styles.name}>Your day, in alignment.</Text>
+      <Text style={styles.greeting}>{t("Namaskaram")}, {name}</Text>
+      <Text style={styles.name}>{t("Your day, in alignment.")}</Text>
 
       <TouchableOpacity style={styles.poojaShortcut} onPress={onOpenPoojaItems}>
         <View style={styles.poojaShortcutText}>
-          <Text style={styles.poojaShortcutTitle}>Pooja Items & Samagri</Text>
-          <Text style={styles.poojaShortcutSubtitle}>View occasion-wise preparation lists</Text>
+          <Text style={styles.poojaShortcutTitle}>{t("Pooja Items & Samagri")}</Text>
+          <Text style={styles.poojaShortcutSubtitle}>{t("View occasion-wise preparation lists")}</Text>
         </View>
-        <Text style={styles.poojaShortcutArrow}>VIEW  →</Text>
+        <Text style={styles.poojaShortcutArrow}>{t("VIEW  →")}</Text>
       </TouchableOpacity>
 
       <SectionTitle>YOUR ASTROLOGY PROFILE</SectionTitle>
@@ -143,11 +143,11 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
       <SectionTitle>THIS DAY'S PANCHANGAM</SectionTitle>
       <Panel>
         {loading ? (
-          <View style={styles.state}><ActivityIndicator color={colors.maroon} /><Text style={styles.stateText}>Loading today's Panchangam…</Text></View>
+          <View style={styles.state}><ActivityIndicator color={colors.maroon} /><Text style={styles.stateText}>{t("Loading today's Panchangam…")}</Text></View>
         ) : error ? (
           <View>
             <Text style={styles.error}>{error}</Text>
-            <TouchableOpacity onPress={load}><Text style={styles.retry}>Try again</Text></TouchableOpacity>
+            <TouchableOpacity onPress={load}><Text style={styles.retry}>{t("Try again")}</Text></TouchableOpacity>
           </View>
         ) : (
           <>
@@ -177,9 +177,9 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
 
       <SectionTitle>INAUSPICIOUS TIMINGS</SectionTitle>
       <Panel>
-        <LabelValue label="Rahu Kalam" value={timeRange(daily?.inauspicious_periods?.rahu_kaal)} />
-        <LabelValue label="Yamagandam" value={timeRange(daily?.inauspicious_periods?.yamaganda)} />
-        <LabelValue label="Gulika Kalam" value={timeRange(daily?.inauspicious_periods?.gulika_kaal)} last />
+        <LabelValue label={t("Rahu Kalam")} value={timeRange(daily?.inauspicious_periods?.rahu_kaal)} />
+        <LabelValue label={t("Yamagandam")} value={timeRange(daily?.inauspicious_periods?.yamaganda)} />
+        <LabelValue label={t("Gulika Kalam")} value={timeRange(daily?.inauspicious_periods?.gulika_kaal)} last />
         <Text style={styles.smallNote}>Traditional periods to be mindful of; interpretations and practices vary.</Text>
       </Panel>
 
@@ -199,8 +199,8 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
 
       <SectionTitle>SUNRISE & SUNSET · {profile?.current_location?.toUpperCase() || "YOUR LOCATION"}</SectionTitle>
       <Panel>
-        <LabelValue label="Sunrise" value={timeText(sunrise)} />
-        <LabelValue label="Sunset" value={timeText(sunset)} last />
+        <LabelValue label={t("Sunrise")} value={timeText(sunrise)} />
+        <LabelValue label={t("Sunset")} value={timeText(sunset)} last />
         <Text style={styles.smallNote}>Calculated for your saved location and local time zone.</Text>
         {!!result?.unavailable && Object.keys(result.unavailable).length > 0 && <Text style={styles.smallNote}>Some timing categories could not be loaded: {Object.keys(result.unavailable).join(", ")}.</Text>}
       </Panel>
