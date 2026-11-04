@@ -10,13 +10,14 @@ import { PanchangamScreen } from "./src/screens/PanchangamScreen";
 import { PoojaItemsScreen } from "./src/screens/PoojaItemsScreen";
 import { HoroscopeScreen } from "./src/screens/HoroscopeScreen";
 import { ProfileScreen } from "./src/screens/ProfileScreen";
+import { DevotionalSongsScreen } from "./src/screens/DevotionalSongsScreen";
 import { colors } from "./src/theme/colors";
 import { AppBackground } from "./src/components/AppBackground";
 import { DailyDeityWelcome } from "./src/components/DailyDeityWelcome";
 import { LanguageProvider, useLanguage, AppLanguage } from "./src/i18n";
 
-type TabName = "Home" | "Panchangam" | "Pooja Items" | "Horoscope" | "Profile";
-const tabs: TabName[] = ["Home", "Panchangam", "Pooja Items", "Horoscope", "Profile"];
+type TabName = "Home" | "Panchangam" | "Pooja Items" | "Horoscope" | "Profile" | "Devotional Songs";
+const tabs: TabName[] = ["Home", "Panchangam", "Pooja Items", "Horoscope", "Profile", "Devotional Songs"];
 
 function AppContent() {
   const { t, setLanguage } = useLanguage();
@@ -135,6 +136,7 @@ function AppContent() {
       case "Pooja Items": return <PoojaItemsScreen />;
       case "Horoscope": return <HoroscopeScreen />;
       case "Profile": return <ProfileScreen />;
+      case "Devotional Songs": return <DevotionalSongsScreen />;
       default: return <HomeScreen onOpenPoojaItems={() => setActiveTab("Pooja Items")} />;
     }
   };
@@ -153,7 +155,7 @@ function AppContent() {
         <View style={styles.tabBar}>
           {tabs.map((tab) => {
             const selected = activeTab === tab;
-            const icon = tab === "Home" ? "⌂" : tab === "Panchangam" ? "▦" : tab === "Pooja Items" ? "✿" : tab === "Horoscope" ? "✧" : "◉";
+            const icon = tab === "Home" ? "⌂" : tab === "Panchangam" ? "▦" : tab === "Pooja Items" ? "✿" : tab === "Horoscope" ? "✧" : tab === "Profile" ? "◉" : "♫";
             return (
               <TouchableOpacity key={tab} onPress={() => setActiveTab(tab)} activeOpacity={0.75}
                 accessibilityRole="button" accessibilityLabel={t(tab)} accessibilityState={{ selected }}
@@ -184,7 +186,7 @@ const styles = StyleSheet.create({
   tabButtonActive: { backgroundColor: "rgba(113, 55, 15, 0.08)" },
   tabIcon: { color: colors.muted, fontSize: 22, lineHeight: 26 },
   tabIconActive: { color: colors.maroon, fontWeight: "700" },
-  tab: { color: colors.muted, fontSize: 9, paddingTop: 2, paddingBottom: 3 },
+  tab: { color: colors.muted, fontSize: 8, paddingTop: 2, paddingBottom: 3 },
   tabActive: { color: colors.maroon, fontWeight: "700" },
 });
 
