@@ -301,8 +301,7 @@ export function OnboardingScreen({
       <Text style={styles.title}>{t("Your details")}</Text>
 
       <Text style={styles.subtitle}>
-        {t("Enter your details to set up KAALAM. No account or phone login is needed. ")}
-        You can enter any village, town or city in India for your birth and current locations.
+        {t("Enter your details to set up KAALAM. No account or phone login is needed. You can enter any village, town or city in India for your birth and current locations.")}
       </Text>
 
       <TextInput
