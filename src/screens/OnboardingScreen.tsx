@@ -85,22 +85,20 @@ export function OnboardingScreen({
     }));
   };
 
-  function isValidDate(date: string) {
-    // Validate calendar components directly. Avoid toISOString(), which can
-    // shift the date to the previous day in time zones such as Asia/Kolkata.
-    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date);
-    if (!match) return false;
-
-    const year = Number(match[1]);
+  function toIsoDate(date: string) {
+    const match = /^(\\d{2})-(\\d{2})-(\\d{4})$/.exec(date.trim());
+    if (!match) return null;
+    const day = Number(match[1]);
     const month = Number(match[2]);
-    const day = Number(match[3]);
-
-    if (year < 1 || month < 1 || month > 12 || day < 1) {
-      return false;
-    }
-
+    const year = Number(match[3]);
+    if (year < 1 || month < 1 || month > 12 || day < 1) return null;
     const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
-    return day <= daysInMonth;
+    if (day > daysInMonth) return null;
+    return `${String(year).padStart(4, "0")}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+  }
+
+  function isValidDate(date: string) {
+    return toIsoDate(date) !== null;
   }
 
   function isValidTime(time: string) {
@@ -202,7 +200,7 @@ export function OnboardingScreen({
         id: session.user.id,
         email: session.user.email ?? null,
         full_name: values.full_name.trim(),
-        date_of_birth: values.date_of_birth.trim(),
+        date_of_birth: toIsoDate(values.date_of_birth.trim())!,
         time_of_birth: values.time_of_birth.trim(),
         birth_place: values.birth_place.trim(),
         current_location: values.current_location.trim(),
