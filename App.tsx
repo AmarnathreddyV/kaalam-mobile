@@ -13,11 +13,13 @@ import { ProfileScreen } from "./src/screens/ProfileScreen";
 import { colors } from "./src/theme/colors";
 import { AppBackground } from "./src/components/AppBackground";
 import { DailyDeityWelcome } from "./src/components/DailyDeityWelcome";
+import { LanguageProvider, useLanguage, AppLanguage } from "./src/i18n";
 
 type TabName = "Home" | "Panchangam" | "Pooja Items" | "Horoscope" | "Profile";
 const tabs: TabName[] = ["Home", "Panchangam", "Pooja Items", "Horoscope", "Profile"];
 
-export default function App() {
+function AppContent() {
+  const { t, setLanguage } = useLanguage();
   const [session, setSession] = useState<Session | null>(null);
   const [authReady, setAuthReady] = useState(false);
   const [profileReady, setProfileReady] = useState(false);
@@ -80,10 +82,14 @@ export default function App() {
       if (!session?.user) { setProfileReady(false); return; }
       setProfileLoading(true);
       const { data, error } = await supabase.from("profiles")
-        .select("onboarding_complete")
+        .select("onboarding_complete,preferred_language")
         .eq("id", session.user.id)
         .maybeSingle();
       if (alive) {
+        const savedLanguage = data?.preferred_language;
+        if (savedLanguage === "Telugu" || savedLanguage === "Hindi" || savedLanguage === "English") {
+          setLanguage(savedLanguage as AppLanguage);
+        }
         setProfileReady(!error && data?.onboarding_complete === true);
         setProfileLoading(false);
       }
@@ -148,7 +154,7 @@ export default function App() {
           {tabs.map((tab) => {
             const selected = activeTab === tab;
             return (
-              <Text key={tab} onPress={() => setActiveTab(tab)} style={[styles.tab, selected && styles.tabActive]}>{tab}</Text>
+              <Text key={tab} onPress={() => setActiveTab(tab)} style={[styles.tab, selected && styles.tabActive]}>{t(tab)}</Text>
             );
           })}
         </View>
@@ -171,3 +177,7 @@ const styles = StyleSheet.create({
   tab: { color: colors.muted, fontSize: 10, paddingVertical: 12 },
   tabActive: { color: colors.maroon, fontWeight: "700" },
 });
+
+export default function App() {
+  return <LanguageProvider><AppContent /></LanguageProvider>;
+}
