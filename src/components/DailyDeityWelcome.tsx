@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Image, Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import { useAudioPlayer } from "expo-audio";
-import { colors } from "../theme/colors";
 
 const deities = {
   Sunday: { name: "Surya Deva", image: require("../../assets/gods/surya.jpg"), audio: require("../../assets/god-audio/surya.mp3") },
