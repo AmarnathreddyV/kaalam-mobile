@@ -3,6 +3,7 @@ import { ActivityIndicator, Text, StyleSheet } from "react-native";
 import { Screen, PageHeading, Panel, LabelValue } from "../components/Screen";
 import { colors } from "../theme/colors";
 import { supabase } from "../auth/supabase";
+import { useLanguage } from "../i18n";
 
 type ChartSummary = { rashi?: string; nakshatra?: string; pada?: number; lagna?: string };
 type ChartProfile = {
@@ -13,7 +14,8 @@ type ChartProfile = {
   birth_chart_calculated_at?: string | null;
 };
 
-export function HoroscopeScreen() {\n  const { t } = useLanguage();
+export function HoroscopeScreen() {
+  const { t } = useLanguage();
   const [profile, setProfile] = useState<ChartProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
