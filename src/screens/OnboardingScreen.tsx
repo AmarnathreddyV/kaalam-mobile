@@ -283,7 +283,7 @@ export function OnboardingScreen({
 
       setError(message);
 
-      Alert.alert("Profile Save Failed", message);
+      Alert.alert(t("Profile Save Failed"), t(message));
 
     } finally {
       setBusy(false);
@@ -383,7 +383,7 @@ export function OnboardingScreen({
             Unable to save profile
           </Text>
 
-          <Text style={styles.error}>{error}</Text>
+          <Text style={styles.error}>{t(error)}</Text>
         </View>
       ) : null}
 
@@ -402,9 +402,7 @@ export function OnboardingScreen({
             <Text style={styles.buttonText}>{t("Saving...")}</Text>
           </View>
         ) : (
-          <Text style={styles.buttonText}>
-            Save and Continue
-          </Text>
+          <Text style={styles.buttonText}>{t("Save and Continue")}</Text>
         )}
       </TouchableOpacity>
     </ScrollView>
