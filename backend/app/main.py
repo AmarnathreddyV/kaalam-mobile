@@ -606,13 +606,22 @@ async def analyze_custom_occasion(
             detail="OpenAI is not configured."
         )
 
+    language_instructions = {
+        "Telugu": "Write the entire response in natural, clear Telugu (తెలుగు). Do not use English headings or English explanatory sentences. Keep traditional Sanskrit terms in common Telugu script.",
+        "Hindi": "Write the entire response in natural, clear Hindi (हिन्दी). Do not use English headings or English explanatory sentences. Keep traditional Sanskrit terms in common Devanagari script.",
+        "English": "Write the entire response in clear English.",
+    }
+    requested_language = request.language if request.language in language_instructions else "English"
+
     prompt = f"""
 A user entered an occasion for KAALAM.
 
 Occasion: {request.occasion}
 Location: {request.location}
 Tradition: {request.tradition}
-Language: {request.language}
+Required response language: {requested_language}
+Language rule: {language_instructions[requested_language]}
+Every heading, bullet, explanation, warning and concluding sentence must be in the required response language. Do not switch to English unless English was selected. Preserve the user's occasion name if it is a proper name, but explain it in the required response language.
 
 Analyze the occasion and identify relevant traditional
 Hindu Muhurtham considerations.
@@ -654,7 +663,9 @@ Rules:
                         "You are KAALAM, a careful assistant "
                         "specializing in Hindu Panchangam and "
                         "Muhurtham traditions. Never fabricate "
-                        "astronomical or Panchangam data."
+                        "astronomical or Panchangam data. Follow "
+                        "the response language explicitly requested "
+                        "in the user input for every part of the answer."
                     ),
 
                     "input": prompt,
