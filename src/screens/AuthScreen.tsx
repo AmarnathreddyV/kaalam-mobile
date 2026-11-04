@@ -1,212 +1,143 @@
-import React, { useEffect, useState } from "react";
-import * as WebBrowser from "expo-web-browser";
-import { ActivityIndicator, Image, KeyboardAvoidingView, Linking, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import React, { useState } from "react";
+import { ActivityIndicator, Image, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { supabase, supabaseConfigured } from "../auth/supabase";
 import { colors } from "../theme/colors";
 
-const AUTH_REDIRECT = "kaalam://auth/callback";
-WebBrowser.maybeCompleteAuthSession();
+type AuthScreenProps = { recoveryMode?: boolean; onRecoveryComplete?: () => void };
 
-type AuthMode = "signup" | "login" | "forgot" | "reset";
-
-export function AuthScreen({ recoveryMode = false, onRecoveryComplete }: { recoveryMode?: boolean; onRecoveryComplete?: () => void }) {
-  const [mode, setMode] = useState<AuthMode>(recoveryMode ? "reset" : "signup");
+export function AuthScreen(_props: AuthScreenProps) {
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [passwordVisible, setPasswordVisible] = useState(false);
-  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
+  const [phone, setPhone] = useState("");
+  const [otp, setOtp] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const [verifiedPhone, setVerifiedPhone] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [messageIsError, setMessageIsError] = useState(false);
-
-  useEffect(() => { if (recoveryMode) setMode("reset"); }, [recoveryMode]);
-
-  useEffect(() => {
-    const handleUrl = async (url: string | null) => {
-      if (!url || !url.startsWith("kaalam://auth/")) return;
-      try {
-        const parsed = new URL(url);
-        const authError = parsed.searchParams.get("error_description") || parsed.searchParams.get("error");
-        if (authError) throw new Error(authError.replace(/\\+/g, " "));
-        const code = parsed.searchParams.get("code");
-        if (code) {
-          const { error } = await supabase.auth.exchangeCodeForSession(code);
-          if (error) throw error;
-          // Supabase emits PASSWORD_RECOVERY for a verified recovery code.
-        } else {
-          const params = new URLSearchParams(parsed.hash.replace(/^#/, ""));
-          const access_token = params.get("access_token");
-          const refresh_token = params.get("refresh_token");
-          if (!access_token || !refresh_token) {
-            throw new Error("This password-reset link is incomplete or expired. Request a fresh reset email.");
-          }
-          const { error } = await supabase.auth.setSession({ access_token, refresh_token });
-          if (error) throw error;
-          if (params.get("type") === "recovery") setMode("reset");
-        }
-      } catch (e) {
-        setMessage(e instanceof Error ? e.message : "Unable to verify the password-reset link.");
-        setMessageIsError(true);
-      }
-    };
-    void Linking.getInitialURL().then(handleUrl);
-    const subscription = Linking.addEventListener("url", ({ url }) => { void handleUrl(url); });
-    const { data: authListener } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "PASSWORD_RECOVERY") {
-        setMode("reset");
-        setMessage("");
-        setMessageIsError(false);
-      }
-    });
-    return () => {
-      subscription.remove();
-      authListener.subscription.unsubscribe();
-    };
-  }, []);
 
   function showMessage(value: string, isError = false) {
     setMessage(value);
     setMessageIsError(isError);
   }
 
-  async function submit() {
-    if (busy) return;
-    if (!supabaseConfigured) return showMessage("Supabase is not configured. Add the Supabase URL and anon key to the app environment.", true);
-    const cleanEmail = email.trim().toLowerCase();
-
-    if (mode === "forgot") {
-      if (!cleanEmail) return showMessage("Enter the email address linked to your KAALAM account.", true);
-    } else if (mode !== "reset" && !cleanEmail) {
-      return showMessage("Enter your email address.", true);
-    }
-    if (mode === "signup" && !name.trim()) return showMessage("Enter your full name.", true);
-    if (mode === "signup" || mode === "login" || mode === "reset") {
-      if (password.length < 8) return showMessage("Use a password with at least 8 characters.", true);
-    }
-    if ((mode === "signup" || mode === "reset") && password !== confirmPassword) {
-      return showMessage("The passwords do not match.", true);
-    }
-
-    setBusy(true);
-    setMessage("");
-    try {
-      if (mode === "signup") {
-        const { data, error } = await supabase.auth.signUp({
-          email: cleanEmail,
-          password,
-          options: { data: { full_name: name.trim() }, emailRedirectTo: AUTH_REDIRECT },
-        });
-        if (error) throw error;
-        showMessage(data.session ? "Your account is created. Continue to set up your profile." : "Account created. Check your inbox and confirm your email before signing in.");
-      } else if (mode === "login") {
-        const { error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
-        if (error) throw error;
-      } else if (mode === "forgot") {
-        const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, { redirectTo: AUTH_REDIRECT });
-        if (error) throw error;
-        showMessage("If an account exists for this address, a password-reset link will arrive by email. Check your spam folder too.");
-      } else {
-        const { error } = await supabase.auth.updateUser({ password });
-        if (error) throw error;
-        await supabase.auth.signOut();
-        setPassword("");
-        setConfirmPassword("");
-        setMode("login");
-        onRecoveryComplete?.();
-        showMessage("Password updated. Sign in using your new password.");
-      }
-    } catch (e) {
-      showMessage(e instanceof Error ? e.message : "Unable to complete authentication.", true);
-    } finally {
-      setBusy(false);
-    }
+  function normalizePhone(value: string) {
+    const trimmed = value.trim().replace(/[\\s()-]/g, "");
+    if (trimmed.startsWith("+")) return trimmed;
+    const digits = trimmed.replace(/\\D/g, "");
+    if (digits.length === 10) return `+91${digits}`;
+    if (digits.length === 12 && digits.startsWith("91")) return `+${digits}`;
+    return "";
   }
 
-  async function googleSignIn() {
+  async function sendOtp() {
     if (busy) return;
-    if (!supabaseConfigured) return showMessage("Supabase is not configured.", true);
+    if (!supabaseConfigured) return showMessage("Phone sign-in is not configured. Please try again later.", true);
+    const normalized = normalizePhone(phone);
+    if (!normalized || !/^\\+[1-9]\\d{7,14}$/.test(normalized)) {
+      return showMessage("Enter a valid phone number with country code. For India, enter your 10-digit mobile number.", true);
+    }
+
     setBusy(true);
     setMessage("");
     try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: { redirectTo: AUTH_REDIRECT, skipBrowserRedirect: true },
+      const { error } = await supabase.auth.signInWithOtp({
+        phone: normalized,
+        options: {
+          shouldCreateUser: true,
+          ...(name.trim() ? { data: { full_name: name.trim() } } : {}),
+        },
       });
       if (error) throw error;
-      if (!data.url) throw new Error("Google sign-in URL was not returned.");
-      const result = await WebBrowser.openAuthSessionAsync(data.url, AUTH_REDIRECT);
-      if (result.type === "success") {
-        const parsed = new URL(result.url);
-        const code = parsed.searchParams.get("code");
-        if (code) {
-          const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
-          if (exchangeError) throw exchangeError;
-        } else {
-          const params = new URLSearchParams(parsed.hash.replace(/^#/, ""));
-          const access_token = params.get("access_token");
-          const refresh_token = params.get("refresh_token");
-          if (!access_token || !refresh_token) throw new Error("Google returned without a valid KAALAM session. Please try again.");
-          const { error: sessionError } = await supabase.auth.setSession({ access_token, refresh_token });
-          if (sessionError) throw sessionError;
-        }
-      } else if (result.type === "cancel" || result.type === "dismiss") {
-        showMessage("Google sign-in was cancelled. You can try again.");
-      } else {
-        throw new Error("Google sign-in did not complete. Please try again.");
-      }
+      setVerifiedPhone(normalized);
+      setOtpSent(true);
+      setOtp("");
+      showMessage(`A verification code has been sent to ${normalized}.`);
     } catch (e) {
-      showMessage(e instanceof Error ? e.message : "Google sign-in could not be started.", true);
+      showMessage(e instanceof Error ? e.message : "Unable to send the verification code.", true);
     } finally {
       setBusy(false);
     }
   }
 
-  const title = mode === "signup" ? "Create your account" : mode === "login" ? "Welcome back" : mode === "forgot" ? "Reset your password" : "Choose a new password";
-  const subtitle = mode === "signup" ? "Your personal Panchangam starts here." : mode === "login" ? "Sign in to continue to KAALAM." : mode === "forgot" ? "We'll email you a secure password-reset link." : "Use a strong password you haven't used before.";
+  async function verifyOtp() {
+    if (busy) return;
+    if (!/^\\d{6}$/.test(otp.trim())) return showMessage("Enter the 6-digit verification code.", true);
+    setBusy(true);
+    setMessage("");
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        phone: verifiedPhone,
+        token: otp.trim(),
+        type: "sms",
+      });
+      if (error) throw error;
+      // Supabase auth state listener in App.tsx handles the new session.
+    } catch (e) {
+      showMessage(e instanceof Error ? e.message : "The verification code could not be verified.", true);
+    } finally {
+      setBusy(false);
+    }
+  }
 
   return (
     <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <View style={styles.inner}>
         <Image source={require("../../assets/kaalam-logo.png")} style={styles.logo} resizeMode="contain" />
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.subtitle}>{subtitle}</Text>
+        <Text style={styles.title}>{otpSent ? "Verify your number" : "Continue with phone"}</Text>
+        <Text style={styles.subtitle}>
+          {otpSent ? `Enter the 6-digit code sent to ${verifiedPhone}.` : "Sign in or create your KAALAM account securely using a one-time password."}
+        </Text>
 
-        {mode === "signup" && <TextInput value={name} onChangeText={setName} placeholder="Full name" placeholderTextColor={colors.muted} autoCapitalize="words" style={styles.input} />}
-        {mode !== "reset" && <TextInput value={email} onChangeText={setEmail} placeholder="Email address" placeholderTextColor={colors.muted} keyboardType="email-address" autoCapitalize="none" autoCorrect={false} autoComplete="email" style={styles.input} />}
-        {mode !== "forgot" && (
-          <View style={styles.passwordRow}>
-            <TextInput value={password} onChangeText={setPassword} placeholder={mode === "reset" ? "New password (minimum 8 characters)" : "Password (minimum 8 characters)"} placeholderTextColor={colors.muted} secureTextEntry={!passwordVisible} autoCapitalize="none" autoComplete={mode === "login" ? "current-password" : "new-password"} style={styles.passwordInput} />
-            <TouchableOpacity accessibilityRole="button" accessibilityLabel={passwordVisible ? "Hide password" : "Show password"} onPress={() => setPasswordVisible(value => !value)} style={styles.showPassword}><Text style={styles.showPasswordText}>{passwordVisible ? "HIDE" : "SHOW"}</Text></TouchableOpacity>
-          </View>
-        )}
-        {(mode === "signup" || mode === "reset") && (
-          <View style={styles.passwordRow}>
-            <TextInput value={confirmPassword} onChangeText={setConfirmPassword} placeholder="Confirm password" placeholderTextColor={colors.muted} secureTextEntry={!confirmPasswordVisible} autoCapitalize="none" autoComplete="new-password" style={styles.passwordInput} />
-            <TouchableOpacity accessibilityRole="button" accessibilityLabel={confirmPasswordVisible ? "Hide confirm password" : "Show confirm password"} onPress={() => setConfirmPasswordVisible(value => !value)} style={styles.showPassword}><Text style={styles.showPasswordText}>{confirmPasswordVisible ? "HIDE" : "SHOW"}</Text></TouchableOpacity>
-          </View>
+        {!otpSent ? (
+          <>
+            <TextInput
+              value={name}
+              onChangeText={setName}
+              placeholder="Your name (optional)"
+              placeholderTextColor={colors.muted}
+              autoCapitalize="words"
+              style={styles.input}
+            />
+            <TextInput
+              value={phone}
+              onChangeText={setPhone}
+              placeholder="Mobile number (e.g. 9876543210)"
+              placeholderTextColor={colors.muted}
+              keyboardType="phone-pad"
+              autoComplete="tel"
+              textContentType="telephoneNumber"
+              style={styles.input}
+            />
+            <TouchableOpacity disabled={busy} onPress={sendOtp} style={[styles.button, busy && styles.disabled]}>
+              {busy ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.buttonText}>Send OTP</Text>}
+            </TouchableOpacity>
+          </>
+        ) : (
+          <>
+            <TextInput
+              value={otp}
+              onChangeText={value => setOtp(value.replace(/\\D/g, "").slice(0, 6))}
+              placeholder="6-digit OTP"
+              placeholderTextColor={colors.muted}
+              keyboardType="number-pad"
+              textContentType="oneTimeCode"
+              autoComplete="sms-otp"
+              maxLength={6}
+              style={[styles.input, styles.otpInput]}
+            />
+            <TouchableOpacity disabled={busy} onPress={verifyOtp} style={[styles.button, busy && styles.disabled]}>
+              {busy ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.buttonText}>Verify & Continue</Text>}
+            </TouchableOpacity>
+            <TouchableOpacity disabled={busy} onPress={sendOtp} style={styles.textButton}>
+              <Text style={styles.link}>Resend OTP</Text>
+            </TouchableOpacity>
+            <TouchableOpacity disabled={busy} onPress={() => { setOtpSent(false); setOtp(""); setMessage(""); }}>
+              <Text style={styles.switchText}>Change phone number</Text>
+            </TouchableOpacity>
+          </>
         )}
 
         {!!message && <Text accessibilityRole="alert" style={[styles.message, messageIsError && styles.messageError]}>{message}</Text>}
-
-        <TouchableOpacity disabled={busy} onPress={submit} style={[styles.button, busy && styles.disabled]}>
-          {busy ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.buttonText}>{mode === "signup" ? "Create account" : mode === "login" ? "Sign in" : mode === "forgot" ? "Send reset link" : "Update password"}</Text>}
-        </TouchableOpacity>
-
-        {mode === "signup" || mode === "login" ? (
-          <>
-            <View style={styles.separator}><View style={styles.rule} /><Text style={styles.orText}>OR</Text><View style={styles.rule} /></View>
-            <TouchableOpacity disabled={busy} onPress={googleSignIn} style={[styles.googleButton, busy && styles.disabled]}>
-              <Text style={styles.googleText}>G  Continue with Google</Text>
-            </TouchableOpacity>
-          </>
-        ) : null}
-
-        {mode === "login" && <TouchableOpacity onPress={() => { setMode("forgot"); showMessage(""); }}><Text style={styles.link}>Forgot password?</Text></TouchableOpacity>}
-        <TouchableOpacity onPress={() => { setMode(mode === "signup" ? "login" : "signup"); showMessage(""); setPassword(""); setConfirmPassword(""); }}>
-          {mode === "signup" || mode === "login" ? <Text style={styles.switchText}>{mode === "signup" ? "Already registered? Sign in" : "New to KAALAM? Create an account"}</Text> : <Text style={styles.switchText}>Back to sign in</Text>}
-        </TouchableOpacity>
         <Text style={styles.terms}>By continuing, you agree to use KAALAM's astrology information as traditional guidance, not guaranteed predictions.</Text>
       </View>
     </KeyboardAvoidingView>
@@ -218,23 +149,16 @@ const styles = StyleSheet.create({
   inner: { paddingHorizontal: 26, paddingVertical: 24 },
   logo: { width: 170, height: 125, alignSelf: "flex-start", marginBottom: 16 },
   title: { color: colors.maroonDark, fontSize: 29, fontWeight: "600", fontFamily: "Georgia" },
-  subtitle: { color: colors.muted, fontSize: 13, marginTop: 8, marginBottom: 24 },
-  input: { backgroundColor: "rgba(255, 248, 234, 0.96)", borderColor: colors.line, borderWidth: 1, borderRadius: 12, paddingHorizontal: 15, paddingVertical: 14, color: colors.text, fontSize: 14, marginBottom: 11 },
-  passwordRow: { flexDirection: "row", alignItems: "center", backgroundColor: "rgba(255, 248, 234, 0.96)", borderColor: colors.line, borderWidth: 1, borderRadius: 12, marginBottom: 11, paddingRight: 13 },
-  passwordInput: { flex: 1, paddingHorizontal: 15, paddingVertical: 14, color: colors.text, fontSize: 14 },
-  showPassword: { paddingVertical: 12, paddingHorizontal: 4 },
-  showPasswordText: { color: colors.maroon, fontSize: 10, fontWeight: "800", letterSpacing: 0.5 },
+  subtitle: { color: colors.muted, fontSize: 13, lineHeight: 19, marginTop: 8, marginBottom: 24 },
+  input: { backgroundColor: "rgba(255, 248, 234, 0.96)", borderColor: colors.line, borderWidth: 1, borderRadius: 12, paddingHorizontal: 15, paddingVertical: 15, color: colors.text, fontSize: 15, marginBottom: 12 },
+  otpInput: { textAlign: "center", fontSize: 23, letterSpacing: 9, fontWeight: "700" },
   button: { backgroundColor: "#71370F", padding: 16, borderRadius: 12, alignItems: "center", justifyContent: "center", minHeight: 52, marginTop: 7 },
   disabled: { opacity: 0.6 },
   buttonText: { color: "#FFFFFF", fontWeight: "700", fontSize: 14 },
-  googleButton: { borderWidth: 1, borderColor: colors.line, backgroundColor: "rgba(255, 248, 234, 0.96)", padding: 15, borderRadius: 12, alignItems: "center" },
-  googleText: { color: colors.text, fontWeight: "700", fontSize: 14 },
-  separator: { flexDirection: "row", alignItems: "center", gap: 12, marginVertical: 17 },
-  rule: { flex: 1, height: 1, backgroundColor: colors.line },
-  orText: { color: colors.muted, fontSize: 10, fontWeight: "700" },
-  switchText: { color: colors.maroon, fontSize: 13, fontWeight: "600", textAlign: "center", marginTop: 20 },
-  link: { color: colors.maroon, fontSize: 12, fontWeight: "600", textAlign: "right", marginTop: 14 },
-  message: { color: "#27633A", fontSize: 12, lineHeight: 18, marginVertical: 9 },
+  textButton: { alignItems: "center", paddingTop: 17 },
+  link: { color: colors.maroon, fontSize: 13, fontWeight: "700" },
+  switchText: { color: colors.maroon, fontSize: 13, fontWeight: "600", textAlign: "center", marginTop: 17 },
+  message: { color: "#27633A", fontSize: 12, lineHeight: 18, marginTop: 15, textAlign: "center" },
   messageError: { color: "#9B2525" },
-  terms: { color: colors.muted, fontSize: 10, lineHeight: 15, textAlign: "center", marginTop: 22 },
+  terms: { color: colors.muted, fontSize: 10, lineHeight: 15, textAlign: "center", marginTop: 25 },
 });
