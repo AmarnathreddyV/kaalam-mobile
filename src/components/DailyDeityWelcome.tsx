@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Image, Modal, Pressable, StyleSheet, Text, View } from "react-native";
-import { useAudioPlayer } from "expo-audio";
+import { useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
 import { useLanguage } from "../i18n";
 
 const deities = {
@@ -19,14 +19,22 @@ export function DailyDeityWelcome({ visible, onContinue }: { visible: boolean; o
   const deity = useMemo(() => deities[weekday] || deities.Monday, [weekday]);
   const [muted, setMuted] = useState(false);
   const player = useAudioPlayer(deity.audio);
+  const status = useAudioPlayerStatus(player);
 
   useEffect(() => {
-    player.loop = true;
+    player.loop = false;
     player.volume = muted ? 0 : 0.55;
     if (visible && !muted) player.play();
     else player.pause();
     return () => { player.pause(); };
   }, [player, visible, muted, deity]);
+
+  useEffect(() => {
+    if (visible && status.didJustFinish) {
+      player.pause();
+      onContinue();
+    }
+  }, [visible, status.didJustFinish, player, onContinue]);
 
   const continueToApp = () => {
     player.pause();
