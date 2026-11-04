@@ -174,15 +174,15 @@ export function MuhurthamScreen() {
     <View style={{ flex: 1 }}>
       <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         <PageHeading title={t("Check a date for an event")} subtitle={t("Choose an event and date range to find dates and timings from published calendars.")} />
-        <Panel style={styles.noticePanel}><Text style={styles.noticeTitle}>{t("Published calendar data")}</Text><Text style={styles.noticeText}>KAALAM searches its collected, source-attributed Muhurtham calendars and displays their published dates and timings. These listings are not personalized; confirm the final Muhurtham with your family priest.</Text></Panel>
+        <Panel style={styles.noticePanel}><Text style={styles.noticeTitle}>{t("Published calendar data")}</Text><Text style={styles.noticeText}>{t("KAALAM searches its collected, source-attributed Muhurtham calendars and displays their published dates and timings. These listings are not personalized; confirm the final Muhurtham with your family priest.")}</Text></Panel>
         <Text style={styles.label}>{t("SELECT YOUR EVENT")}</Text>
         {occasionGroups.map(group => (
           <View key={group.title} style={styles.group}>
-            <Text style={styles.groupTitle}>{group.title}</Text>
+            <Text style={styles.groupTitle}>{t(group.title)}</Text>
             <View style={styles.options}>
               {group.items.map(item => (
                 <TouchableOpacity key={item} onPress={() => { setSelected(item); setResults([]); setError(""); }} style={[styles.option, selected === item && styles.optionSelected]}>
-                  <Text style={[styles.optionText, selected === item && styles.optionTextSelected]}>{item}</Text>
+                  <Text style={[styles.optionText, selected === item && styles.optionTextSelected]}>{t(item)}</Text>
                 </TouchableOpacity>
               ))}
             </View>
@@ -190,15 +190,15 @@ export function MuhurthamScreen() {
         ))}
         {selected === "Other custom event" && (
           <>
-            <Text style={styles.label}>DESCRIBE YOUR EVENT</Text>
-            <TextInput value={customOccasion} onChangeText={setCustomOccasion} placeholder="Describe the event" placeholderTextColor={colors.muted} style={styles.input} multiline maxLength={160} />
+            <Text style={styles.label}>{t("DESCRIBE YOUR EVENT")}</Text>
+            <TextInput value={customOccasion} onChangeText={setCustomOccasion} placeholder={t("Describe the event")} placeholderTextColor={colors.muted} style={styles.input} multiline maxLength={160} />
           </>
         )}
         <Text style={styles.label}>{t("SELECT SEARCH PERIOD")}</Text>
         <View style={styles.options}>
           {periods.map(period => (
             <TouchableOpacity key={period.label} onPress={() => changePeriod(period.label)} style={[styles.option, selectedPeriod === period.label && styles.optionSelected]}>
-              <Text style={[styles.optionText, selectedPeriod === period.label && styles.optionTextSelected]}>{period.label}</Text>
+              <Text style={[styles.optionText, selectedPeriod === period.label && styles.optionTextSelected]}>{t(period.label)}</Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -212,20 +212,20 @@ export function MuhurthamScreen() {
           <TouchableOpacity style={styles.dateButton} onPress={() => setShowEndPicker(true)}>
             <Text style={styles.dateText}>{displayDate(endDate)}</Text><Text style={styles.calendar}>▦</Text>
           </TouchableOpacity>
-          <Text style={styles.hint}>{selectedPeriod === "Custom" ? "Custom range" : selectedPeriod}</Text>
+          <Text style={styles.hint}>{t(selectedPeriod === "Custom" ? "Custom range" : selectedPeriod)}</Text>
         </Panel>
         {showStartPicker && <DateTimePicker value={startDate} mode="date" display={Platform.OS === "ios" ? "spinner" : "calendar"} onChange={onStartChange} />}
         {showEndPicker && <DateTimePicker value={endDate} mode="date" display={Platform.OS === "ios" ? "spinner" : "calendar"} minimumDate={startDate} maximumDate={addDays(startDate, 365)} onChange={onEndChange} />}
         <TouchableOpacity style={styles.button} onPress={search} disabled={loading}>
           {loading ? <View style={styles.loading}><ActivityIndicator color="#FFF" /><Text style={styles.buttonText}>{t("Searching published dates…")}</Text></View> : <Text style={styles.buttonText}>{t("Find suitable dates")}</Text>}
         </TouchableOpacity>
-        {!!error && <Panel style={styles.result}><Text style={styles.error}>{error}</Text></Panel>}
+        {!!error && <Panel style={styles.result}><Text style={styles.error}>{t(error)}</Text></Panel>}
         {!!active && (
           <Panel style={styles.result}>
             <Text style={styles.resultEyebrow}>PUBLISHED DATE {activeResult + 1} OF {results.length}</Text>
             <Text style={styles.resultDate}>{active.date}</Text>
             <Text style={styles.resultTime}>{active.start_time} – {active.end_time}</Text>
-            {!!active.reason && <Text style={styles.reason}>{active.reason}</Text>}
+            {!!active.reason && <Text style={styles.reason}>{t(active.reason)}</Text>}
             <View style={styles.navigation}>
               <TouchableOpacity disabled={activeResult === 0} onPress={() => setActiveResult(index => Math.max(0, index - 1))} style={[styles.navButton, activeResult === 0 && styles.disabled]}>
                 <Text style={styles.navText}>{t("Previous date")}</Text>
@@ -236,7 +236,7 @@ export function MuhurthamScreen() {
             </View>
           </Panel>
         )}
-        <Text style={styles.disclaimer}>Only a validated Telugu Drik Muhurtha calculation can mark a date and time as suitable. Daily Panchangam snapshots alone are not sufficient.</Text>
+        <Text style={styles.disclaimer}>{t("Only a validated Telugu Drik Muhurtha calculation can mark a date and time as suitable. Daily Panchangam snapshots alone are not sufficient.")}</Text>
       </ScrollView>
     </View>
   );
