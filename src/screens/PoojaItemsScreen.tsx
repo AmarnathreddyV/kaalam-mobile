@@ -77,7 +77,7 @@ export function PoojaItemsScreen() {
       <PageHeading title={t("Pooja Items")} subtitle={t("Preparation checklists for common Hindu ceremonies and poojas.")} />
       <Text style={styles.label}>{t("CHOOSE AN OCCASION")}</Text>
       <View style={styles.options}>
-        {names.map(name => <TouchableOpacity key={name} onPress={() => setSelected(name)} style={[styles.chip, selected === name && styles.chipActive]}><Text style={[styles.chipText, selected === name && styles.chipTextActive]}>{name}</Text></TouchableOpacity>)}
+        {names.map(name => <TouchableOpacity key={name} onPress={() => setSelected(name)} style={[styles.chip, selected === name && styles.chipActive]}><Text style={[styles.chipText, selected === name && styles.chipTextActive]}>{t(name)}</Text></TouchableOpacity>)}
       </View>
       <Panel style={styles.panel}>
         <Text style={styles.title}>{t(current.title)}</Text>
