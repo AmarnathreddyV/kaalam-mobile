@@ -90,6 +90,10 @@ Object.assign(hi, {
 "Profile details could not be loaded:":"प्रोफ़ाइल विवरण लोड नहीं हो सका:","Some timing categories could not be loaded:":"कुछ समय श्रेणियाँ लोड नहीं हो सकीं:"
 });
 
+
+Object.assign(te, {"Rashi":"రాశి","Janma Nakshatra":"జన్మ నక్షత్రం","YOUR LOCATION":"మీ స్థలం","SUNRISE & SUNSET":"సూర్యోదయం మరియు సూర్యాస్తమయం","Profile details could not be loaded:":"ప్రొఫైల్ వివరాలను లోడ్ చేయలేకపోయాం:","Some timing categories could not be loaded:":"కొన్ని సమయ విభాగాలను లోడ్ చేయలేకపోయాం:","Lord Surya · Sunday":"సూర్య దేవుడు · ఆదివారం","Lord Vishnu · Thursday":"విష్ణువు · గురువారం","Lord Shiva · Monday":"శివుడు · సోమవారం","Lord Hanuman · Tuesday":"హనుమంతుడు · మంగళవారం","Lord Ganesha · Wednesday":"గణేశుడు · బుధవారం","Goddess Lakshmi · Friday":"లక్ష్మీదేవి · శుక్రవారం","Lord Venkateswara or Hanuman · Saturday":"వేంకటేశ్వర స్వామి లేదా హనుమంతుడు · శనివారం"});
+Object.assign(hi, {"Rashi":"राशि","Janma Nakshatra":"जन्म नक्षत्र","YOUR LOCATION":"आपका स्थान","SUNRISE & SUNSET":"सूर्योदय और सूर्यास्त","Profile details could not be loaded:":"प्रोफ़ाइल विवरण लोड नहीं हो सका:","Some timing categories could not be loaded:":"कुछ समय श्रेणियाँ लोड नहीं हो सकीं:","Lord Surya · Sunday":"सूर्य देव · रविवार","Lord Vishnu · Thursday":"भगवान विष्णु · गुरुवार","Lord Shiva · Monday":"भगवान शिव · सोमवार","Lord Hanuman · Tuesday":"हनुमान जी · मंगलवार","Lord Ganesha · Wednesday":"गणेश जी · बुधवार","Goddess Lakshmi · Friday":"माता लक्ष्मी · शुक्रवार","Lord Venkateswara or Hanuman · Saturday":"वेंकटेश्वर स्वामी या हनुमान जी · शनिवार"});
+
 const translations: Record<AppLanguage, Record<string, string>> = { English: {}, Telugu: te, Hindi: hi };
 type LanguageContextValue = { language: AppLanguage; setLanguage: (language: AppLanguage) => void; t: (text: string) => string };
 const LanguageContext = createContext<LanguageContextValue>({ language: "English", setLanguage: () => undefined, t: text => text });
