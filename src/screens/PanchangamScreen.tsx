@@ -59,7 +59,7 @@ export function PanchangamScreen() {
 
   return (
     <Screen>
-      <PageHeading title="Panchangam" subtitle={result ? `${result.date} · ${place} · Telugu Drik` : "Daily calendar"} />
+      <PageHeading title={t("Panchangam")} subtitle={result ? `${result.date} · ${place} · Telugu Drik` : t("Daily calendar")} />
       {loading ? (
         <Panel><ActivityIndicator color={colors.maroon} /><Text style={styles.status}>Loading Panchangam…</Text></Panel>
       ) : error ? (
@@ -67,33 +67,33 @@ export function PanchangamScreen() {
       ) : (
         <>
           <Panel>
-            <LabelValue label="Tithi" value={[p?.tithi?.name, p?.tithi?.paksha].filter(Boolean).join(" · ") || "—"} />
-            <LabelValue label="Vara" value={p?.weekday?.name || "—"} />
-            <LabelValue label="Nakshatra" value={p?.nakshatra?.name || "—"} />
-            <LabelValue label="Yoga" value={p?.yoga?.name || "—"} />
-            <LabelValue label="Karana" value={p?.karana?.name || "—"} last />
+            <LabelValue label={t("Tithi")} value={[p?.tithi?.name, p?.tithi?.paksha].filter(Boolean).join(" · ") || "—"} />
+            <LabelValue label={t("Vara")} value={p?.weekday?.name || "—"} />
+            <LabelValue label={t("Nakshatra")} value={p?.nakshatra?.name || "—"} />
+            <LabelValue label={t("Yoga")} value={p?.yoga?.name || "—"} />
+            <LabelValue label={t("Karana")} value={p?.karana?.name || "—"} last />
           </Panel>
           <View style={styles.providerRow}>
             <Text style={styles.provider}>DATA: NAVAMSHA</Text>
-            <TouchableOpacity onPress={load}><Text style={styles.refresh}>REFRESH</Text></TouchableOpacity>
+            <TouchableOpacity onPress={load}><Text style={styles.refresh}>{t("REFRESH")}</Text></TouchableOpacity>
           </View>
         </>
       )}
-      <Text style={styles.heading}>Sun timings</Text>
+      <Text style={styles.heading}>{t("Sun timings")}</Text>
       <Panel>
         <LabelValue label={t("Sunrise")} value={formatTime(d?.sun_times?.rise?.local_datetime)} />
         <LabelValue label={t("Sunset")} value={formatTime(d?.sun_times?.set?.local_datetime)} last />
       </Panel>
-      <Text style={styles.heading}>Avoidable periods</Text>
+      <Text style={styles.heading}>{t("Avoidable periods")}</Text>
       <Panel>
         <LabelValue label={t("Rahu Kalam")} value={range(d?.inauspicious_periods?.rahu_kaal)} />
         <LabelValue label={t("Yamagandam")} value={range(d?.inauspicious_periods?.yamaganda)} />
         <LabelValue label={t("Gulika Kalam")} value={range(d?.inauspicious_periods?.gulika_kaal)} last />
       </Panel>
-      <Text style={styles.heading}>Other daily windows</Text>
+      <Text style={styles.heading}>{t("Other daily windows")}</Text>
       <Panel>
-        <LabelValue label="Abhijit Muhurat" value={range(d?.abhijit_muhurat?.interval?.period?.[0])} last />
-        <Text style={styles.footnote}>Choghadiya day slots</Text>
+        <LabelValue label={t("Abhijit Muhurat")} value={range(d?.abhijit_muhurat?.interval?.period?.[0])} last />
+        <Text style={styles.footnote}>{t("Choghadiya day slots")}</Text>
         {(d?.choghadiya?.day || []).map((slot, index) => (
           <LabelValue key={String(slot.name) + index} label={slot.name || "Choghadiya"} value={range(slot)} last={index === (d?.choghadiya?.day?.length || 0) - 1} />
         ))}
