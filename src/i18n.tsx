@@ -78,6 +78,18 @@ Object.assign(hi, {
 "Coconut":"नारियल","Fruits and sweets":"फल और मिठाइयाँ","Flowers":"फूल","Coconut and fruits":"नारियल और फल","Kalasham and vessels":"कलश और बर्तन","Diya, incense and camphor":"दीपक, अगरबत्ती और कपूर","Pooja plates and clean cloth":"पूजा की थालियाँ और साफ कपड़ा","Kalasham":"कलश","Turmeric, kumkum and akshata":"हल्दी, कुमकुम और अक्षत","Fruits and coconuts":"फल और नारियल","Milk and sweets":"दूध और मिठाइयाँ","Diya, oil or ghee, cotton wicks":"दीपक, तेल या घी, रुई की बाती","Pooja plates and clean vessels":"पूजा की थालियाँ और साफ बर्तन","Your KAALAM profile has been saved successfully.":"आपकी KAALAM प्रोफ़ाइल सफलतापूर्वक सहेजी गई।"
 });
 
+
+Object.assign(te, {
+"Please describe your occasion in at least 3 characters.":"దయచేసి మీ కార్యక్రమాన్ని కనీసం 3 అక్షరాలతో వివరించండి.","Choose a date range of no more than 366 days.":"366 రోజులకు మించని తేదీ పరిధిని ఎంచుకోండి.","Your current location has not been resolved. Complete or update your profile first.":"మీ ప్రస్తుత స్థలం గుర్తించబడలేదు. ముందుగా మీ ప్రొఫైల్‌ను పూర్తి చేయండి లేదా నవీకరించండి.","Unable to validate the selected date range.":"ఎంచుకున్న తేదీ పరిధిని ధృవీకరించలేకపోయాం.","Event-specific Telugu Drik Muhurtham calculations are not validated yet. No dates will be labelled auspicious.":"నిర్దిష్ట కార్యక్రమానికి తెలుగు దృక్ ముహూర్త గణనలు ఇంకా ధృవీకరించబడలేదు. ఏ తేదీని కూడా శుభప్రదంగా గుర్తించము.","No published dates were found in this range.":"ఈ తేదీ పరిధిలో ప్రచురిత తేదీలు కనుగొనబడలేదు.","Unable to complete the Muhurtham search.":"ముహూర్త శోధనను పూర్తి చేయలేకపోయాం.",
+"Loading Panchangam…":"పంచాంగం లోడ్ అవుతోంది…","Sunrise & Sunset":"సూర్యోదయం మరియు సూర్యాస్తమయం","Avoidable periods":"వర్జించాల్సిన సమయాలు","Other daily windows":"ఇతర రోజువారీ సమయాలు",
+"Profile details could not be loaded:":"ప్రొఫైల్ వివరాలను లోడ్ చేయలేకపోయాం:","Some timing categories could not be loaded:":"కొన్ని సమయ విభాగాలను లోడ్ చేయలేకపోయాం:"
+});
+Object.assign(hi, {
+"Please describe your occasion in at least 3 characters.":"कृपया अपने कार्यक्रम का विवरण कम से कम 3 अक्षरों में दें।","Choose a date range of no more than 366 days.":"366 दिनों से अधिक की तारीख अवधि न चुनें।","Your current location has not been resolved. Complete or update your profile first.":"आपका वर्तमान स्थान पहचाना नहीं गया। पहले अपनी प्रोफ़ाइल पूरी करें या अपडेट करें।","Unable to validate the selected date range.":"चुनी गई तारीख अवधि सत्यापित नहीं हो सकी।","Event-specific Telugu Drik Muhurtham calculations are not validated yet. No dates will be labelled auspicious.":"विशिष्ट कार्यक्रम के लिए तेलुगु दृक मुहूर्त गणना अभी सत्यापित नहीं है। किसी तारीख को शुभ नहीं बताया जाएगा।","No published dates were found in this range.":"इस अवधि में कोई प्रकाशित तारीख नहीं मिली।","Unable to complete the Muhurtham search.":"मुहूर्त खोज पूरी नहीं हो सकी।",
+"Loading Panchangam…":"पंचांग लोड हो रहा है…","Sunrise & Sunset":"सूर्योदय और सूर्यास्त","Avoidable periods":"वर्जित समय","Other daily windows":"अन्य दैनिक समय",
+"Profile details could not be loaded:":"प्रोफ़ाइल विवरण लोड नहीं हो सका:","Some timing categories could not be loaded:":"कुछ समय श्रेणियाँ लोड नहीं हो सकीं:"
+});
+
 const translations: Record<AppLanguage, Record<string, string>> = { English: {}, Telugu: te, Hindi: hi };
 type LanguageContextValue = { language: AppLanguage; setLanguage: (language: AppLanguage) => void; t: (text: string) => string };
 const LanguageContext = createContext<LanguageContextValue>({ language: "English", setLanguage: () => undefined, t: text => text });
