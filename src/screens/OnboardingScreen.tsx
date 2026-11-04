@@ -28,7 +28,7 @@ const fields = [
   {
     key: "birth_place",
     label: "Place of birth",
-    placeholder: "City, State, Country",
+    placeholder: "Village / Town / City, District, State",
   },
   {
     key: "current_location",
@@ -298,8 +298,8 @@ export function OnboardingScreen({
       <Text style={styles.title}>Your details</Text>
 
       <Text style={styles.subtitle}>
-        These details are used to personalize your horoscope
-        and date recommendations.
+        Enter your details to set up KAALAM. No account or phone login is needed.
+        You can enter any village, town or city in India for your birth and current locations.
       </Text>
 
       <TextInput
@@ -309,6 +309,7 @@ export function OnboardingScreen({
         placeholderTextColor={colors.muted}
         style={styles.input}
         autoCapitalize="words"
+        autoCorrect={false}
       />
 
       {fields.map((field) => (
@@ -327,6 +328,7 @@ export function OnboardingScreen({
                 ? "numbers-and-punctuation"
                 : "default"
             }
+            autoCorrect={false}
           />
         </View>
       ))}
