@@ -28,28 +28,42 @@ export function AuthScreen({ recoveryMode = false, onRecoveryComplete }: { recov
       if (!url || !url.startsWith("kaalam://auth/")) return;
       try {
         const parsed = new URL(url);
+        const authError = parsed.searchParams.get("error_description") || parsed.searchParams.get("error");
+        if (authError) throw new Error(authError.replace(/\\+/g, " "));
         const code = parsed.searchParams.get("code");
         if (code) {
           const { error } = await supabase.auth.exchangeCodeForSession(code);
           if (error) throw error;
+          // Supabase emits PASSWORD_RECOVERY for a verified recovery code.
         } else {
-          const hash = parsed.hash.replace(/^#/, "");
-          const params = new URLSearchParams(hash);
+          const params = new URLSearchParams(parsed.hash.replace(/^#/, ""));
           const access_token = params.get("access_token");
           const refresh_token = params.get("refresh_token");
-          if (access_token && refresh_token) {
-            const { error } = await supabase.auth.setSession({ access_token, refresh_token });
-            if (error) throw error;
+          if (!access_token || !refresh_token) {
+            throw new Error("This password-reset link is incomplete or expired. Request a fresh reset email.");
           }
+          const { error } = await supabase.auth.setSession({ access_token, refresh_token });
+          if (error) throw error;
+          if (params.get("type") === "recovery") setMode("reset");
         }
       } catch (e) {
-        setMessage(e instanceof Error ? e.message : "Unable to complete the secure sign-in link.");
+        setMessage(e instanceof Error ? e.message : "Unable to verify the password-reset link.");
         setMessageIsError(true);
       }
     };
-    Linking.getInitialURL().then(handleUrl);
+    void Linking.getInitialURL().then(handleUrl);
     const subscription = Linking.addEventListener("url", ({ url }) => { void handleUrl(url); });
-    return () => subscription.remove();
+    const { data: authListener } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY") {
+        setMode("reset");
+        setMessage("");
+        setMessageIsError(false);
+      }
+    });
+    return () => {
+      subscription.remove();
+      authListener.subscription.unsubscribe();
+    };
   }, []);
 
   function showMessage(value: string, isError = false) {
