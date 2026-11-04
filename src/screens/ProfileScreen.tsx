@@ -47,15 +47,15 @@ export function ProfileScreen() {
             <LabelValue label={t("Email")} value={profile?.email || t("Not added")} />
             <LabelValue label={t("Date of birth")} value={profile?.date_of_birth || t("Not added")} />
             <LabelValue label={t("Time of birth")} value={profile?.time_of_birth || t("Not added")} />
-            <LabelValue label="Place of birth" value={profile?.birth_place || "Not added"} last />
+            <LabelValue label={t("Place of birth")} value={profile?.birth_place || t("Not added")} last />
           </>
         )}
       </Panel>
       <Text style={styles.heading}>{t("Preferences & location")}</Text>
       <Panel>
         <LabelValue label={t("Current location")} value={profile?.current_location || t("Not set")} />
-        <LabelValue label={t("Language")} value={profile?.preferred_language || "English"} />
-        <LabelValue label={t("Panchangam tradition")} value={profile?.panchangam_tradition || "Telugu Drik"} last />
+        <LabelValue label={t("Language")} value={t(profile?.preferred_language || "English")} />
+        <LabelValue label={t("Panchangam tradition")} value={t(profile?.panchangam_tradition || "Telugu Drik")} last />
       </Panel>
       <Text style={styles.heading}>{t("Preferred language")}</Text>
       <Panel>
