@@ -13,6 +13,7 @@ import { HoroscopeScreen } from "./src/screens/HoroscopeScreen";
 import { ProfileScreen } from "./src/screens/ProfileScreen";
 import { colors } from "./src/theme/colors";
 import { AppBackground } from "./src/components/AppBackground";
+import { DailyDeityWelcome } from "./src/components/DailyDeityWelcome";
 
 type TabName = "Home" | "Panchangam" | "Pooja Items" | "Horoscope" | "Profile";
 const tabs: TabName[] = ["Home", "Panchangam", "Pooja Items", "Horoscope", "Profile"];
@@ -24,6 +25,7 @@ export default function App() {
   const [recoveryMode, setRecoveryMode] = useState(false);
   const [profileLoading, setProfileLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<TabName>("Home");
+  const [showDailyWelcome, setShowDailyWelcome] = useState(true);
 
   useEffect(() => {
     if (!supabaseConfigured) { setAuthReady(true); return; }
@@ -101,6 +103,7 @@ export default function App() {
           <Text onPress={signOut} style={styles.signOut}>SIGN OUT</Text>
         </View>
         <View style={styles.content}>{renderScreen()}</View>
+        <DailyDeityWelcome visible={showDailyWelcome} onContinue={() => setShowDailyWelcome(false)} />
         <View style={styles.tabBar}>
           {tabs.map((tab) => {
             const selected = activeTab === tab;
