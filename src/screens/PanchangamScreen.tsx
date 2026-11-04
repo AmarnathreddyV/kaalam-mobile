@@ -61,7 +61,7 @@ export function PanchangamScreen() {
     <Screen>
       <PageHeading title={t("Panchangam")} subtitle={result ? `${result.date} · ${place} · Telugu Drik` : t("Daily calendar")} />
       {loading ? (
-        <Panel><ActivityIndicator color={colors.maroon} /><Text style={styles.status}>Loading Panchangam…</Text></Panel>
+        <Panel><ActivityIndicator color={colors.maroon} /><Text style={styles.status}>{t("Loading Panchangam…")}</Text></Panel>
       ) : error ? (
         <Panel><Text style={styles.error}>{error}</Text><TouchableOpacity onPress={load} style={styles.retry}><Text style={styles.retryText}>{t("Try again")}</Text></TouchableOpacity></Panel>
       ) : (
@@ -74,7 +74,7 @@ export function PanchangamScreen() {
             <LabelValue label={t("Karana")} value={p?.karana?.name || "—"} last />
           </Panel>
           <View style={styles.providerRow}>
-            <Text style={styles.provider}>DATA: NAVAMSHA</Text>
+            <Text style={styles.provider}>{t("DATA: NAVAMSHA")}</Text>
             <TouchableOpacity onPress={load}><Text style={styles.refresh}>{t("REFRESH")}</Text></TouchableOpacity>
           </View>
         </>
@@ -95,7 +95,7 @@ export function PanchangamScreen() {
         <LabelValue label={t("Abhijit Muhurat")} value={range(d?.abhijit_muhurat?.interval?.period?.[0])} last />
         <Text style={styles.footnote}>{t("Choghadiya day slots")}</Text>
         {(d?.choghadiya?.day || []).map((slot, index) => (
-          <LabelValue key={String(slot.name) + index} label={slot.name || "Choghadiya"} value={range(slot)} last={index === (d?.choghadiya?.day?.length || 0) - 1} />
+          <LabelValue key={String(slot.name) + index} label={t(slot.name || "Choghadiya")} value={range(slot)} last={index === (d?.choghadiya?.day?.length || 0) - 1} />
         ))}
       </Panel>
       <Text style={styles.footnote}>Times are displayed in the local time zone of your saved current location. Abhijit and Choghadiya are general daily indicators, not event-specific Muhurtham approval. Missing categories are shown as unavailable.</Text>
