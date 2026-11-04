@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
+import * as WebBrowser from "expo-web-browser";
 import { ActivityIndicator, Image, KeyboardAvoidingView, Linking, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { supabase, supabaseConfigured } from "../auth/supabase";
 import { colors } from "../theme/colors";
 
 const AUTH_REDIRECT = "kaalam://auth/callback";
+WebBrowser.maybeCompleteAuthSession();
 
 type AuthMode = "signup" | "login" | "forgot" | "reset";
 
@@ -13,6 +15,8 @@ export function AuthScreen({ recoveryMode = false, onRecoveryComplete }: { recov
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [messageIsError, setMessageIsError] = useState(false);
@@ -118,7 +122,26 @@ export function AuthScreen({ recoveryMode = false, onRecoveryComplete }: { recov
       });
       if (error) throw error;
       if (!data.url) throw new Error("Google sign-in URL was not returned.");
-      await Linking.openURL(data.url);
+      const result = await WebBrowser.openAuthSessionAsync(data.url, AUTH_REDIRECT);
+      if (result.type === "success") {
+        const parsed = new URL(result.url);
+        const code = parsed.searchParams.get("code");
+        if (code) {
+          const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+          if (exchangeError) throw exchangeError;
+        } else {
+          const params = new URLSearchParams(parsed.hash.replace(/^#/, ""));
+          const access_token = params.get("access_token");
+          const refresh_token = params.get("refresh_token");
+          if (!access_token || !refresh_token) throw new Error("Google returned without a valid KAALAM session. Please try again.");
+          const { error: sessionError } = await supabase.auth.setSession({ access_token, refresh_token });
+          if (sessionError) throw sessionError;
+        }
+      } else if (result.type === "cancel" || result.type === "dismiss") {
+        showMessage("Google sign-in was cancelled. You can try again.");
+      } else {
+        throw new Error("Google sign-in did not complete. Please try again.");
+      }
     } catch (e) {
       showMessage(e instanceof Error ? e.message : "Google sign-in could not be started.", true);
     } finally {
@@ -138,8 +161,18 @@ export function AuthScreen({ recoveryMode = false, onRecoveryComplete }: { recov
 
         {mode === "signup" && <TextInput value={name} onChangeText={setName} placeholder="Full name" placeholderTextColor={colors.muted} autoCapitalize="words" style={styles.input} />}
         {mode !== "reset" && <TextInput value={email} onChangeText={setEmail} placeholder="Email address" placeholderTextColor={colors.muted} keyboardType="email-address" autoCapitalize="none" autoCorrect={false} autoComplete="email" style={styles.input} />}
-        {mode !== "forgot" && <TextInput value={password} onChangeText={setPassword} placeholder={mode === "reset" ? "New password (minimum 8 characters)" : "Password (minimum 8 characters)"} placeholderTextColor={colors.muted} secureTextEntry autoCapitalize="none" autoComplete={mode === "login" ? "current-password" : "new-password"} style={styles.input} />}
-        {(mode === "signup" || mode === "reset") && <TextInput value={confirmPassword} onChangeText={setConfirmPassword} placeholder="Confirm password" placeholderTextColor={colors.muted} secureTextEntry autoCapitalize="none" autoComplete="new-password" style={styles.input} />}
+        {mode !== "forgot" && (
+          <View style={styles.passwordRow}>
+            <TextInput value={password} onChangeText={setPassword} placeholder={mode === "reset" ? "New password (minimum 8 characters)" : "Password (minimum 8 characters)"} placeholderTextColor={colors.muted} secureTextEntry={!passwordVisible} autoCapitalize="none" autoComplete={mode === "login" ? "current-password" : "new-password"} style={styles.passwordInput} />
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={passwordVisible ? "Hide password" : "Show password"} onPress={() => setPasswordVisible(value => !value)} style={styles.showPassword}><Text style={styles.showPasswordText}>{passwordVisible ? "HIDE" : "SHOW"}</Text></TouchableOpacity>
+          </View>
+        )}
+        {(mode === "signup" || mode === "reset") && (
+          <View style={styles.passwordRow}>
+            <TextInput value={confirmPassword} onChangeText={setConfirmPassword} placeholder="Confirm password" placeholderTextColor={colors.muted} secureTextEntry={!confirmPasswordVisible} autoCapitalize="none" autoComplete="new-password" style={styles.passwordInput} />
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={confirmPasswordVisible ? "Hide confirm password" : "Show confirm password"} onPress={() => setConfirmPasswordVisible(value => !value)} style={styles.showPassword}><Text style={styles.showPasswordText}>{confirmPasswordVisible ? "HIDE" : "SHOW"}</Text></TouchableOpacity>
+          </View>
+        )}
 
         {!!message && <Text accessibilityRole="alert" style={[styles.message, messageIsError && styles.messageError]}>{message}</Text>}
 
@@ -173,6 +206,10 @@ const styles = StyleSheet.create({
   title: { color: colors.maroonDark, fontSize: 29, fontWeight: "600", fontFamily: "Georgia" },
   subtitle: { color: colors.muted, fontSize: 13, marginTop: 8, marginBottom: 24 },
   input: { backgroundColor: "rgba(255, 248, 234, 0.96)", borderColor: colors.line, borderWidth: 1, borderRadius: 12, paddingHorizontal: 15, paddingVertical: 14, color: colors.text, fontSize: 14, marginBottom: 11 },
+  passwordRow: { flexDirection: "row", alignItems: "center", backgroundColor: "rgba(255, 248, 234, 0.96)", borderColor: colors.line, borderWidth: 1, borderRadius: 12, marginBottom: 11, paddingRight: 13 },
+  passwordInput: { flex: 1, paddingHorizontal: 15, paddingVertical: 14, color: colors.text, fontSize: 14 },
+  showPassword: { paddingVertical: 12, paddingHorizontal: 4 },
+  showPasswordText: { color: colors.maroon, fontSize: 10, fontWeight: "800", letterSpacing: 0.5 },
   button: { backgroundColor: "#71370F", padding: 16, borderRadius: 12, alignItems: "center", justifyContent: "center", minHeight: 52, marginTop: 7 },
   disabled: { opacity: 0.6 },
   buttonText: { color: "#FFFFFF", fontWeight: "700", fontSize: 14 },
