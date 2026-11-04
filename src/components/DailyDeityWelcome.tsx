@@ -40,11 +40,11 @@ export function DailyDeityWelcome({ visible, onContinue }: { visible: boolean; o
         <View pointerEvents="none" style={styles.scrim} />
         <View style={styles.content}>
           <Text style={styles.eyebrow}>{t("KAALAM · TODAY'S DIVINE BLESSING")}</Text>
-          <Text style={styles.deity}>{deity.name}</Text>
-          <Text style={styles.day}>{weekday.toUpperCase()}</Text>
+          <Text style={styles.deity}>{t(deity.name)}</Text>
+          <Text style={styles.day}>{t(weekday).toUpperCase()}</Text>
           <View style={styles.actions}>
             <Pressable accessibilityRole="button" style={styles.secondary} onPress={() => setMuted(value => !value)}>
-              <Text style={styles.secondaryText}>{muted ? "♫  Turn music on" : "♫  Mute music"}</Text>
+              <Text style={styles.secondaryText}>{muted ? "♫  " + t("Turn music on") : "♫  " + t("Mute music")}</Text>
             </Pressable>
             <Pressable accessibilityRole="button" style={styles.primary} onPress={continueToApp}>
               <Text style={styles.primaryText}>{t("Continue to KAALAM  →")}</Text>
