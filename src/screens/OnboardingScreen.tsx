@@ -301,7 +301,7 @@ export function OnboardingScreen({
       <Text style={styles.title}>{t("Your details")}</Text>
 
       <Text style={styles.subtitle}>
-        Enter your details to set up KAALAM. No account or phone login is needed.
+        {t("Enter your details to set up KAALAM. No account or phone login is needed. ")}
         You can enter any village, town or city in India for your birth and current locations.
       </Text>
 
@@ -322,7 +322,7 @@ export function OnboardingScreen({
           <TextInput
             value={values[field.key]}
             onChangeText={(v) => update(field.key, v)}
-            placeholder={field.placeholder}
+            placeholder={field.key === "birth_place" || field.key === "current_location" ? t("Village / Town / City, District, State") : field.placeholder}
             placeholderTextColor={colors.muted}
             style={styles.input}
             keyboardType={
