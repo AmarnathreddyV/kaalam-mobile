@@ -4,6 +4,7 @@ import { Screen, SectionTitle, Panel, LabelValue } from "../components/Screen";
 import { colors } from "../theme/colors";
 import { fetchDailyPanchangam, DailyPanchangamResponse } from "../services/panchangam";
 import { supabase } from "../auth/supabase";
+import { useLanguage } from "../i18n";
 
 type Profile = {
   full_name?: string | null;
@@ -24,7 +25,8 @@ function todayLabel() {
   }).format(new Date()).toUpperCase().replace(",", " ·");
 }
 
-export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void }) {\n  const { t } = useLanguage();
+export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void }) {
+  const { t } = useLanguage();
   const [result, setResult] = useState<DailyPanchangamResponse | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [error, setError] = useState("");
