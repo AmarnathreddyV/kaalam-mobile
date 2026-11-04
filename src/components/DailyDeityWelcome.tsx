@@ -3,13 +3,13 @@ import { Image, Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import { useAudioPlayer } from "expo-audio";
 
 const deities = {
-  Sunday: { name: "Surya Deva", image: require("../../assets/gods/surya.jpg"), audio: require("../../assets/god-audio/surya.mp3") },
-  Monday: { name: "Lord Shiva", image: require("../../assets/gods/shiva.jpg"), audio: require("../../assets/god-audio/shiva.mp3") },
-  Tuesday: { name: "Lord Hanuman", image: require("../../assets/gods/hanuman.jpg"), audio: require("../../assets/god-audio/hanuman.mp3") },
-  Wednesday: { name: "Lord Ganesha", image: require("../../assets/gods/ganesh.jpg"), audio: require("../../assets/god-audio/ganesh.mp3") },
-  Thursday: { name: "Lord Venkateswara", image: require("../../assets/gods/venkateshwara.jpg"), audio: require("../../assets/god-audio/venkateshwara.mp3") },
-  Friday: { name: "Goddess Lakshmi", image: require("../../assets/gods/lakshmi.jpg"), audio: require("../../assets/god-audio/lakshmi.mp3") },
-  Saturday: { name: "Lord Hanuman", image: require("../../assets/gods/hanuman.jpg"), audio: require("../../assets/god-audio/hanuman.mp3") },
+  Sunday: { name: "Surya Deva", image: require("../../assets/surya dev/images.jpg"), audio: require("../../assets/audios/surya dev.mp3") },
+  Monday: { name: "Lord Shiva", image: require("../../assets/lord shiva/images.jpg"), audio: require("../../assets/audios/shiva.mp3") },
+  Tuesday: { name: "Lord Hanuman", image: require("../../assets/hanuman/images.jpg"), audio: require("../../assets/audios/hanuman.mp3") },
+  Wednesday: { name: "Lord Ganesha", image: require("../../assets/ganesh/lord-ganesha-traditional-nature-ai-image-4k-1080p-774805.jpg"), audio: require("../../assets/audios/ganesh.mp3") },
+  Thursday: { name: "Lord Venkateswara", image: require("../../assets/venkateswara swamy/images.jpg"), audio: require("../../assets/audios/venkateshwara swamy.mp3") },
+  Friday: { name: "Goddess Lakshmi", image: require("../../assets/lakshmi devi/images.jpg"), audio: require("../../assets/audios/lakshmi devi.mp3") },
+  Saturday: { name: "Lord Hanuman", image: require("../../assets/hanuman/images.jpg"), audio: require("../../assets/audios/hanuman.mp3") },
 };
 
 export function DailyDeityWelcome({ visible, onContinue }: { visible: boolean; onContinue: () => void }) {
