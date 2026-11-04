@@ -19,7 +19,7 @@ type Profile = {
   birth_chart_summary?: { rashi?: string; nakshatra?: string; pada?: number; lagna?: string } | null;
 };
 
-function todayLabel(language: string) {
+function displayBirthDate(value?: string) {\n  if (!value) return value;\n  const match = /^(\\d{4})-(\\d{2})-(\\d{2})$/.exec(value);\n  return match ? `${match[3]}-${match[2]}-${match[1]}` : value;\n}\n\nfunction todayLabel(language: string) {
   const locale = language === "Telugu" ? "te-IN" : language === "Hindi" ? "hi-IN" : "en-IN";
   return new Intl.DateTimeFormat(locale, {
     weekday: "long", day: "2-digit", month: "long", year: "numeric",
@@ -117,7 +117,7 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
   const basicDetails = useMemo(() => [
     ["Rashi", profile?.birth_chart_summary?.rashi || "Not calculated"],
     ["Janma Nakshatra", profile?.birth_chart_summary?.nakshatra || "Not calculated"],
-    ["Birth date", profile?.date_of_birth || "Not provided"],
+    ["Birth date", displayBirthDate(profile?.date_of_birth) || "Not provided"],
     ["Birth place", profile?.birth_place || "Not provided"],
   ], [profile]);
 
