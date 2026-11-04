@@ -133,14 +133,6 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
       <Text style={styles.greeting}>{t("Namaskaram")}, {name}</Text>
       <Text style={styles.name}>{t("Your day, in alignment.")}</Text>
 
-      <TouchableOpacity style={styles.poojaShortcut} onPress={onOpenPoojaItems}>
-        <View style={styles.poojaShortcutText}>
-          <Text style={styles.poojaShortcutTitle}>{t("Pooja Items & Samagri")}</Text>
-          <Text style={styles.poojaShortcutSubtitle}>{t("View occasion-wise preparation lists")}</Text>
-        </View>
-        <Text style={styles.poojaShortcutArrow}>{t("VIEW  →")}</Text>
-      </TouchableOpacity>
-
       <SectionTitle>{t("YOUR ASTROLOGY PROFILE")}</SectionTitle>
       <Panel>
         {basicDetails.map(([label, value], index) => (
@@ -216,6 +208,14 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
       </Panel>
 
       <Text style={styles.note}>Panchangam data is provided by Navamsha using your saved location. General daily indicators are not a guarantee of personal outcomes and do not replace event-specific Telugu Drik Muhurtham analysis.</Text>
+
+      <TouchableOpacity style={styles.poojaShortcut} onPress={onOpenPoojaItems}>
+        <View style={styles.poojaShortcutText}>
+          <Text style={styles.poojaShortcutTitle}>{t("Pooja Items & Samagri")}</Text>
+          <Text style={styles.poojaShortcutSubtitle}>{t("View occasion-wise preparation lists")}</Text>
+        </View>
+        <Text style={styles.poojaShortcutArrow}>{t("VIEW  →")}</Text>
+      </TouchableOpacity>
     </Screen>
   );
 }
