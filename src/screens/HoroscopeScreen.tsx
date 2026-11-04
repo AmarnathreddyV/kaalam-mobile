@@ -14,7 +14,7 @@ type ChartProfile = {
   birth_chart_calculated_at?: string | null;
 };
 
-export function HoroscopeScreen() {
+function displayBirthDate(value?: string) {\n  if (!value) return "Not added";\n  const match = /^(\\d{4})-(\\d{2})-(\\d{2})$/.exec(value);\n  return match ? `${match[3]}-${match[2]}-${match[1]}` : value;\n}\n\nexport function HoroscopeScreen() {
   const { t } = useLanguage();
   const [profile, setProfile] = useState<ChartProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -56,7 +56,7 @@ export function HoroscopeScreen() {
       </Panel>
       <Text style={styles.heading}>{t("Birth details")}</Text>
       <Panel>
-        <LabelValue label={t("Date")} value={profile?.date_of_birth || t("Not added")} />
+        <LabelValue label={t("Date")} value={profile?.date_of_birth ? displayBirthDate(profile.date_of_birth) : t("Not added")} />
         <LabelValue label={t("Time")} value={profile?.time_of_birth || t("Not added")} />
         <LabelValue label={t("Place")} value={profile?.birth_place || t("Not added")} last />
       </Panel>
