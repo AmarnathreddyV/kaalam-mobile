@@ -4,7 +4,6 @@ import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Session } from "@supabase/supabase-js";
 import { supabase, supabaseConfigured } from "./src/auth/supabase";
-import { AuthScreen } from "./src/screens/AuthScreen";
 import { OnboardingScreen } from "./src/screens/OnboardingScreen";
 import { HomeScreen } from "./src/screens/HomeScreen";
 import { PanchangamScreen } from "./src/screens/PanchangamScreen";
@@ -22,23 +21,57 @@ export default function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [authReady, setAuthReady] = useState(false);
   const [profileReady, setProfileReady] = useState(false);
-  const [recoveryMode, setRecoveryMode] = useState(false);
+  const [authError, setAuthError] = useState("");
   const [profileLoading, setProfileLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<TabName>("Home");
   const [showDailyWelcome, setShowDailyWelcome] = useState(true);
 
   useEffect(() => {
     if (!supabaseConfigured) { setAuthReady(true); return; }
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setAuthReady(true);
-    });
-    const { data: listener } = supabase.auth.onAuthStateChange((event, nextSession) => {
+
+    let mounted = true;
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      if (!mounted) return;
       setSession(nextSession);
-      if (event === "PASSWORD_RECOVERY") setRecoveryMode(true);
-      if (!nextSession) { setProfileReady(false); setRecoveryMode(false); }
+      if (!nextSession) setProfileReady(false);
     });
-    return () => listener.subscription.unsubscribe();
+
+    (async () => {
+      const { data, error: sessionError } = await supabase.auth.getSession();
+      if (!mounted) return;
+      if (sessionError) {
+        setAuthError(sessionError.message);
+        setAuthReady(true);
+        return;
+      }
+
+      if (data.session) {
+        setSession(data.session);
+        setAuthReady(true);
+        return;
+      }
+
+      // Create a private anonymous session in the background. No login,
+      // phone number, email, or OTP is shown or requested from the user.
+      const { data: anonymousData, error: anonymousError } =
+        await supabase.auth.signInAnonymously();
+
+      if (!mounted) return;
+      if (anonymousError || !anonymousData.session) {
+        setAuthError(
+          anonymousError?.message ||
+          "Could not start a guest session. Enable Anonymous Sign-Ins in Supabase Authentication settings."
+        );
+      } else {
+        setSession(anonymousData.session);
+      }
+      setAuthReady(true);
+    })();
+
+    return () => {
+      mounted = false;
+      listener.subscription.unsubscribe();
+    };
   }, []);
 
   useEffect(() => {
@@ -59,7 +92,6 @@ export default function App() {
     return () => { alive = false; };
   }, [session]);
 
-  const signOut = async () => { await supabase.auth.signOut(); };
 
   if (!authReady || (session && profileLoading)) {
     return <SafeAreaProvider><AppBackground /><SafeAreaView style={styles.center}><ActivityIndicator color={colors.maroon} /></SafeAreaView></SafeAreaProvider>;
@@ -75,8 +107,16 @@ export default function App() {
     );
   }
 
-  if (!session || recoveryMode) {
-    return <SafeAreaProvider><AppBackground /><SafeAreaView style={styles.safe}><StatusBar style="dark" /><AuthScreen recoveryMode={recoveryMode} onRecoveryComplete={() => setRecoveryMode(false)} /></SafeAreaView></SafeAreaProvider>;
+  if (!session) {
+    return (
+      <SafeAreaProvider><AppBackground /><SafeAreaView style={styles.config}>
+        <Text style={styles.brand}>KAALAM</Text>
+        <Text style={styles.configTitle}>Guest access setup needed</Text>
+        <Text style={styles.configBody}>
+          {authError || "Enable Anonymous Sign-Ins in Supabase Authentication settings, then restart KAALAM."}
+        </Text>
+      </SafeAreaView></SafeAreaProvider>
+    );
   }
 
   if (!profileReady) {
@@ -100,7 +140,7 @@ export default function App() {
         <StatusBar style="dark" />
         <View style={styles.header}>
           <Text style={styles.wordmark}>KAALAM</Text>
-          <Text onPress={signOut} style={styles.signOut}>SIGN OUT</Text>
+          
         </View>
         <View style={styles.content}>{renderScreen()}</View>
         <DailyDeityWelcome visible={showDailyWelcome} onContinue={() => setShowDailyWelcome(false)} />
@@ -126,7 +166,6 @@ const styles = StyleSheet.create({
   configBody: { color: colors.muted, fontSize: 13, lineHeight: 20, marginTop: 10 },
   header: { height: 62, paddingHorizontal: 24, flexDirection: "row", alignItems: "center", justifyContent: "space-between", borderBottomWidth: 1, borderBottomColor: colors.line, backgroundColor: "rgba(255, 241, 214, 0.76)" },
   wordmark: { color: colors.maroonDark, fontSize: 23, letterSpacing: 4, fontWeight: "700", fontFamily: "Georgia" },
-  signOut: { color: colors.muted, fontSize: 10, letterSpacing: 1.2, fontWeight: "700", padding: 10 },
   content: { flex: 1 },
   tabBar: { height: 66, flexDirection: "row", backgroundColor: "rgba(255, 244, 221, 0.96)", borderTopWidth: 1, borderTopColor: colors.line, alignItems: "center", justifyContent: "space-around", paddingHorizontal: 4 },
   tab: { color: colors.muted, fontSize: 10, paddingVertical: 12 },
