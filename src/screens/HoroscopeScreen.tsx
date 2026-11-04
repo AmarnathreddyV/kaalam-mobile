@@ -60,7 +60,7 @@ export function HoroscopeScreen() {
         <LabelValue label={t("Time")} value={profile?.time_of_birth || t("Not added")} />
         <LabelValue label={t("Place")} value={profile?.birth_place || t("Not added")} last />
       </Panel>
-      <Text style={styles.footnote}>Astrological interpretations are traditional cultural guidance, not guaranteed predictions or professional advice. If birth details change, recalculate the chart.</Text>
+      <Text style={styles.footnote}>{t("Astrological interpretations are traditional cultural guidance, not guaranteed predictions or professional advice. If birth details change, recalculate the chart.")}</Text>
     </Screen>
   );
 }
