@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { PageHeading, Panel } from "../components/Screen";
 import { colors } from "../theme/colors";
+import { useLanguage } from "../i18n";
 
 const lists: Record<string, { title: string; items: string[]; note: string }> = {
   "Gruhapravesam": {
@@ -66,7 +67,8 @@ const lists: Record<string, { title: string; items: string[]; note: string }> = 
   }
 };
 
-export function PoojaItemsScreen() {\n  const { t } = useLanguage();
+export function PoojaItemsScreen() {
+  const { t } = useLanguage();
   const names = useMemo(() => Object.keys(lists), []);
   const [selected, setSelected] = useState("Gruhapravesam");
   const current = lists[selected];
