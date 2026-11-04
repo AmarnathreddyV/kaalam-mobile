@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Text, StyleSheet } from "react-native";
+import { ActivityIndicator, Text, StyleSheet, View } from "react-native";
 import { Screen, PageHeading, Panel, LabelValue } from "../components/Screen";
 import { colors } from "../theme/colors";
 import { supabase } from "../auth/supabase";
