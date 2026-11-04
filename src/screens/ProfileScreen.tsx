@@ -58,6 +58,7 @@ export function ProfileScreen() {
         <LabelValue label={t("Panchangam tradition")} value={t(profile?.panchangam_tradition || "Telugu Drik")} last />
       </Panel>
       <Text style={styles.heading}>{t("Preferred language")}</Text>
+      <Text style={styles.footnote}>{t("Change the app language anytime. Your choice is saved automatically.")}</Text>
       <Panel>
         <View style={styles.languageRow}>
           {(["Telugu", "Hindi", "English"] as const).map(item => (
