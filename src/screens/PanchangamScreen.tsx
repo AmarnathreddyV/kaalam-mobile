@@ -67,11 +67,11 @@ export function PanchangamScreen() {
       ) : (
         <>
           <Panel>
-            <LabelValue label={t("Tithi")} value={[p?.tithi?.name, p?.tithi?.paksha].filter(Boolean).join(" · ") || "—"} />
-            <LabelValue label={t("Vara")} value={p?.weekday?.name || "—"} />
-            <LabelValue label={t("Nakshatra")} value={p?.nakshatra?.name || "—"} />
-            <LabelValue label={t("Yoga")} value={p?.yoga?.name || "—"} />
-            <LabelValue label={t("Karana")} value={p?.karana?.name || "—"} last />
+            <LabelValue label={t("Tithi")} value={[p?.tithi?.name ? t(p.tithi.name) : "", p?.tithi?.paksha ? t(p.tithi.paksha) : ""].filter(Boolean).join(" · ") || "—"} />
+            <LabelValue label={t("Vara")} value={p?.weekday?.name ? t(p.weekday.name) : "—"} />
+            <LabelValue label={t("Nakshatra")} value={p?.nakshatra?.name ? t(p.nakshatra.name) : "—"} />
+            <LabelValue label={t("Yoga")} value={p?.yoga?.name ? t(p.yoga.name) : "—"} />
+            <LabelValue label={t("Karana")} value={p?.karana?.name ? t(p.karana.name) : "—"} last />
           </Panel>
           <View style={styles.providerRow}>
             <Text style={styles.provider}>{t("DATA: NAVAMSHA")}</Text>
