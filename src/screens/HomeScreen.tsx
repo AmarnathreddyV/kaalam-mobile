@@ -19,14 +19,15 @@ type Profile = {
   birth_chart_summary?: { rashi?: string; nakshatra?: string; pada?: number; lagna?: string } | null;
 };
 
-function todayLabel() {
-  return new Intl.DateTimeFormat("en-IN", {
+function todayLabel(language: string) {
+  const locale = language === "Telugu" ? "te-IN" : language === "Hindi" ? "hi-IN" : "en-IN";
+  return new Intl.DateTimeFormat(locale, {
     weekday: "long", day: "2-digit", month: "long", year: "numeric",
   }).format(new Date()).toUpperCase().replace(",", " ·");
 }
 
 export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void }) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [result, setResult] = useState<DailyPanchangamResponse | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [error, setError] = useState("");
@@ -121,7 +122,7 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
 
   return (
     <Screen>
-      <Text style={styles.date}>{todayLabel()}</Text>
+      <Text style={styles.date}>{todayLabel(language)}</Text>
       <Text style={styles.greeting}>{t("Namaskaram")}, {name}</Text>
       <Text style={styles.name}>{t("Your day, in alignment.")}</Text>
 
