@@ -35,16 +35,16 @@ export function DailyDeityWelcome({ visible, onContinue }: { visible: boolean; o
     <Modal visible={visible} animationType="fade" statusBarTranslucent onRequestClose={continueToApp}>
       <View style={styles.root}>
         <Image source={deity.image} style={styles.image} resizeMode="contain" />
-        <View style={styles.scrim} />
+        <View pointerEvents="none" style={styles.scrim} />
         <View style={styles.content}>
           <Text style={styles.eyebrow}>KAALAM · TODAY'S DIVINE BLESSING</Text>
           <Text style={styles.deity}>{deity.name}</Text>
           <Text style={styles.day}>{weekday.toUpperCase()}</Text>
           <View style={styles.actions}>
-            <Pressable style={styles.secondary} onPress={() => setMuted(value => !value)}>
-              <Text style={styles.secondaryText}>{muted ? "Turn music on" : "Mute music"}</Text>
+            <Pressable accessibilityRole="button" style={styles.secondary} onPress={() => setMuted(value => !value)}>
+              <Text style={styles.secondaryText}>{muted ? "♫  Turn music on" : "♫  Mute music"}</Text>
             </Pressable>
-            <Pressable style={styles.primary} onPress={continueToApp}>
+            <Pressable accessibilityRole="button" style={styles.primary} onPress={continueToApp}>
               <Text style={styles.primaryText}>Continue to KAALAM  →</Text>
             </Pressable>
           </View>
@@ -56,17 +56,17 @@ export function DailyDeityWelcome({ visible, onContinue }: { visible: boolean; o
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#170D08", justifyContent: "flex-end" },
+  root: { flex: 1, backgroundColor: "#100905", alignItems: "center", justifyContent: "center" },
   image: { ...StyleSheet.absoluteFillObject, width: "100%", height: "100%" },
-  scrim: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(12, 7, 4, 0.18)" },
-  content: { paddingHorizontal: 28, paddingBottom: 54, paddingTop: 30, backgroundColor: "rgba(18, 10, 6, 0.58)" },
-  eyebrow: { color: "#E8C88D", fontSize: 9, letterSpacing: 2, fontWeight: "700", fontFamily: "sans-serif" },
-  deity: { color: "#FFF7E9", fontSize: 34, fontFamily: "serif", fontWeight: "600", letterSpacing: 0.2, marginTop: 13 },
-  day: { color: "#E8C88D", fontSize: 11, letterSpacing: 3, marginTop: 8, fontFamily: "sans-serif-medium" },
-  actions: { gap: 11, marginTop: 22 },
-  secondary: { borderColor: "rgba(255,247,233,0.65)", borderWidth: 1, borderRadius: 13, padding: 14, alignItems: "center" },
-  secondaryText: { color: "#FFF7E9", fontSize: 13, fontWeight: "600", fontFamily: "sans-serif" },
-  primary: { backgroundColor: "#E8C88D", borderRadius: 13, padding: 16, alignItems: "center" },
-  primaryText: { color: "#321B0D", fontSize: 13, fontWeight: "800", fontFamily: "sans-serif" },
-  caption: { color: "#F4E6D2", textAlign: "center", fontSize: 13, marginTop: 16, fontFamily: "serif", fontStyle: "italic" }
+  scrim: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(12, 7, 4, 0.12)" },
+  content: { position: "absolute", left: 0, right: 0, bottom: 0, paddingHorizontal: 26, paddingTop: 34, paddingBottom: 42, backgroundColor: "rgba(18, 10, 6, 0.48)", borderTopWidth: 1, borderTopColor: "rgba(232, 200, 141, 0.28)" },
+  eyebrow: { color: "#F0D7A8", fontSize: 9, letterSpacing: 2, fontWeight: "700", fontFamily: "sans-serif" },
+  deity: { color: "#FFF7E9", fontSize: 34, fontFamily: "serif", fontWeight: "600", letterSpacing: 0.2, marginTop: 13, textShadowColor: "rgba(0,0,0,0.65)", textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 5 },
+  day: { color: "#F0D7A8", fontSize: 11, letterSpacing: 3, marginTop: 8, fontFamily: "sans-serif-medium" },
+  actions: { flexDirection: "row", gap: 10, marginTop: 22 },
+  secondary: { flex: 1, borderColor: "rgba(255,247,233,0.8)", borderWidth: 1, borderRadius: 13, paddingVertical: 15, paddingHorizontal: 10, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(20, 12, 8, 0.42)" },
+  secondaryText: { color: "#FFF7E9", fontSize: 12, fontWeight: "700", fontFamily: "sans-serif" },
+  primary: { flex: 1.5, backgroundColor: "#E8C88D", borderRadius: 13, paddingVertical: 16, paddingHorizontal: 10, alignItems: "center", justifyContent: "center" },
+  primaryText: { color: "#321B0D", fontSize: 12, fontWeight: "800", fontFamily: "sans-serif" },
+  caption: { color: "#FFF1DC", textAlign: "center", fontSize: 13, marginTop: 17, fontFamily: "serif", fontStyle: "italic", textShadowColor: "rgba(0,0,0,0.7)", textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 4 }
 });
