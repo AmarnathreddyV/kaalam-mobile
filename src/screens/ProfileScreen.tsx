@@ -16,7 +16,7 @@ type Profile = {
   panchangam_tradition?: string;
 };
 
-export function ProfileScreen() {
+function displayBirthDate(value?: string) {\n  if (!value) return "Not added";\n  const match = /^(\\d{4})-(\\d{2})-(\\d{2})$/.exec(value);\n  return match ? `${match[3]}-${match[2]}-${match[1]}` : value;\n}\n\nexport function ProfileScreen() {
   const { language, setLanguage, t } = useLanguage();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -45,7 +45,7 @@ export function ProfileScreen() {
           <>
             <LabelValue label={t("Name")} value={profile?.full_name || t("Not added")} />
             <LabelValue label={t("Email")} value={profile?.email || t("Not added")} />
-            <LabelValue label={t("Date of birth")} value={profile?.date_of_birth || t("Not added")} />
+            <LabelValue label={t("Date of birth")} value={profile?.date_of_birth ? displayBirthDate(profile.date_of_birth) : t("Not added")} />
             <LabelValue label={t("Time of birth")} value={profile?.time_of_birth || t("Not added")} />
             <LabelValue label={t("Place of birth")} value={profile?.birth_place || t("Not added")} last />
           </>
