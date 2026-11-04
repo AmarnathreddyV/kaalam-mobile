@@ -76,11 +76,12 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
   const name = profile?.full_name?.trim() || "there";
   const daily = result?.data;
   const userTimezone = profile?.current_timezone || "UTC";
+  const timeLocale = language === "Telugu" ? "te-IN" : language === "Hindi" ? "hi-IN" : "en-IN";
   const timeText = (value?: string) => {
     if (!value) return "Unavailable";
     const parsed = new Date(value);
     if (Number.isNaN(parsed.getTime())) return "Unavailable";
-    return new Intl.DateTimeFormat("en-IN", {
+    return new Intl.DateTimeFormat(timeLocale, {
       hour: "numeric", minute: "2-digit", hour12: true, timeZone: userTimezone,
     }).format(parsed);
   };
@@ -103,11 +104,11 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
   };
   const tithiText = [p?.tithi?.name, p?.tithi?.paksha].filter(Boolean).join(" ").toLowerCase();
   const specialTithiNote = tithiText.includes("ekadashi")
-    ? "Ekadashi is traditionally observed by many devotees with Vishnu worship. Fasting practices differ; follow your health needs and family tradition."
+    ? t("Ekadashi is traditionally observed by many devotees with Vishnu worship. Fasting practices differ; follow your health needs and family tradition.")
     : tithiText.includes("purnima") || tithiText.includes("pournami")
-      ? "Pournami (full-moon day) is traditionally observed with prayer and devotional practices in many households."
+      ? t("Pournami (full-moon day) is traditionally observed with prayer and devotional practices in many households.")
       : tithiText.includes("amavasya")
-        ? "Amavasya is traditionally associated in many families with remembrance and prayers for ancestors; customs vary."
+        ? t("Amavasya is traditionally associated in many families with remembrance and prayers for ancestors; customs vary.")
         : "";
   const spiritualGuidance = {
     ...(weekdayGuidance[weekday] || weekdayGuidance.Monday),
