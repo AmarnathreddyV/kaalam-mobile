@@ -753,22 +753,36 @@ async def resolve_location(request: LocationResolveRequest) -> dict[str, Any]:
         ) as client:
             response = await client.get(
                 "https://nominatim.openstreetmap.org/search",
-                params={"q": query, "format": "jsonv2", "limit": 5},
+                params={
+                    "q": query,
+                    "format": "jsonv2",
+                    "limit": 10,
+                    "countrycodes": "in",
+                    "addressdetails": 1,
+                },
             )
             response.raise_for_status()
             matches = response.json()
     except (httpx.RequestError, httpx.HTTPStatusError, ValueError) as exc:
         raise HTTPException(status_code=502, detail="Location lookup is temporarily unavailable.") from exc
 
-    if not matches:
-        raise HTTPException(status_code=404, detail=f"Could not find the place: {query}")
+    india_matches = [
+        item for item in matches
+        if isinstance(item, dict)
+        and (item.get("address") or {}).get("country_code", "").lower() == "in"
+    ]
+    if not india_matches:
+        raise HTTPException(
+            status_code=404,
+            detail=(
+                f"Could not find an Indian location matching '{query}'. "
+                "Enter a village, town, city, district or state in India."
+            ),
+        )
 
-    if len(matches) > 1:
-        # Use the highest-ranked exact provider result, but return its full label
-        # so the app can show the resolved location to the user for confirmation.
-        match = matches[0]
-    else:
-        match = matches[0]
+    # Nominatim ranks the most relevant Indian match first. Keep the complete
+    # display label so the app can identify the resolved village/town/city.
+    match = india_matches[0]
 
     latitude = float(match["lat"])
     longitude = float(match["lon"])
