@@ -13,7 +13,8 @@ const deities = {
   Saturday: { name: "Lord Hanuman", image: require("../../assets/hanuman/images.jpg"), audio: require("../../assets/audios/hanuman.mp3") },
 };
 
-export function DailyDeityWelcome({ visible, onContinue }: { visible: boolean; onContinue: () => void }) {\n  const { t } = useLanguage();
+export function DailyDeityWelcome({ visible, onContinue }: { visible: boolean; onContinue: () => void }) {
+  const { t } = useLanguage();
   const weekday = new Intl.DateTimeFormat("en-US", { weekday: "long" }).format(new Date()) as keyof typeof deities;
   const deity = useMemo(() => deities[weekday] || deities.Monday, [weekday]);
   const [muted, setMuted] = useState(false);
