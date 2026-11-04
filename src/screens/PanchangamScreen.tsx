@@ -4,10 +4,12 @@ import { Screen, PageHeading, Panel, LabelValue } from "../components/Screen";
 import { colors } from "../theme/colors";
 import { fetchDailyPanchangam, DailyPanchangamResponse } from "../services/panchangam";
 import { supabase } from "../auth/supabase";
+import { useLanguage } from "../i18n";
 
 type LocationProfile = { current_location?: string; current_latitude?: number; current_longitude?: number; current_timezone?: string };
 
-export function PanchangamScreen() {\n  const { t } = useLanguage();
+export function PanchangamScreen() {
+  const { t } = useLanguage();
   const [result, setResult] = useState<DailyPanchangamResponse | null>(null);
   const [place, setPlace] = useState("");
   const [timezone, setTimezone] = useState("UTC");
