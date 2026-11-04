@@ -34,7 +34,7 @@ export function DailyDeityWelcome({ visible, onContinue }: { visible: boolean; o
   return (
     <Modal visible={visible} animationType="fade" statusBarTranslucent onRequestClose={continueToApp}>
       <View style={styles.root}>
-        <Image source={deity.image} style={styles.image} resizeMode="cover" />
+        <Image source={deity.image} style={styles.image} resizeMode="contain" />
         <View style={styles.scrim} />
         <View style={styles.content}>
           <Text style={styles.eyebrow}>KAALAM · TODAY'S DIVINE BLESSING</Text>
@@ -58,15 +58,15 @@ export function DailyDeityWelcome({ visible, onContinue }: { visible: boolean; o
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: "#170D08", justifyContent: "flex-end" },
   image: { ...StyleSheet.absoluteFillObject, width: "100%", height: "100%" },
-  scrim: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(12, 7, 4, 0.30)" },
-  content: { paddingHorizontal: 28, paddingBottom: 54, paddingTop: 42, backgroundColor: "rgba(18, 10, 6, 0.62)" },
+  scrim: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(12, 7, 4, 0.18)" },
+  content: { paddingHorizontal: 28, paddingBottom: 54, paddingTop: 30, backgroundColor: "rgba(18, 10, 6, 0.58)" },
   eyebrow: { color: "#E8C88D", fontSize: 9, letterSpacing: 2, fontWeight: "700" },
   deity: { color: "#FFF7E9", fontSize: 32, fontFamily: "Georgia", fontWeight: "700", marginTop: 13 },
   day: { color: "#E8C88D", fontSize: 11, letterSpacing: 3, marginTop: 8 },
-  actions: { gap: 11, marginTop: 27 },
+  actions: { gap: 11, marginTop: 22 },
   secondary: { borderColor: "rgba(255,247,233,0.65)", borderWidth: 1, borderRadius: 13, padding: 14, alignItems: "center" },
   secondaryText: { color: "#FFF7E9", fontSize: 13, fontWeight: "600" },
   primary: { backgroundColor: "#E8C88D", borderRadius: 13, padding: 16, alignItems: "center" },
   primaryText: { color: "#321B0D", fontSize: 13, fontWeight: "800" },
-  caption: { color: "#F4E6D2", textAlign: "center", fontSize: 11, marginTop: 18 }
+  caption: { color: "#F4E6D2", textAlign: "center", fontSize: 11, marginTop: 16 }
 });
