@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Text, View, StyleSheet } from "react-native";
+import { ActivityIndicator, Text, View, StyleSheet, Image, TouchableOpacity } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Session } from "@supabase/supabase-js";
@@ -145,7 +145,7 @@ function AppContent() {
       <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
         <StatusBar style="dark" />
         <View style={styles.header}>
-          <Text style={styles.wordmark}>KAALAM</Text>
+          <Image source={require("./assets/kaalam-logo.png")} style={styles.headerLogo} resizeMode="contain" accessibilityLabel="KAALAM logo" />
           
         </View>
         <View style={styles.content}>{renderScreen()}</View>
@@ -153,8 +153,14 @@ function AppContent() {
         <View style={styles.tabBar}>
           {tabs.map((tab) => {
             const selected = activeTab === tab;
+            const icon = tab === "Home" ? "⌂" : tab === "Panchangam" ? "▦" : tab === "Pooja Items" ? "✿" : tab === "Horoscope" ? "✧" : "◉";
             return (
-              <Text key={tab} onPress={() => setActiveTab(tab)} style={[styles.tab, selected && styles.tabActive]}>{t(tab)}</Text>
+              <TouchableOpacity key={tab} onPress={() => setActiveTab(tab)} activeOpacity={0.75}
+                accessibilityRole="button" accessibilityLabel={t(tab)} accessibilityState={{ selected }}
+                style={[styles.tabButton, selected && styles.tabButtonActive]}>
+                <Text style={[styles.tabIcon, selected && styles.tabIconActive]}>{icon}</Text>
+                <Text numberOfLines={1} style={[styles.tab, selected && styles.tabActive]}>{t(tab)}</Text>
+              </TouchableOpacity>
             );
           })}
         </View>
@@ -171,10 +177,14 @@ const styles = StyleSheet.create({
   configTitle: { color: colors.maroonDark, fontSize: 23, fontWeight: "600" },
   configBody: { color: colors.muted, fontSize: 13, lineHeight: 20, marginTop: 10 },
   header: { height: 62, paddingHorizontal: 24, flexDirection: "row", alignItems: "center", justifyContent: "space-between", borderBottomWidth: 1, borderBottomColor: colors.line, backgroundColor: "rgba(255, 241, 214, 0.76)" },
-  wordmark: { color: colors.maroonDark, fontSize: 23, letterSpacing: 4, fontWeight: "700", fontFamily: "Georgia" },
+  headerLogo: { width: 112, height: 58 },
   content: { flex: 1 },
-  tabBar: { height: 66, flexDirection: "row", backgroundColor: "rgba(255, 244, 221, 0.96)", borderTopWidth: 1, borderTopColor: colors.line, alignItems: "center", justifyContent: "space-around", paddingHorizontal: 4 },
-  tab: { color: colors.muted, fontSize: 10, paddingVertical: 12 },
+  tabBar: { height: 72, flexDirection: "row", backgroundColor: "rgba(255, 244, 221, 0.98)", borderTopWidth: 1, borderTopColor: colors.line, alignItems: "center", justifyContent: "space-around", paddingHorizontal: 4 },
+  tabButton: { flex: 1, height: 60, alignItems: "center", justifyContent: "center", borderRadius: 12, marginHorizontal: 2 },
+  tabButtonActive: { backgroundColor: "rgba(113, 55, 15, 0.08)" },
+  tabIcon: { color: colors.muted, fontSize: 22, lineHeight: 26 },
+  tabIconActive: { color: colors.maroon, fontWeight: "700" },
+  tab: { color: colors.muted, fontSize: 9, paddingTop: 2, paddingBottom: 3 },
   tabActive: { color: colors.maroon, fontWeight: "700" },
 });
 
