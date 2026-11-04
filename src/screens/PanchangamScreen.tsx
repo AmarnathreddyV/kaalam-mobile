@@ -98,7 +98,7 @@ export function PanchangamScreen() {
           <LabelValue key={String(slot.name) + index} label={t(slot.name || "Choghadiya")} value={range(slot)} last={index === (d?.choghadiya?.day?.length || 0) - 1} />
         ))}
       </Panel>
-      <Text style={styles.footnote}>Times are displayed in the local time zone of your saved current location. Abhijit and Choghadiya are general daily indicators, not event-specific Muhurtham approval. Missing categories are shown as unavailable.</Text>
+      <Text style={styles.footnote}>{t("Times are displayed in the local time zone of your saved current location. Abhijit and Choghadiya are general daily indicators, not event-specific Muhurtham approval. Missing categories are shown as unavailable.")}</Text>
     </Screen>
   );
 }
