@@ -86,7 +86,7 @@ export function OnboardingScreen({
   };
 
   function toIsoDate(date: string) {
-    const match = /^(\\d{2})-(\\d{2})-(\\d{4})$/.exec(date.trim());
+    const match = /^(\d{2})-(\d{2})-(\d{4})$/.exec(date.trim());
     if (!match) return null;
     const day = Number(match[1]);
     const month = Number(match[2]);
