@@ -32,8 +32,9 @@ type PanchangResult = { date: string; data: Record<string, any> };
 function formatDate(date: Date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
-function displayDate(date: Date) {
-  return date.toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" });
+function displayDate(date: Date, language: string) {
+  const locale = language === "Telugu" ? "te-IN" : language === "Hindi" ? "hi-IN" : "en-IN";
+  return date.toLocaleDateString(locale, { day: "2-digit", month: "long", year: "numeric" });
 }
 function addMonths(date: Date, months: number) {
   const result = new Date(date);
@@ -58,7 +59,7 @@ function addDays(date: Date, days: number) {
 }
 
 export function MuhurthamScreen() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [selected, setSelected] = useState("Gruhapravesam");
   const [customOccasion, setCustomOccasion] = useState("");
   const [selectedPeriod, setSelectedPeriod] = useState("3 Months");
@@ -206,11 +207,11 @@ export function MuhurthamScreen() {
         <Panel>
           <Text style={styles.dateLabel}>{t("FROM")}</Text>
           <TouchableOpacity style={styles.dateButton} onPress={() => setShowStartPicker(true)}>
-            <Text style={styles.dateText}>{displayDate(startDate)}</Text><Text style={styles.calendar}>▦</Text>
+            <Text style={styles.dateText}>{displayDate(startDate, language)}</Text><Text style={styles.calendar}>▦</Text>
           </TouchableOpacity>
           <Text style={styles.dateLabel}>{t("TO")}</Text>
           <TouchableOpacity style={styles.dateButton} onPress={() => setShowEndPicker(true)}>
-            <Text style={styles.dateText}>{displayDate(endDate)}</Text><Text style={styles.calendar}>▦</Text>
+            <Text style={styles.dateText}>{displayDate(endDate, language)}</Text><Text style={styles.calendar}>▦</Text>
           </TouchableOpacity>
           <Text style={styles.hint}>{t(selectedPeriod === "Custom" ? "Custom range" : selectedPeriod)}</Text>
         </Panel>
