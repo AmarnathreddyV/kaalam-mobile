@@ -149,7 +149,7 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
           <View style={styles.state}><ActivityIndicator color={colors.maroon} /><Text style={styles.stateText}>{t("Loading today's Panchangam…")}</Text></View>
         ) : error ? (
           <View>
-            <Text style={styles.error}>{error}</Text>
+            <Text style={styles.error}>{t(error)}</Text>
             <TouchableOpacity onPress={load}><Text style={styles.retry}>{t("Try again")}</Text></TouchableOpacity>
           </View>
         ) : (
@@ -200,7 +200,7 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
         )}
       </Panel>
 
-      <SectionTitle>SUNRISE & SUNSET · {profile?.current_location?.toUpperCase() || "YOUR LOCATION"}</SectionTitle>
+      <SectionTitle>{t("SUNRISE & SUNSET")} · {profile?.current_location?.toUpperCase() || t("YOUR LOCATION")}</SectionTitle>
       <Panel>
         <LabelValue label={t("Sunrise")} value={timeText(sunrise)} />
         <LabelValue label={t("Sunset")} value={timeText(sunset)} last />
