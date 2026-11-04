@@ -60,13 +60,13 @@ const styles = StyleSheet.create({
   image: { ...StyleSheet.absoluteFillObject, width: "100%", height: "100%" },
   scrim: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(12, 7, 4, 0.18)" },
   content: { paddingHorizontal: 28, paddingBottom: 54, paddingTop: 30, backgroundColor: "rgba(18, 10, 6, 0.58)" },
-  eyebrow: { color: "#E8C88D", fontSize: 9, letterSpacing: 2, fontWeight: "700" },
-  deity: { color: "#FFF7E9", fontSize: 32, fontFamily: "Georgia", fontWeight: "700", marginTop: 13 },
-  day: { color: "#E8C88D", fontSize: 11, letterSpacing: 3, marginTop: 8 },
+  eyebrow: { color: "#E8C88D", fontSize: 9, letterSpacing: 2, fontWeight: "700", fontFamily: "sans-serif" },
+  deity: { color: "#FFF7E9", fontSize: 34, fontFamily: "serif", fontWeight: "600", letterSpacing: 0.2, marginTop: 13 },
+  day: { color: "#E8C88D", fontSize: 11, letterSpacing: 3, marginTop: 8, fontFamily: "sans-serif-medium" },
   actions: { gap: 11, marginTop: 22 },
   secondary: { borderColor: "rgba(255,247,233,0.65)", borderWidth: 1, borderRadius: 13, padding: 14, alignItems: "center" },
-  secondaryText: { color: "#FFF7E9", fontSize: 13, fontWeight: "600" },
+  secondaryText: { color: "#FFF7E9", fontSize: 13, fontWeight: "600", fontFamily: "sans-serif" },
   primary: { backgroundColor: "#E8C88D", borderRadius: 13, padding: 16, alignItems: "center" },
-  primaryText: { color: "#321B0D", fontSize: 13, fontWeight: "800" },
-  caption: { color: "#F4E6D2", textAlign: "center", fontSize: 11, marginTop: 16 }
+  primaryText: { color: "#321B0D", fontSize: 13, fontWeight: "800", fontFamily: "sans-serif" },
+  caption: { color: "#F4E6D2", textAlign: "center", fontSize: 13, marginTop: 16, fontFamily: "serif", fontStyle: "italic" }
 });
