@@ -7,6 +7,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { PageHeading, Panel } from "../components/Screen";
 import { colors } from "../theme/colors";
 import { supabase } from "../auth/supabase";
+import { useLanguage } from "../i18n";
 
 const API_BASE_URL = (process.env.EXPO_PUBLIC_API_BASE_URL || "https://kaalam-mobile.onrender.com").replace(/\/$/, "");
 
@@ -56,7 +57,7 @@ function addDays(date: Date, days: number) {
   return result;
 }
 
-export function MuhurthamScreen() {
+export function MuhurthamScreen() {\n  const { t } = useLanguage();
   const [selected, setSelected] = useState("Gruhapravesam");
   const [customOccasion, setCustomOccasion] = useState("");
   const [selectedPeriod, setSelectedPeriod] = useState("3 Months");
@@ -171,9 +172,9 @@ export function MuhurthamScreen() {
   return (
     <View style={{ flex: 1 }}>
       <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-        <PageHeading title="Check a date for an event" subtitle="Choose an event and date range to find dates and timings from published calendars." />
-        <Panel style={styles.noticePanel}><Text style={styles.noticeTitle}>Published calendar data</Text><Text style={styles.noticeText}>KAALAM searches its collected, source-attributed Muhurtham calendars and displays their published dates and timings. These listings are not personalized; confirm the final Muhurtham with your family priest.</Text></Panel>
-        <Text style={styles.label}>SELECT YOUR EVENT</Text>
+        <PageHeading title={t("Check a date for an event")} subtitle={t("Choose an event and date range to find dates and timings from published calendars.")} />
+        <Panel style={styles.noticePanel}><Text style={styles.noticeTitle}>{t("Published calendar data")}</Text><Text style={styles.noticeText}>KAALAM searches its collected, source-attributed Muhurtham calendars and displays their published dates and timings. These listings are not personalized; confirm the final Muhurtham with your family priest.</Text></Panel>
+        <Text style={styles.label}>{t("SELECT YOUR EVENT")}</Text>
         {occasionGroups.map(group => (
           <View key={group.title} style={styles.group}>
             <Text style={styles.groupTitle}>{group.title}</Text>
@@ -192,7 +193,7 @@ export function MuhurthamScreen() {
             <TextInput value={customOccasion} onChangeText={setCustomOccasion} placeholder="Describe the event" placeholderTextColor={colors.muted} style={styles.input} multiline maxLength={160} />
           </>
         )}
-        <Text style={styles.label}>SELECT SEARCH PERIOD</Text>
+        <Text style={styles.label}>{t("SELECT SEARCH PERIOD")}</Text>
         <View style={styles.options}>
           {periods.map(period => (
             <TouchableOpacity key={period.label} onPress={() => changePeriod(period.label)} style={[styles.option, selectedPeriod === period.label && styles.optionSelected]}>
@@ -200,13 +201,13 @@ export function MuhurthamScreen() {
             </TouchableOpacity>
           ))}
         </View>
-        <Text style={styles.label}>DATE RANGE</Text>
+        <Text style={styles.label}>{t("DATE RANGE")}</Text>
         <Panel>
-          <Text style={styles.dateLabel}>FROM</Text>
+          <Text style={styles.dateLabel}>{t("FROM")}</Text>
           <TouchableOpacity style={styles.dateButton} onPress={() => setShowStartPicker(true)}>
             <Text style={styles.dateText}>{displayDate(startDate)}</Text><Text style={styles.calendar}>▦</Text>
           </TouchableOpacity>
-          <Text style={styles.dateLabel}>TO</Text>
+          <Text style={styles.dateLabel}>{t("TO")}</Text>
           <TouchableOpacity style={styles.dateButton} onPress={() => setShowEndPicker(true)}>
             <Text style={styles.dateText}>{displayDate(endDate)}</Text><Text style={styles.calendar}>▦</Text>
           </TouchableOpacity>
@@ -215,7 +216,7 @@ export function MuhurthamScreen() {
         {showStartPicker && <DateTimePicker value={startDate} mode="date" display={Platform.OS === "ios" ? "spinner" : "calendar"} onChange={onStartChange} />}
         {showEndPicker && <DateTimePicker value={endDate} mode="date" display={Platform.OS === "ios" ? "spinner" : "calendar"} minimumDate={startDate} maximumDate={addDays(startDate, 365)} onChange={onEndChange} />}
         <TouchableOpacity style={styles.button} onPress={search} disabled={loading}>
-          {loading ? <View style={styles.loading}><ActivityIndicator color="#FFF" /><Text style={styles.buttonText}>Searching published dates…</Text></View> : <Text style={styles.buttonText}>Find suitable dates</Text>}
+          {loading ? <View style={styles.loading}><ActivityIndicator color="#FFF" /><Text style={styles.buttonText}>{t("Searching published dates…")}</Text></View> : <Text style={styles.buttonText}>{t("Find suitable dates")}</Text>}
         </TouchableOpacity>
         {!!error && <Panel style={styles.result}><Text style={styles.error}>{error}</Text></Panel>}
         {!!active && (
@@ -226,10 +227,10 @@ export function MuhurthamScreen() {
             {!!active.reason && <Text style={styles.reason}>{active.reason}</Text>}
             <View style={styles.navigation}>
               <TouchableOpacity disabled={activeResult === 0} onPress={() => setActiveResult(index => Math.max(0, index - 1))} style={[styles.navButton, activeResult === 0 && styles.disabled]}>
-                <Text style={styles.navText}>Previous date</Text>
+                <Text style={styles.navText}>{t("Previous date")}</Text>
               </TouchableOpacity>
               <TouchableOpacity disabled={activeResult >= results.length - 1} onPress={() => setActiveResult(index => Math.min(results.length - 1, index + 1))} style={[styles.navButton, activeResult >= results.length - 1 && styles.disabled]}>
-                <Text style={styles.navText}>Find another date →</Text>
+                <Text style={styles.navText}>{t("Find another date →")}</Text>
               </TouchableOpacity>
             </View>
           </Panel>
