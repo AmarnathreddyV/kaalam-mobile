@@ -6,12 +6,12 @@ import { colors } from "../theme/colors";
 import { useLanguage } from "../i18n";
 
 const songs = [
-  { title: "Sri Venkatesha Suprabhatam", deity: "Lord Venkateswara", source: require("../../assets/devotional-songs/sri_venkatesha_suprabhatam.mp3") },
-  { title: "Lingashtakam", deity: "Lord Shiva", source: require("../../assets/devotional-songs/lingashtakam_lord_shiva.mp3") },
-  { title: "Garuda Gamana Tava", deity: "Lord Maha Vishnu", source: require("../../assets/devotional-songs/garuda_gamana_tava_sri_maha_vishnu_stotram.mp3") },
-  { title: "Hanuman Chalisa", deity: "Lord Hanuman", source: require("../../assets/devotional-songs/hanuman_chalisa.mp3") },
-  { title: "Ganpati Stotram", deity: "Lord Ganesha", source: require("../../assets/devotional-songs/ganpati_stotram.mp3") },
-  { title: "Aarti Sai Baba", deity: "Sai Baba", source: require("../../assets/devotional-songs/aarti_saibaba.mp3") },
+  { title: "Sri Venkatesha Suprabhatam", deity: "Lord Venkateswara", source: require("../../devotional-song/sri_venkatesha_suprabhatam.mp3") },
+  { title: "Lingashtakam", deity: "Lord Shiva", source: require("../../devotional-song/lingashtakam_lord_shiva.mp3") },
+  { title: "Garuda Gamana Tava", deity: "Lord Maha Vishnu", source: require("../../devotional-song/garuda_gamana_tava_sri_maha_vishnu_stotram.mp3") },
+  { title: "Hanuman Chalisa", deity: "Lord Hanuman", source: require("../../devotional-song/hanuman_chalisa.mp3") },
+  { title: "Ganpati Stotram", deity: "Lord Ganesha", source: require("../../devotional-song/ganpati_stotram.mp3") },
+  { title: "Aarti Sai Baba", deity: "Sai Baba", source: require("../../devotional-song/aarti_saibaba.mp3") },
 ];
 
 export function DevotionalSongsScreen() {
