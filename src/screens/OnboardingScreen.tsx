@@ -18,8 +18,8 @@ import { useLanguage } from "../i18n";
 const fields = [
   {
     key: "date_of_birth",
-    label: "Date of birth (YYYY-MM-DD)",
-    placeholder: "1998-04-21",
+    label: "Date of birth (DD-MM-YYYY)",
+    placeholder: "21-04-1998",
   },
   {
     key: "time_of_birth",
@@ -124,7 +124,7 @@ export function OnboardingScreen({
     }
 
     if (!isValidDate(values.date_of_birth.trim())) {
-      setError("Enter a valid date in YYYY-MM-DD format.");
+      setError("Enter a valid date in DD-MM-YYYY format.");
       return;
     }
 
@@ -178,7 +178,7 @@ export function OnboardingScreen({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          date_of_birth: values.date_of_birth.trim(),
+          date_of_birth: formatDateForStorage(values.date_of_birth.trim()),
           time_of_birth: values.time_of_birth.trim(),
           latitude: birthLocation.latitude,
           longitude: birthLocation.longitude,
@@ -191,7 +191,7 @@ export function OnboardingScreen({
       }
 
       const chartInputHash = [
-        values.date_of_birth.trim(),
+        formatDateForStorage(values.date_of_birth.trim()),
         values.time_of_birth.trim(),
         birthLocation.latitude,
         birthLocation.longitude,
