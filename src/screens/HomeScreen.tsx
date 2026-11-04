@@ -24,7 +24,7 @@ function todayLabel() {
   }).format(new Date()).toUpperCase().replace(",", " ·");
 }
 
-export function HomeScreen() {
+export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void }) {
   const [result, setResult] = useState<DailyPanchangamResponse | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [error, setError] = useState("");
@@ -123,6 +123,14 @@ export function HomeScreen() {
       <Text style={styles.greeting}>Namaskaram, {name}</Text>
       <Text style={styles.name}>Your day, in alignment.</Text>
 
+      <TouchableOpacity style={styles.poojaShortcut} onPress={onOpenPoojaItems}>
+        <View style={styles.poojaShortcutText}>
+          <Text style={styles.poojaShortcutTitle}>Pooja Items & Samagri</Text>
+          <Text style={styles.poojaShortcutSubtitle}>View occasion-wise preparation lists</Text>
+        </View>
+        <Text style={styles.poojaShortcutArrow}>VIEW  →</Text>
+      </TouchableOpacity>
+
       <SectionTitle>YOUR ASTROLOGY PROFILE</SectionTitle>
       <Panel>
         {basicDetails.map(([label, value], index) => (
@@ -203,6 +211,11 @@ export function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
+  poojaShortcut: { marginTop: 18, marginBottom: 8, padding: 16, borderRadius: 14, backgroundColor: "#71370F", flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  poojaShortcutText: { flex: 1 },
+  poojaShortcutTitle: { color: "#FFF7E9", fontSize: 14, fontWeight: "700" },
+  poojaShortcutSubtitle: { color: "#F0D8B8", fontSize: 11, marginTop: 4 },
+  poojaShortcutArrow: { color: "#F7D99F", fontSize: 10, fontWeight: "800", marginLeft: 8 },
   date: { color: colors.gold, fontSize: 10, letterSpacing: 1.7, fontWeight: "700", marginTop: 8 },
   greeting: { color: colors.maroonDark, fontSize: 29, fontWeight: "600", marginTop: 13 },
   name: { color: colors.muted, fontSize: 13, marginTop: 5 },
