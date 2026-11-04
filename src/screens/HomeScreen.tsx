@@ -19,7 +19,13 @@ type Profile = {
   birth_chart_summary?: { rashi?: string; nakshatra?: string; pada?: number; lagna?: string } | null;
 };
 
-function displayBirthDate(value?: string) {\n  if (!value) return value;\n  const match = /^(\\d{4})-(\\d{2})-(\\d{2})$/.exec(value);\n  return match ? `${match[3]}-${match[2]}-${match[1]}` : value;\n}\n\nfunction todayLabel(language: string) {
+function displayBirthDate(value?: string) {
+  if (!value) return value;
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  return match ? `${match[3]}-${match[2]}-${match[1]}` : value;
+}
+
+function todayLabel(language: string) {
   const locale = language === "Telugu" ? "te-IN" : language === "Hindi" ? "hi-IN" : "en-IN";
   return new Intl.DateTimeFormat(locale, {
     weekday: "long", day: "2-digit", month: "long", year: "numeric",
