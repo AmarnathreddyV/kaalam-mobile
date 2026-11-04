@@ -13,6 +13,7 @@ import {
 
 import { supabase } from "../auth/supabase";
 import { colors } from "../theme/colors";
+import { useLanguage } from "../i18n";
 
 const fields = [
   {
@@ -51,6 +52,7 @@ export function OnboardingScreen({
 }: {
   onComplete: () => void;
 }) {
+  const { t, setLanguage } = useLanguage();
   const [values, setValues] = useState<ProfileValues>({
     full_name: "",
     date_of_birth: "",
@@ -76,6 +78,7 @@ export function OnboardingScreen({
   }, []);
 
   const update = (key: string, value: string) => {
+    if (key === "preferred_language" && ["Telugu", "Hindi", "English"].includes(value)) setLanguage(value as "Telugu" | "Hindi" | "English");
     setValues((old) => ({
       ...old,
       [key]: value,
@@ -295,7 +298,7 @@ export function OnboardingScreen({
     >
       <Text style={styles.brand}>KAALAM</Text>
 
-      <Text style={styles.title}>Your details</Text>
+      <Text style={styles.title}>{t("Your details")}</Text>
 
       <Text style={styles.subtitle}>
         Enter your details to set up KAALAM. No account or phone login is needed.
@@ -305,7 +308,7 @@ export function OnboardingScreen({
       <TextInput
         value={values.full_name}
         onChangeText={(v) => update("full_name", v)}
-        placeholder="Full name"
+        placeholder={t("Full name")}
         placeholderTextColor={colors.muted}
         style={styles.input}
         autoCapitalize="words"
@@ -314,7 +317,7 @@ export function OnboardingScreen({
 
       {fields.map((field) => (
         <View key={field.key}>
-          <Text style={styles.label}>{field.label}</Text>
+          <Text style={styles.label}>{t(field.label)}</Text>
 
           <TextInput
             value={values[field.key]}
@@ -333,7 +336,7 @@ export function OnboardingScreen({
         </View>
       ))}
 
-      <Text style={styles.label}>Preferred language</Text>
+      <Text style={styles.label}>{t("Preferred language")}</Text>
 
       <View style={styles.pills}>
         {["Telugu", "English", "Hindi"].map((language) => {
@@ -364,7 +367,7 @@ export function OnboardingScreen({
         })}
       </View>
 
-      <Text style={styles.label}>Panchangam tradition</Text>
+      <Text style={styles.label}>{t("Panchangam tradition")}</Text>
 
       <View style={styles.pills}>
         <View style={[styles.pill, styles.pillSelected]}>
@@ -396,7 +399,7 @@ export function OnboardingScreen({
         {busy ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator color="#FFFFFF" />
-            <Text style={styles.buttonText}>Saving...</Text>
+            <Text style={styles.buttonText}>{t("Saving...")}</Text>
           </View>
         ) : (
           <Text style={styles.buttonText}>
