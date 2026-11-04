@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
   brand: { color: colors.maroonDark, fontSize: 23, fontWeight: "700", letterSpacing: 5, fontFamily: "Georgia", marginBottom: 30 },
   configTitle: { color: colors.maroonDark, fontSize: 23, fontWeight: "600" },
   configBody: { color: colors.muted, fontSize: 13, lineHeight: 20, marginTop: 10 },
-  header: { height: 62, paddingHorizontal: 24, flexDirection: "row", alignItems: "center", justifyContent: "space-between", borderBottomWidth: 1, borderBottomColor: colors.line, backgroundColor: "rgba(255, 241, 214, 0.76)" },
+  header: { height: 62, paddingHorizontal: 24, flexDirection: "row", alignItems: "center", justifyContent: "space-between", backgroundColor: "transparent", borderBottomWidth: 0 },
   headerLogo: { width: 112, height: 58 },
   content: { flex: 1 },
   tabBar: { height: 72, flexDirection: "row", backgroundColor: "rgba(255, 244, 221, 0.98)", borderTopWidth: 1, borderTopColor: colors.line, alignItems: "center", justifyContent: "space-around", paddingHorizontal: 4 },
