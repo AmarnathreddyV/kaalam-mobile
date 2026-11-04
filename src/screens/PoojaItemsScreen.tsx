@@ -66,25 +66,25 @@ const lists: Record<string, { title: string; items: string[]; note: string }> = 
   }
 };
 
-export function PoojaItemsScreen() {
+export function PoojaItemsScreen() {\n  const { t } = useLanguage();
   const names = useMemo(() => Object.keys(lists), []);
   const [selected, setSelected] = useState("Gruhapravesam");
   const current = lists[selected];
   return (
     <ScrollView style={styles.root} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-      <PageHeading title="Pooja Items" subtitle="Preparation checklists for common Hindu ceremonies and poojas." />
-      <Text style={styles.label}>CHOOSE AN OCCASION</Text>
+      <PageHeading title={t("Pooja Items")} subtitle={t("Preparation checklists for common Hindu ceremonies and poojas.")} />
+      <Text style={styles.label}>{t("CHOOSE AN OCCASION")}</Text>
       <View style={styles.options}>
         {names.map(name => <TouchableOpacity key={name} onPress={() => setSelected(name)} style={[styles.chip, selected === name && styles.chipActive]}><Text style={[styles.chipText, selected === name && styles.chipTextActive]}>{name}</Text></TouchableOpacity>)}
       </View>
       <Panel style={styles.panel}>
-        <Text style={styles.title}>{current.title}</Text>
-        <Text style={styles.note}>{current.note}</Text>
-        <Text style={styles.count}>{current.items.length} ITEMS</Text>
+        <Text style={styles.title}>{t(current.title)}</Text>
+        <Text style={styles.note}>{t(current.note)}</Text>
+        <Text style={styles.count}>{current.items.length} {t("ITEMS")}</Text>
         {current.items.map((item, index) => (
           <View key={item} style={styles.item}>
             <Text style={styles.number}>{String(index + 1).padStart(2, "0")}</Text>
-            <Text style={styles.itemText}>{item}</Text>
+            <Text style={styles.itemText}>{t(item)}</Text>
           </View>
         ))}
       </Panel>
