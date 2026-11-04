@@ -63,7 +63,7 @@ export function PanchangamScreen() {
       {loading ? (
         <Panel><ActivityIndicator color={colors.maroon} /><Text style={styles.status}>{t("Loading Panchangam…")}</Text></Panel>
       ) : error ? (
-        <Panel><Text style={styles.error}>{error}</Text><TouchableOpacity onPress={load} style={styles.retry}><Text style={styles.retryText}>{t("Try again")}</Text></TouchableOpacity></Panel>
+        <Panel><Text style={styles.error}>{t(error)}</Text><TouchableOpacity onPress={load} style={styles.retry}><Text style={styles.retryText}>{t("Try again")}</Text></TouchableOpacity></Panel>
       ) : (
         <>
           <Panel>
