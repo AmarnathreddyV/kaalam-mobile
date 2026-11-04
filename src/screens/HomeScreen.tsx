@@ -139,7 +139,7 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
           <LabelValue key={label} label={label} value={value} last={index === basicDetails.length - 1} />
         ))}
         {!!profileError && <Text style={styles.smallNote}>Profile details could not be loaded: {profileError}</Text>}
-        <Text style={styles.smallNote}>Birth-chart details are shown from the calculation saved to your profile. If your birth details change, update them and recalculate your chart.</Text>
+        <Text style={styles.smallNote}>{t("Birth-chart details are shown from the calculation saved to your profile. If your birth details change, update them and recalculate your chart.")}</Text>
       </Panel>
 
       <SectionTitle>{t("THIS DAY'S PANCHANGAM")}</SectionTitle>
@@ -167,14 +167,14 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
 
       <SectionTitle>{t("FAVOURABLE TIMINGS")}</SectionTitle>
       <Panel>
-        {loading ? <Text style={styles.horoscope}>Loading favourable periods…</Text> : (
+        {loading ? <Text style={styles.horoscope}>{t("Loading favourable periods…")}</Text> : (
           <>
-            {choghadiyaGood.map((slot,index)=>(<LabelValue key={String(slot.name)+index} label={slot.name || "Choghadiya"} value={timeRange(slot)} />))}
-            <LabelValue label="Abhijit Muhurat" value={timeRange(daily?.abhijit_muhurat?.interval?.period?.[0])} last />
-            {!choghadiyaGood.length && <Text style={styles.smallNote}>No favourable Choghadiya windows were returned for today.</Text>}
+            {choghadiyaGood.map((slot,index)=>(<LabelValue key={String(slot.name)+index} label={t(slot.name || "Choghadiya")} value={timeRange(slot)} />))}
+            <LabelValue label={t("Abhijit Muhurat")} value={timeRange(daily?.abhijit_muhurat?.interval?.period?.[0])} last />
+            {!choghadiyaGood.length && <Text style={styles.smallNote}>{t("No favourable Choghadiya windows were returned for today.")}</Text>}
           </>
         )}
-        <Text style={styles.smallNote}>General daily indicators only; these do not certify a ceremony-specific Muhurtham.</Text>
+        <Text style={styles.smallNote}>{t("General daily indicators only; these do not certify a ceremony-specific Muhurtham.")}</Text>
       </Panel>
 
       <SectionTitle>{t("INAUSPICIOUS TIMINGS")}</SectionTitle>
@@ -182,18 +182,18 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
         <LabelValue label={t("Rahu Kalam")} value={timeRange(daily?.inauspicious_periods?.rahu_kaal)} />
         <LabelValue label={t("Yamagandam")} value={timeRange(daily?.inauspicious_periods?.yamaganda)} />
         <LabelValue label={t("Gulika Kalam")} value={timeRange(daily?.inauspicious_periods?.gulika_kaal)} last />
-        <Text style={styles.smallNote}>Traditional periods to be mindful of; interpretations and practices vary.</Text>
+        <Text style={styles.smallNote}>{t("Traditional periods to be mindful of; interpretations and practices vary.")}</Text>
       </Panel>
 
       <SectionTitle>{t("TODAY'S SPIRITUAL GUIDANCE")}</SectionTitle>
       <Panel>
-        {loading ? <View style={styles.state}><ActivityIndicator color={colors.maroon} /><Text style={styles.stateText}>Preparing today's spiritual guidance…</Text></View> : error ? <Text style={styles.horoscope}>Spiritual guidance will appear when today's Panchangam is available.</Text> : (
+        {loading ? <View style={styles.state}><ActivityIndicator color={colors.maroon} /><Text style={styles.stateText}>Preparing today's spiritual guidance…</Text></View> : error ? <Text style={styles.horoscope}>{t("Spiritual guidance will appear when today's Panchangam is available.")}</Text> : (
           <>
             <Text style={styles.suggestionTitle}>{spiritualGuidance.deity}</Text>
             <Text style={styles.guidanceLabel}>{t("TEMPLE SUGGESTION")}</Text><Text style={styles.horoscope}>{spiritualGuidance.temple}</Text>
             <Text style={styles.guidanceLabel}>{t("PRAYER OR ACTIVITY")}</Text><Text style={styles.horoscope}>{spiritualGuidance.practice}</Text>
             {!!spiritualGuidance.tithiNote && <><Text style={styles.guidanceLabel}>{t("PANCHANGAM NOTE")}</Text><Text style={styles.horoscope}>{spiritualGuidance.tithiNote}</Text></>}
-            <Text style={styles.guidanceLabel}>{t("A THOUGHT FOR TODAY")}</Text><Text style={styles.horoscope}>Try to avoid harsh words and rushed decisions. Make space for patience, kindness and thoughtful action.</Text>
+            <Text style={styles.guidanceLabel}>{t("A THOUGHT FOR TODAY")}</Text><Text style={styles.horoscope}>{t("Try to avoid harsh words and rushed decisions. Make space for patience, kindness and thoughtful action.")}</Text>
             <Text style={styles.smallNote}>General spiritual inspiration based on common weekday devotional associations and returned Tithi. Traditions vary by family and region.</Text>
           </>
         )}
@@ -203,7 +203,7 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
       <Panel>
         <LabelValue label={t("Sunrise")} value={timeText(sunrise)} />
         <LabelValue label={t("Sunset")} value={timeText(sunset)} last />
-        <Text style={styles.smallNote}>Calculated for your saved location and local time zone.</Text>
+        <Text style={styles.smallNote}>{t("Calculated for your saved location and local time zone.")}</Text>
         {!!result?.unavailable && Object.keys(result.unavailable).length > 0 && <Text style={styles.smallNote}>Some timing categories could not be loaded: {Object.keys(result.unavailable).join(", ")}.</Text>}
       </Panel>
 
