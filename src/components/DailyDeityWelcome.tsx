@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Image, Modal, Pressable, StyleSheet, Text, View } from "react-native";
-import { Audio } from "expo-av";
+import { useAudioPlayer } from "expo-audio";
 import { colors } from "../theme/colors";
 
 const deities = {
@@ -17,30 +17,23 @@ export function DailyDeityWelcome({ visible, onContinue }: { visible: boolean; o
   const weekday = new Intl.DateTimeFormat("en-US", { weekday: "long" }).format(new Date()) as keyof typeof deities;
   const deity = useMemo(() => deities[weekday] || deities.Monday, [weekday]);
   const [muted, setMuted] = useState(false);
-  const [sound, setSound] = useState<Audio.Sound | null>(null);
+  const player = useAudioPlayer(deity.audio);
 
   useEffect(() => {
-    let alive = true;
-    async function play() {
-      if (!visible || muted) return;
-      try {
-        const { sound: nextSound } = await Audio.Sound.createAsync(deity.audio, { shouldPlay: true, isLooping: true, volume: 0.55 });
-        if (!alive) { await nextSound.unloadAsync(); return; }
-        setSound(nextSound);
-      } catch {
-        // The welcome screen remains usable if audio playback is unavailable.
-      }
-    }
-    void play();
-    return () => {
-      alive = false;
-      if (sound) void sound.unloadAsync();
-      setSound(null);
-    };
-  }, [visible, muted, deity]);
+    player.loop = true;
+    player.volume = muted ? 0 : 0.55;
+    if (visible && !muted) player.play();
+    else player.pause();
+    return () => { player.pause(); };
+  }, [player, visible, muted, deity]);
+
+  const continueToApp = () => {
+    player.pause();
+    onContinue();
+  };
 
   return (
-    <Modal visible={visible} animationType="fade" statusBarTranslucent onRequestClose={onContinue}>
+    <Modal visible={visible} animationType="fade" statusBarTranslucent onRequestClose={continueToApp}>
       <View style={styles.root}>
         <Image source={deity.image} style={styles.image} resizeMode="cover" />
         <View style={styles.scrim} />
@@ -52,7 +45,7 @@ export function DailyDeityWelcome({ visible, onContinue }: { visible: boolean; o
             <Pressable style={styles.secondary} onPress={() => setMuted(value => !value)}>
               <Text style={styles.secondaryText}>{muted ? "Turn music on" : "Mute music"}</Text>
             </Pressable>
-            <Pressable style={styles.primary} onPress={onContinue}>
+            <Pressable style={styles.primary} onPress={continueToApp}>
               <Text style={styles.primaryText}>Continue to KAALAM  →</Text>
             </Pressable>
           </View>
