@@ -6,14 +6,13 @@ import { colors } from "../theme/colors";
 import { useLanguage } from "../i18n";
 
 const songs = [
-  { title: "Sri Venkatesha Suprabhatam", deity: "Lord Venkateswara", file: "sri_venkatesha_suprabhatam.mp3" },
-  { title: "Lingashtakam", deity: "Lord Shiva", file: "lingashtakam_lord_shiva.mp3" },
-  { title: "Garuda Gamana Tava", deity: "Lord Maha Vishnu", file: "garuda_gamana_tava_sri_maha_vishnu_stotram.mp3" },
-  { title: "Hanuman Chalisa", deity: "Lord Hanuman", file: "hanuman_chalisa.mp3" },
-  { title: "Ganpati Stotram", deity: "Lord Ganesha", file: "ganpati_stotram.mp3" },
-  { title: "Aarti Sai Baba", deity: "Sai Baba", file: "aarti_saibaba.mp3" },
+  { title: "Sri Venkatesha Suprabhatam", deity: "Lord Venkateswara", source: require("../../assets/devotional-songs/sri_venkatesha_suprabhatam.mp3") },
+  { title: "Lingashtakam", deity: "Lord Shiva", source: require("../../assets/devotional-songs/lingashtakam_lord_shiva.mp3") },
+  { title: "Garuda Gamana Tava", deity: "Lord Maha Vishnu", source: require("../../assets/devotional-songs/garuda_gamana_tava_sri_maha_vishnu_stotram.mp3") },
+  { title: "Hanuman Chalisa", deity: "Lord Hanuman", source: require("../../assets/devotional-songs/hanuman_chalisa.mp3") },
+  { title: "Ganpati Stotram", deity: "Lord Ganesha", source: require("../../assets/devotional-songs/ganpati_stotram.mp3") },
+  { title: "Aarti Sai Baba", deity: "Sai Baba", source: require("../../assets/devotional-songs/aarti_saibaba.mp3") },
 ];
-const audioUrl = (file: string) => `https://raw.githubusercontent.com/AmarnathreddyV/kaalam-mobile/main/assets/devotional-songs/${file}`;
 
 export function DevotionalSongsScreen() {
   const { t } = useLanguage();
@@ -29,7 +28,7 @@ export function DevotionalSongsScreen() {
       return;
     }
     setActiveIndex(index);
-    player.replace({ uri: audioUrl(songs[index].file) });
+    player.replace(songs[index].source);
     player.play();
   };
 
@@ -54,7 +53,7 @@ export function DevotionalSongsScreen() {
           </TouchableOpacity>
         );
       })}
-      <Text style={styles.footer}>{t("Audio playback streams from the KAALAM devotional library. An internet connection is required.")}</Text>
+      <Text style={styles.footer}>{t("Songs are stored on your device and can play without an internet connection.")}</Text>
     </ScrollView>
   );
 }
