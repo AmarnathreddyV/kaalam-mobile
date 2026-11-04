@@ -133,7 +133,7 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
         <Text style={styles.poojaShortcutArrow}>{t("VIEW  →")}</Text>
       </TouchableOpacity>
 
-      <SectionTitle>YOUR ASTROLOGY PROFILE</SectionTitle>
+      <SectionTitle>{t("YOUR ASTROLOGY PROFILE")}</SectionTitle>
       <Panel>
         {basicDetails.map(([label, value], index) => (
           <LabelValue key={label} label={label} value={value} last={index === basicDetails.length - 1} />
@@ -142,7 +142,7 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
         <Text style={styles.smallNote}>Birth-chart details are shown from the calculation saved to your profile. If your birth details change, update them and recalculate your chart.</Text>
       </Panel>
 
-      <SectionTitle>THIS DAY'S PANCHANGAM</SectionTitle>
+      <SectionTitle>{t("THIS DAY'S PANCHANGAM")}</SectionTitle>
       <Panel>
         {loading ? (
           <View style={styles.state}><ActivityIndicator color={colors.maroon} /><Text style={styles.stateText}>{t("Loading today's Panchangam…")}</Text></View>
@@ -154,10 +154,10 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
         ) : (
           <>
             <View style={styles.panchangamGrid}>
-              <View style={styles.gridItem}><Text style={styles.gridLabel}>TITHI</Text><Text style={styles.gridValue}>{tithi}</Text></View>
-              <View style={styles.gridItem}><Text style={styles.gridLabel}>NAKSHATRA</Text><Text style={styles.gridValue}>{nakshatra}</Text></View>
-              <View style={styles.gridItem}><Text style={styles.gridLabel}>YOGA</Text><Text style={styles.gridValue}>{yoga}</Text></View>
-              <View style={styles.gridItem}><Text style={styles.gridLabel}>KARANA</Text><Text style={styles.gridValue}>{karana}</Text></View>
+              <View style={styles.gridItem}><Text style={styles.gridLabel}>{t("TITHI")}</Text><Text style={styles.gridValue}>{tithi}</Text></View>
+              <View style={styles.gridItem}><Text style={styles.gridLabel}>{t("NAKSHATRA")}</Text><Text style={styles.gridValue}>{nakshatra}</Text></View>
+              <View style={styles.gridItem}><Text style={styles.gridLabel}>{t("YOGA")}</Text><Text style={styles.gridValue}>{yoga}</Text></View>
+              <View style={styles.gridItem}><Text style={styles.gridLabel}>{t("KARANA")}</Text><Text style={styles.gridValue}>{karana}</Text></View>
             </View>
             <Text style={styles.smallNote}>Local Panchangam snapshot · {result?.date || ""}</Text>
           </>
@@ -165,7 +165,7 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
       </Panel>
 
 
-      <SectionTitle>FAVOURABLE TIMINGS</SectionTitle>
+      <SectionTitle>{t("FAVOURABLE TIMINGS")}</SectionTitle>
       <Panel>
         {loading ? <Text style={styles.horoscope}>Loading favourable periods…</Text> : (
           <>
@@ -177,7 +177,7 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
         <Text style={styles.smallNote}>General daily indicators only; these do not certify a ceremony-specific Muhurtham.</Text>
       </Panel>
 
-      <SectionTitle>INAUSPICIOUS TIMINGS</SectionTitle>
+      <SectionTitle>{t("INAUSPICIOUS TIMINGS")}</SectionTitle>
       <Panel>
         <LabelValue label={t("Rahu Kalam")} value={timeRange(daily?.inauspicious_periods?.rahu_kaal)} />
         <LabelValue label={t("Yamagandam")} value={timeRange(daily?.inauspicious_periods?.yamaganda)} />
@@ -185,15 +185,15 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
         <Text style={styles.smallNote}>Traditional periods to be mindful of; interpretations and practices vary.</Text>
       </Panel>
 
-      <SectionTitle>TODAY'S SPIRITUAL GUIDANCE</SectionTitle>
+      <SectionTitle>{t("TODAY'S SPIRITUAL GUIDANCE")}</SectionTitle>
       <Panel>
         {loading ? <View style={styles.state}><ActivityIndicator color={colors.maroon} /><Text style={styles.stateText}>Preparing today's spiritual guidance…</Text></View> : error ? <Text style={styles.horoscope}>Spiritual guidance will appear when today's Panchangam is available.</Text> : (
           <>
             <Text style={styles.suggestionTitle}>{spiritualGuidance.deity}</Text>
-            <Text style={styles.guidanceLabel}>TEMPLE SUGGESTION</Text><Text style={styles.horoscope}>{spiritualGuidance.temple}</Text>
-            <Text style={styles.guidanceLabel}>PRAYER OR ACTIVITY</Text><Text style={styles.horoscope}>{spiritualGuidance.practice}</Text>
-            {!!spiritualGuidance.tithiNote && <><Text style={styles.guidanceLabel}>PANCHANGAM NOTE</Text><Text style={styles.horoscope}>{spiritualGuidance.tithiNote}</Text></>}
-            <Text style={styles.guidanceLabel}>A THOUGHT FOR TODAY</Text><Text style={styles.horoscope}>Try to avoid harsh words and rushed decisions. Make space for patience, kindness and thoughtful action.</Text>
+            <Text style={styles.guidanceLabel}>{t("TEMPLE SUGGESTION")}</Text><Text style={styles.horoscope}>{spiritualGuidance.temple}</Text>
+            <Text style={styles.guidanceLabel}>{t("PRAYER OR ACTIVITY")}</Text><Text style={styles.horoscope}>{spiritualGuidance.practice}</Text>
+            {!!spiritualGuidance.tithiNote && <><Text style={styles.guidanceLabel}>{t("PANCHANGAM NOTE")}</Text><Text style={styles.horoscope}>{spiritualGuidance.tithiNote}</Text></>}
+            <Text style={styles.guidanceLabel}>{t("A THOUGHT FOR TODAY")}</Text><Text style={styles.horoscope}>Try to avoid harsh words and rushed decisions. Make space for patience, kindness and thoughtful action.</Text>
             <Text style={styles.smallNote}>General spiritual inspiration based on common weekday devotional associations and returned Tithi. Traditions vary by family and region.</Text>
           </>
         )}
