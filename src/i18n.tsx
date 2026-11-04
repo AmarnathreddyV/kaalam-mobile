@@ -68,6 +68,16 @@ Object.assign(hi, {
 "15 Days":"15 दिन","1 Month":"1 महीना","3 Months":"3 महीने","6 Months":"6 महीने","1 Year":"1 वर्ष","Custom":"कस्टम","Sunday":"रविवार","Monday":"सोमवार","Tuesday":"मंगलवार","Wednesday":"बुधवार","Thursday":"गुरुवार","Friday":"शुक्रवार","Saturday":"शनिवार","Surya Deva":"सूर्य देव","Lord Shiva":"भगवान शिव","Lord Hanuman":"हनुमान जी","Lord Ganesha":"गणेश जी","Lord Venkateswara":"वेंकटेश्वर स्वामी","Goddess Lakshmi":"माता लक्ष्मी","Telugu Drik":"तेलुगु दृक","English":"अंग्रेज़ी","Hindi":"हिंदी","Telugu":"तेलुगु","Choghadiya":"चौघड़िया"
 });
 
+
+Object.assign(te, {
+"Satyanarayana Vratham":"సత్యనారాయణ వ్రతం","Ganesh Pooja":"గణేశ పూజ","Lakshmi Pooja":"లక్ష్మీ పూజ","Rudrabhishekam":"రుద్రాభిషేకం","Namakaranam":"నామకరణం","Annaprashana":"అన్నప్రాశన","Bhoomi Pooja":"భూమి పూజ",
+"Coconut":"కొబ్బరికాయ","Fruits and sweets":"పండ్లు మరియు మిఠాయిలు","Flowers":"పూలు","Coconut and fruits":"కొబ్బరికాయ మరియు పండ్లు","Kalasham and vessels":"కలశం మరియు పాత్రలు","Diya, incense and camphor":"దీపం, అగరబత్తులు మరియు కర్పూరం","Pooja plates and clean cloth":"పూజా పళ్లెములు మరియు శుభ్రమైన వస్త్రం","Kalasham":"కలశం","Turmeric, kumkum and akshata":"పసుపు, కుంకుమ మరియు అక్షతలు","Fruits and coconuts":"పండ్లు మరియు కొబ్బరికాయలు","Milk and sweets":"పాలు మరియు మిఠాయిలు","Diya, oil or ghee, cotton wicks":"దీపం, నూనె లేదా నెయ్యి, వత్తులు","Pooja plates and clean vessels":"పూజా పళ్లెములు మరియు శుభ్రమైన పాత్రలు","Your KAALAM profile has been saved successfully.":"మీ KAALAM ప్రొఫైల్ విజయవంతంగా సేవ్ అయింది."
+});
+Object.assign(hi, {
+"Satyanarayana Vratham":"सत्यनारायण व्रत","Ganesh Pooja":"गणेश पूजा","Lakshmi Pooja":"लक्ष्मी पूजा","Rudrabhishekam":"रुद्राभिषेक","Namakaranam":"नामकरण","Annaprashana":"अन्नप्राशन","Bhoomi Pooja":"भूमि पूजा",
+"Coconut":"नारियल","Fruits and sweets":"फल और मिठाइयाँ","Flowers":"फूल","Coconut and fruits":"नारियल और फल","Kalasham and vessels":"कलश और बर्तन","Diya, incense and camphor":"दीपक, अगरबत्ती और कपूर","Pooja plates and clean cloth":"पूजा की थालियाँ और साफ कपड़ा","Kalasham":"कलश","Turmeric, kumkum and akshata":"हल्दी, कुमकुम और अक्षत","Fruits and coconuts":"फल और नारियल","Milk and sweets":"दूध और मिठाइयाँ","Diya, oil or ghee, cotton wicks":"दीपक, तेल या घी, रुई की बाती","Pooja plates and clean vessels":"पूजा की थालियाँ और साफ बर्तन","Your KAALAM profile has been saved successfully.":"आपकी KAALAM प्रोफ़ाइल सफलतापूर्वक सहेजी गई।"
+});
+
 const translations: Record<AppLanguage, Record<string, string>> = { English: {}, Telugu: te, Hindi: hi };
 type LanguageContextValue = { language: AppLanguage; setLanguage: (language: AppLanguage) => void; t: (text: string) => string };
 const LanguageContext = createContext<LanguageContextValue>({ language: "English", setLanguage: () => undefined, t: text => text });
