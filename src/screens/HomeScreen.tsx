@@ -137,9 +137,9 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
       <SectionTitle>{t("YOUR ASTROLOGY PROFILE")}</SectionTitle>
       <Panel>
         {basicDetails.map(([label, value], index) => (
-          <LabelValue key={label} label={label} value={value} last={index === basicDetails.length - 1} />
+          <LabelValue key={label} label={t(label)} value={t(value)} last={index === basicDetails.length - 1} />
         ))}
-        {!!profileError && <Text style={styles.smallNote}>Profile details could not be loaded: {profileError}</Text>}
+        {!!profileError && <Text style={styles.smallNote}>{t("Profile details could not be loaded:")} {t(profileError)}</Text>}
         <Text style={styles.smallNote}>{t("Birth-chart details are shown from the calculation saved to your profile. If your birth details change, update them and recalculate your chart.")}</Text>
       </Panel>
 
@@ -160,7 +160,7 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
               <View style={styles.gridItem}><Text style={styles.gridLabel}>{t("YOGA")}</Text><Text style={styles.gridValue}>{yoga}</Text></View>
               <View style={styles.gridItem}><Text style={styles.gridLabel}>{t("KARANA")}</Text><Text style={styles.gridValue}>{karana}</Text></View>
             </View>
-            <Text style={styles.smallNote}>Local Panchangam snapshot · {result?.date || ""}</Text>
+            <Text style={styles.smallNote}>{t("Local Panchangam snapshot")} · {result?.date || ""}</Text>
           </>
         )}
       </Panel>
@@ -190,12 +190,12 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
       <Panel>
         {loading ? <View style={styles.state}><ActivityIndicator color={colors.maroon} /><Text style={styles.stateText}>Preparing today's spiritual guidance…</Text></View> : error ? <Text style={styles.horoscope}>{t("Spiritual guidance will appear when today's Panchangam is available.")}</Text> : (
           <>
-            <Text style={styles.suggestionTitle}>{spiritualGuidance.deity}</Text>
-            <Text style={styles.guidanceLabel}>{t("TEMPLE SUGGESTION")}</Text><Text style={styles.horoscope}>{spiritualGuidance.temple}</Text>
-            <Text style={styles.guidanceLabel}>{t("PRAYER OR ACTIVITY")}</Text><Text style={styles.horoscope}>{spiritualGuidance.practice}</Text>
+            <Text style={styles.suggestionTitle}>{t(spiritualGuidance.deity)}</Text>
+            <Text style={styles.guidanceLabel}>{t("TEMPLE SUGGESTION")}</Text><Text style={styles.horoscope}>{t(spiritualGuidance.temple)}</Text>
+            <Text style={styles.guidanceLabel}>{t("PRAYER OR ACTIVITY")}</Text><Text style={styles.horoscope}>{t(spiritualGuidance.practice)}</Text>
             {!!spiritualGuidance.tithiNote && <><Text style={styles.guidanceLabel}>{t("PANCHANGAM NOTE")}</Text><Text style={styles.horoscope}>{spiritualGuidance.tithiNote}</Text></>}
             <Text style={styles.guidanceLabel}>{t("A THOUGHT FOR TODAY")}</Text><Text style={styles.horoscope}>{t("Try to avoid harsh words and rushed decisions. Make space for patience, kindness and thoughtful action.")}</Text>
-            <Text style={styles.smallNote}>General spiritual inspiration based on common weekday devotional associations and returned Tithi. Traditions vary by family and region.</Text>
+            <Text style={styles.smallNote}>{t("General spiritual inspiration based on common weekday devotional associations and returned Tithi. Traditions vary by family and region.")}</Text>
           </>
         )}
       </Panel>
@@ -205,7 +205,7 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
         <LabelValue label={t("Sunrise")} value={timeText(sunrise)} />
         <LabelValue label={t("Sunset")} value={timeText(sunset)} last />
         <Text style={styles.smallNote}>{t("Calculated for your saved location and local time zone.")}</Text>
-        {!!result?.unavailable && Object.keys(result.unavailable).length > 0 && <Text style={styles.smallNote}>Some timing categories could not be loaded: {Object.keys(result.unavailable).join(", ")}.</Text>}
+        {!!result?.unavailable && Object.keys(result.unavailable).length > 0 && <Text style={styles.smallNote}>{t("Some timing categories could not be loaded:")} {Object.keys(result.unavailable).join(", ")}.</Text>}
       </Panel>
 
       <Text style={styles.note}>Panchangam data is provided by Navamsha using your saved location. General daily indicators are not a guarantee of personal outcomes and do not replace event-specific Telugu Drik Muhurtham analysis.</Text>
