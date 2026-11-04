@@ -7,7 +7,7 @@ import { supabase } from "../auth/supabase";
 
 type LocationProfile = { current_location?: string; current_latitude?: number; current_longitude?: number; current_timezone?: string };
 
-export function PanchangamScreen() {
+export function PanchangamScreen() {\n  const { t } = useLanguage();
   const [result, setResult] = useState<DailyPanchangamResponse | null>(null);
   const [place, setPlace] = useState("");
   const [timezone, setTimezone] = useState("UTC");
@@ -61,7 +61,7 @@ export function PanchangamScreen() {
       {loading ? (
         <Panel><ActivityIndicator color={colors.maroon} /><Text style={styles.status}>Loading Panchangam…</Text></Panel>
       ) : error ? (
-        <Panel><Text style={styles.error}>{error}</Text><TouchableOpacity onPress={load} style={styles.retry}><Text style={styles.retryText}>Try again</Text></TouchableOpacity></Panel>
+        <Panel><Text style={styles.error}>{error}</Text><TouchableOpacity onPress={load} style={styles.retry}><Text style={styles.retryText}>{t("Try again")}</Text></TouchableOpacity></Panel>
       ) : (
         <>
           <Panel>
@@ -79,14 +79,14 @@ export function PanchangamScreen() {
       )}
       <Text style={styles.heading}>Sun timings</Text>
       <Panel>
-        <LabelValue label="Sunrise" value={formatTime(d?.sun_times?.rise?.local_datetime)} />
-        <LabelValue label="Sunset" value={formatTime(d?.sun_times?.set?.local_datetime)} last />
+        <LabelValue label={t("Sunrise")} value={formatTime(d?.sun_times?.rise?.local_datetime)} />
+        <LabelValue label={t("Sunset")} value={formatTime(d?.sun_times?.set?.local_datetime)} last />
       </Panel>
       <Text style={styles.heading}>Avoidable periods</Text>
       <Panel>
-        <LabelValue label="Rahu Kalam" value={range(d?.inauspicious_periods?.rahu_kaal)} />
-        <LabelValue label="Yamagandam" value={range(d?.inauspicious_periods?.yamaganda)} />
-        <LabelValue label="Gulika Kalam" value={range(d?.inauspicious_periods?.gulika_kaal)} last />
+        <LabelValue label={t("Rahu Kalam")} value={range(d?.inauspicious_periods?.rahu_kaal)} />
+        <LabelValue label={t("Yamagandam")} value={range(d?.inauspicious_periods?.yamaganda)} />
+        <LabelValue label={t("Gulika Kalam")} value={range(d?.inauspicious_periods?.gulika_kaal)} last />
       </Panel>
       <Text style={styles.heading}>Other daily windows</Text>
       <Panel>
