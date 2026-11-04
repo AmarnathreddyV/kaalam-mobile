@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Image, Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import { useAudioPlayer } from "expo-audio";
+import { useLanguage } from "../i18n";
 
 const deities = {
   Sunday: { name: "Surya Deva", image: require("../../assets/surya dev/images.jpg"), audio: require("../../assets/audios/surya dev.mp3") },
@@ -12,7 +13,7 @@ const deities = {
   Saturday: { name: "Lord Hanuman", image: require("../../assets/hanuman/images.jpg"), audio: require("../../assets/audios/hanuman.mp3") },
 };
 
-export function DailyDeityWelcome({ visible, onContinue }: { visible: boolean; onContinue: () => void }) {
+export function DailyDeityWelcome({ visible, onContinue }: { visible: boolean; onContinue: () => void }) {\n  const { t } = useLanguage();
   const weekday = new Intl.DateTimeFormat("en-US", { weekday: "long" }).format(new Date()) as keyof typeof deities;
   const deity = useMemo(() => deities[weekday] || deities.Monday, [weekday]);
   const [muted, setMuted] = useState(false);
@@ -37,7 +38,7 @@ export function DailyDeityWelcome({ visible, onContinue }: { visible: boolean; o
         <Image source={deity.image} style={styles.image} resizeMode="contain" />
         <View pointerEvents="none" style={styles.scrim} />
         <View style={styles.content}>
-          <Text style={styles.eyebrow}>KAALAM · TODAY'S DIVINE BLESSING</Text>
+          <Text style={styles.eyebrow}>{t("KAALAM · TODAY'S DIVINE BLESSING")}</Text>
           <Text style={styles.deity}>{deity.name}</Text>
           <Text style={styles.day}>{weekday.toUpperCase()}</Text>
           <View style={styles.actions}>
@@ -45,10 +46,10 @@ export function DailyDeityWelcome({ visible, onContinue }: { visible: boolean; o
               <Text style={styles.secondaryText}>{muted ? "♫  Turn music on" : "♫  Mute music"}</Text>
             </Pressable>
             <Pressable accessibilityRole="button" style={styles.primary} onPress={continueToApp}>
-              <Text style={styles.primaryText}>Continue to KAALAM  →</Text>
+              <Text style={styles.primaryText}>{t("Continue to KAALAM  →")}</Text>
             </Pressable>
           </View>
-          <Text style={styles.caption}>May your day be peaceful and blessed.</Text>
+          <Text style={styles.caption}>{t("May your day be peaceful and blessed.")}</Text>
         </View>
       </View>
     </Modal>
