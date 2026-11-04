@@ -57,7 +57,8 @@ function addDays(date: Date, days: number) {
   return result;
 }
 
-export function MuhurthamScreen() {\n  const { t } = useLanguage();
+export function MuhurthamScreen() {
+  const { t } = useLanguage();
   const [selected, setSelected] = useState("Gruhapravesam");
   const [customOccasion, setCustomOccasion] = useState("");
   const [selectedPeriod, setSelectedPeriod] = useState("3 Months");
