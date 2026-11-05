@@ -87,7 +87,7 @@ function AppContent() {
         .maybeSingle();
       if (alive) {
         const savedLanguage = data?.preferred_language;
-        if (savedLanguage === "Telugu" || savedLanguage === "Hindi" || savedLanguage === "English") {
+        if (["Telugu","Hindi","English","Tamil","Malayalam","Kannada","Gujarati","Marathi"].includes(savedLanguage)) {
           setLanguage(savedLanguage as AppLanguage);
         }
         setProfileReady(!error && data?.onboarding_complete === true);
