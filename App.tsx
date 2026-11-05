@@ -7,6 +7,7 @@ import { supabase, supabaseConfigured } from "./src/auth/supabase";
 import { OnboardingScreen } from "./src/screens/OnboardingScreen";
 import { HomeScreen } from "./src/screens/HomeScreen";
 import { PanchangamScreen } from "./src/screens/PanchangamScreen";
+import { MuhurthamScreen } from "./src/screens/MuhurthamScreen";
 import { PoojaItemsScreen } from "./src/screens/PoojaItemsScreen";
 import { ProfileScreen } from "./src/screens/ProfileScreen";
 import { DevotionalSongsScreen } from "./src/screens/DevotionalSongsScreen";
@@ -15,8 +16,8 @@ import { AppBackground } from "./src/components/AppBackground";
 import { DailyDeityWelcome } from "./src/components/DailyDeityWelcome";
 import { LanguageProvider, useLanguage, AppLanguage } from "./src/i18n";
 
-type TabName = "Home" | "Panchangam" | "Pooja Items" | "Profile" | "Devotional Songs";
-const tabs: TabName[] = ["Home", "Panchangam", "Pooja Items", "Devotional Songs", "Profile"];
+type TabName = "Home" | "Panchangam" | "Muhurtham" | "Pooja Items" | "Profile" | "Devotional Songs";
+const tabs: TabName[] = ["Home", "Panchangam", "Muhurtham", "Pooja Items", "Devotional Songs", "Profile"];
 
 function AppContent() {
   const { t, setLanguage } = useLanguage();
@@ -132,6 +133,7 @@ function AppContent() {
   const renderScreen = () => {
     switch (activeTab) {
       case "Panchangam": return <PanchangamScreen />;
+      case "Muhurtham": return <MuhurthamScreen />;
       case "Pooja Items": return <PoojaItemsScreen />;
       case "Profile": return <ProfileScreen />;
       case "Devotional Songs": return <DevotionalSongsScreen />;
@@ -153,7 +155,7 @@ function AppContent() {
         <View style={styles.tabBar}>
           {tabs.map((tab) => {
             const selected = activeTab === tab;
-            const icon = tab === "Home" ? "⌂" : tab === "Panchangam" ? "▦" : tab === "Pooja Items" ? "✿" : tab === "Profile" ? "◉" : "♫";
+            const icon = tab === "Home" ? "⌂" : tab === "Panchangam" ? "▦" : tab === "Muhurtham" ? "✧" : tab === "Pooja Items" ? "✿" : tab === "Profile" ? "◉" : "♫";
             return (
               <TouchableOpacity key={tab} onPress={() => setActiveTab(tab)} activeOpacity={0.75}
                 accessibilityRole="button" accessibilityLabel={t(tab)} accessibilityState={{ selected }}
