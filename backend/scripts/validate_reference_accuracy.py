@@ -11,6 +11,7 @@ import json
 import os
 import sys
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 from collections import Counter, defaultdict
@@ -49,11 +50,31 @@ STATE_BOUNDS = {
 
 def get_json(url: str) -> dict:
     request = urllib.request.Request(url, headers={"User-Agent": "KAALAM-independent-accuracy-check/2.0"})
-    with urllib.request.urlopen(request, timeout=90) as response:
-        payload = json.loads(response.read().decode("utf-8"))
-    if not isinstance(payload, dict):
-        raise ValueError("API returned a non-object JSON response")
-    return payload
+    retryable_statuses = {429, 500, 502, 503, 504}
+    for attempt in range(3):
+        try:
+            with urllib.request.urlopen(request, timeout=45) as response:
+                payload = json.loads(response.read().decode("utf-8"))
+            if not isinstance(payload, dict):
+                raise ValueError("API returned a non-object JSON response")
+            return payload
+        except urllib.error.HTTPError as exc:
+            if exc.code not in retryable_statuses or attempt == 2:
+                raise
+            retry_after = exc.headers.get("Retry-After") if exc.headers else None
+            try:
+                delay = min(max(float(retry_after), 1.0), 8.0) if retry_after else 2 ** attempt
+            except ValueError:
+                delay = 2 ** attempt
+            print(f"Transient HTTP {exc.code}; retrying {url} in {delay:.0f}s", flush=True)
+            time.sleep(delay)
+        except (urllib.error.URLError, TimeoutError, ConnectionError) as exc:
+            if attempt == 2:
+                raise
+            delay = 2 ** attempt
+            print(f"Transient network error ({exc}); retrying {url} in {delay}s", flush=True)
+            time.sleep(delay)
+    raise RuntimeError(f"request retry loop exhausted for {url}")
 
 
 def limb_name(value) -> str:
