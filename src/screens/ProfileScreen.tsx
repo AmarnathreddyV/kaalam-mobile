@@ -67,7 +67,7 @@ export function ProfileScreen() {
       <Text style={styles.footnote}>{t("Change the app language anytime. Your choice is saved automatically.")}</Text>
       <Panel>
         <View style={styles.languageRow}>
-          {(["Telugu", "Hindi", "English"] as const).map(item => (
+          {(["Telugu", "Hindi", "English", "Tamil", "Malayalam", "Kannada", "Gujarati", "Marathi"] as const).map(item => (
             <Text key={item} onPress={async () => {
               setLanguage(item);
               const { data } = await supabase.auth.getUser();
