@@ -188,7 +188,7 @@ export function OnboardingScreen({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          date_of_birth: formatDateForStorage(values.date_of_birth.trim()),
+          date_of_birth: toIsoDate(values.date_of_birth.trim())!,
           time_of_birth: values.time_of_birth.trim(),
           latitude: birthLocation.latitude,
           longitude: birthLocation.longitude,
@@ -201,7 +201,7 @@ export function OnboardingScreen({
       }
 
       const chartInputHash = [
-        formatDateForStorage(values.date_of_birth.trim()),
+        toIsoDate(values.date_of_birth.trim())!,
         values.time_of_birth.trim(),
         birthLocation.latitude,
         birthLocation.longitude,
