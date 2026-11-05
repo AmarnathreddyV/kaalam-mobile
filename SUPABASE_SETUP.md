@@ -66,3 +66,24 @@ Run supabase/schema.sql in Supabase SQL Editor if the profile table/policies are
 - Supabase Auth generates and verifies OTPs. MSG91 only delivers the same OTP.
 - The Render hook verifies Supabase's Standard Webhooks signature and rejects stale requests.
 - Keep Supabase RLS enabled. Never trust user_metadata for authorization.
+
+
+## 7. Shared Panchang cache (Navamsha credit control)
+
+KAALAM now stores completed daily Panchang responses in a server-only Supabase table so Render restarts do not erase the cache and separate backend instances can reuse the same result.
+
+The table `public.panchang_cache` has already been created in the connected Supabase project. Row Level Security is enabled and direct `anon` / `authenticated` access is revoked; only the backend's server-side key should access it.
+
+In Render > KAALAM service > Environment, add:
+
+- `SUPABASE_URL=https://qiljzcaakexmktwvdltq.supabase.co`
+- `SUPABASE_SECRET_KEY` = a Supabase **secret key** for this project (preferred), or use `SUPABASE_SERVICE_ROLE_KEY` with the legacy service-role JWT.
+
+Keep this key only in Render. Never add it to Expo/EAS variables or the Git repository. The backend supports either variable name. If the key is absent, KAALAM safely falls back to its short-lived in-memory cache and the shared cache remains inactive.
+
+Daily Drik Panchang calculations group nearby coordinates into a 0.01° grid (about 1.1 km in latitude) and calculate using that same grid coordinate. This small location bucketing allows nearby users to share one daily Navamsha result. The API response reports the rounded coordinates used for the calculation. The regular single-time Panchang endpoint retains fine-grained coordinate keys.
+
+The cache TTL defaults to 24 hours. Completed daily results are persisted; incomplete provider responses are not persisted. Monitor `GET /health` or `GET /api/usage` for `shared_cache_configured`, `shared_cache_hits`, `shared_cache_errors`, `cache_hits` and `cache_misses`.
+
+After adding the key, Render will redeploy. Confirm `shared_cache_configured: true` in the health response, then request the same date and nearby location twice: the second request should increment a cache-hit counter without additional Navamsha calls.
+
