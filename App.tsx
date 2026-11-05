@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Text, View, StyleSheet, Image, TouchableOpacity } from "react-native";
+import { ActivityIndicator, Text, View, StyleSheet, TouchableOpacity } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Session } from "@supabase/supabase-js";
@@ -145,7 +145,7 @@ function AppContent() {
       <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
         <StatusBar style="dark" />
         <View style={styles.header}>
-          <Image source={require("./assets/kaalam-logo.png")} style={styles.headerLogo} resizeMode="contain" accessibilityLabel="KAALAM logo" />
+          <Text style={styles.headerBrand}>KAALAM</Text>
           
         </View>
         <View style={styles.content}>{renderScreen()}</View>
@@ -176,8 +176,8 @@ const styles = StyleSheet.create({
   brand: { color: colors.maroonDark, fontSize: 23, fontWeight: "700", letterSpacing: 5, fontFamily: "Georgia", marginBottom: 30 },
   configTitle: { color: colors.maroonDark, fontSize: 23, fontWeight: "600" },
   configBody: { color: colors.muted, fontSize: 13, lineHeight: 20, marginTop: 10 },
-  header: { height: 68, paddingHorizontal: 25, flexDirection: "row", alignItems: "center", justifyContent: "flex-start", backgroundColor: "transparent", borderBottomWidth: 0 },
-  headerLogo: { width: 120, height: 62 },
+  header: { height: 58, paddingHorizontal: 22, flexDirection: "row", alignItems: "center", justifyContent: "flex-start", backgroundColor: "rgba(250,247,239,0.98)", borderBottomWidth: 1, borderBottomColor: "rgba(111,29,43,0.14)" },
+  headerBrand: { color: colors.maroonDark, fontSize: 22, fontWeight: "700", letterSpacing: 5, fontFamily: "Georgia" },
   content: { flex: 1 },
   tabBar: { height: 76, flexDirection: "row", backgroundColor: "rgba(250, 247, 239, 0.99)", borderTopWidth: 1, borderTopColor: "rgba(111, 29, 43, 0.12)", alignItems: "center", justifyContent: "space-around", paddingHorizontal: 5 },
   tabButton: { flex: 1, height: 64, alignItems: "center", justifyContent: "center", borderRadius: 0, marginHorizontal: 1, borderTopWidth: 2, borderTopColor: "transparent" },
