@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Alert, AppState, Modal, TextInput, View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
+import { Alert, Linking, Modal, TextInput, View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
 import * as Location from "expo-location";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
 import { Screen, SectionTitle, Panel, LabelValue } from "../components/Screen";
 import { colors } from "../theme/colors";
@@ -164,42 +163,8 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
 
   useEffect(() => { load(); }, [load]);
 
-  useEffect(() => {
-    let alive = true;
-    const timer = setTimeout(async () => {
-      const permission = await Location.getForegroundPermissionsAsync();
-      if (!alive) return;
-      if (permission.status === "granted") {
-        void useDeviceLocation(false);
-        return;
-      }
-      const alreadyAsked = await AsyncStorage.getItem("kaalam-location-explained");
-      if (!alive || alreadyAsked === "yes") return;
-      await AsyncStorage.setItem("kaalam-location-explained", "yes");
-      Alert.alert(
-        "Location for accurate Panchangam",
-        "KAALAM uses your location only while the app is open to calculate local sunrise, Rahu Kalam, Yamagandam and other timings. You can also choose a city manually.",
-        [
-          { text: "Choose city", onPress: () => setLocationModal(true) },
-          { text: "Allow location", onPress: () => { void useDeviceLocation(true); } },
-        ],
-        { cancelable: false }
-      );
-    }, 900);
-    return () => { alive = false; clearTimeout(timer); };
-  }, [useDeviceLocation]);
-
-  useEffect(() => {
-    const subscription = AppState.addEventListener("change", state => {
-      if (state === "active") {
-        Location.getForegroundPermissionsAsync().then(permission => {
-          if (permission.status === "granted") void useDeviceLocation(false);
-        }).catch(() => undefined);
-      }
-    });
-    return () => subscription.remove();
-  }, [useDeviceLocation]);
-
+  // Keep the saved city as the source of truth. Device GPS is used only
+  // after the user explicitly selects "Use my current location" in the picker.
   useEffect(() => {
     setAudioModeAsync({ playsInSilentMode: true, shouldPlayInBackground: false }).catch(() => {});
     return () => { songPlayer.pause(); };
@@ -397,6 +362,7 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
           <View style={styles.locationModalCard}>
             <Text style={styles.locationModalTitle}>{t("Set Panchangam location")}</Text>
             <Text style={styles.locationModalBody}>{t("Daily timings are calculated for this location. Use your device location or enter a city manually.")}</Text>
+            <Text style={styles.osmAttribution} onPress={() => { void Linking.openURL("https://www.openstreetmap.org/copyright"); }} accessibilityRole="link">© OpenStreetMap contributors</Text>
             <TouchableOpacity style={styles.locationAction} disabled={locationBusy} onPress={() => { void useDeviceLocation(true); }}>
               {locationBusy ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.locationActionText}>{t("Use my current location")}</Text>}
             </TouchableOpacity>
@@ -428,6 +394,7 @@ const styles = StyleSheet.create({
   locationModalCard: { backgroundColor: "#FAF7EF", borderRadius: 16, padding: 20, borderWidth: 1, borderColor: colors.gold },
   locationModalTitle: { color: colors.maroonDark, fontFamily: "Georgia", fontSize: 21, fontWeight: "700" },
   locationModalBody: { color: colors.muted, fontSize: 12, lineHeight: 18, marginTop: 8, marginBottom: 16 },
+  osmAttribution: { color: colors.muted, fontSize: 10, textDecorationLine: "underline", marginTop: -8, marginBottom: 14 },
   locationAction: { minHeight: 46, borderRadius: 10, backgroundColor: colors.maroonDark, alignItems: "center", justifyContent: "center" },
   locationActionText: { color: "#FFFFFF", fontSize: 13, fontWeight: "700" },
   locationOr: { color: colors.muted, fontSize: 9, letterSpacing: 1.3, textAlign: "center", marginVertical: 14 },
