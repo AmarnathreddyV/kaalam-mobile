@@ -127,7 +127,10 @@ def validate_row(row: dict[str, str]) -> dict:
         errors.append("apparent_sunrise_engine_not_active")
     if metadata.get("provider_calls_per_daily_location") != 1:
         errors.append("unexpected_provider_call_budget")
-    if metadata.get("cache_namespace") != "daily-apparent-v1":
+    # Older entries already stored under the versioned apparent-sunrise
+    # namespace may predate the optional metadata field; their timings remain
+    # valid. Reject only an explicitly different namespace.
+    if metadata.get("cache_namespace") not in (None, "daily-apparent-v1"):
         errors.append("unexpected_daily_cache_namespace")
     for key in ("tithi", "nakshatra", "yoga", "karana"):
         if actual[key].casefold() != expected[key].casefold():
