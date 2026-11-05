@@ -55,6 +55,6 @@ The backend calls Navamsha's documented Panchangam routes. `GET /api/panchang/da
 
 KAALAM initially serves Telangana, Andhra Pradesh, Karnataka, Tamil Nadu, Kerala, Maharashtra, Gujarat and Rajasthan. Telangana (60 planned groups) and Andhra Pradesh (65) have the highest priority. The remaining planning allocation is Karnataka (30), Tamil Nadu (25), Maharashtra (30), Kerala (15), Gujarat (15) and Rajasthan (10), for 250 planned regional groups.
 
-The 250 groups are a target allocation, not a certified coordinate registry. Current Panchangam cache keys retain 0.01-degree coordinates plus date and timezone. Do not broaden cache cells or reuse location-dependent solar timings across locations until results are validated against Navamsha. The location resolver returns the resolved state and whether it is in the initial launch coverage. `GET /api/coverage` returns the coverage plan.
+The 250 groups are a target allocation, not a certified coordinate registry. Daily Panchangam uses each user's resolved coordinates and cache keys preserve six decimal places, date and timezone; nearby users do not share location-sensitive timing results merely because they belong to one regional group. The location resolver returns the resolved state and whether it is in the initial launch coverage. `GET /api/coverage` returns the coverage plan.
 
 KAALAM has no AI integrations. All calculations and recommendations must be deterministic and traceable to verified data.
