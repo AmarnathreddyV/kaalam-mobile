@@ -1,6 +1,8 @@
 import os
 import json
 import asyncio
+import copy
+import time
 from pathlib import Path
 
 from datetime import date as date_type
@@ -31,6 +33,50 @@ OPENAI_MODEL = os.getenv(
     "gpt-5.5"
 ).strip()
 
+# Process-local cache; use Redis for multi-instance production deployments.
+PANCHANG_CACHE_TTL_SECONDS = max(60, int(os.getenv("PANCHANG_CACHE_TTL_SECONDS", "86400")))
+PANCHANG_CACHE_MAX_ENTRIES = max(100, int(os.getenv("PANCHANG_CACHE_MAX_ENTRIES", "2000")))
+_panchang_cache: dict[str, tuple[float, dict[str, Any]]] = {}
+_panchang_inflight: dict[str, asyncio.Task] = {}
+_panchang_cache_lock = asyncio.Lock()
+_panchang_usage = {"provider_calls": 0, "cache_hits": 0, "cache_misses": 0, "provider_errors": 0}
+
+def _panchang_cache_key(kind: str, day: date_type, latitude: float, longitude: float, timezone: float, **extra: Any) -> str:
+    parts = [kind, day.isoformat(), f"{latitude:.5f}", f"{longitude:.5f}", f"{timezone:.4f}"]
+    parts.extend(f"{key}={extra[key]}" for key in sorted(extra))
+    return "|".join(parts)
+
+async def _cached_panchang(key: str, loader):
+    async with _panchang_cache_lock:
+        cached = _panchang_cache.get(key)
+        if cached and cached[0] > time.monotonic():
+            _panchang_usage["cache_hits"] += 1
+            return copy.deepcopy(cached[1])
+        if cached:
+            _panchang_cache.pop(key, None)
+        _panchang_usage["cache_misses"] += 1
+        task = _panchang_inflight.get(key)
+        owner = task is None
+        if owner:
+            task = asyncio.create_task(loader())
+            _panchang_inflight[key] = task
+    try:
+        result = await task
+        if owner:
+            async with _panchang_cache_lock:
+                if len(_panchang_cache) >= PANCHANG_CACHE_MAX_ENTRIES:
+                    oldest = min(_panchang_cache, key=lambda k: _panchang_cache[k][0])
+                    _panchang_cache.pop(oldest, None)
+                _panchang_cache[key] = (time.monotonic() + PANCHANG_CACHE_TTL_SECONDS, copy.deepcopy(result))
+        return copy.deepcopy(result)
+    finally:
+        if owner:
+            async with _panchang_cache_lock:
+                if _panchang_inflight.get(key) is task:
+                    _panchang_inflight.pop(key, None)
+
+def _panchang_usage_snapshot() -> dict[str, Any]:
+    return {**_panchang_usage, "cache_entries": len(_panchang_cache), "cache_ttl_seconds": PANCHANG_CACHE_TTL_SECONDS, "cache_scope": "single backend instance; resets on restart"}
 
 app = FastAPI(
     title="KAALAM API",
@@ -63,10 +109,12 @@ app.add_middleware(
 @app.get("/health")
 async def health() -> dict[str, str]:
 
-    return {
-        "status": "ok",
-        "service": "kaalam-api"
-    }
+    return {"status": "ok", "service": "kaalam-api", "panchang_usage": _panchang_usage_snapshot()}
+
+
+@app.get("/api/usage")
+async def usage() -> dict[str, Any]:
+    return {"service": "kaalam-api", "panchang": _panchang_usage_snapshot()}
 
 
 async def fetch_panchang(
@@ -101,6 +149,7 @@ async def fetch_panchang(
 
         # Navamsha may apply request-rate limits. Retry 429 responses
         # with exponential backoff and honour Retry-After when present.
+        _panchang_usage["provider_calls"] += 1
         response = None
         for attempt in range(4):
             response = await client.post(
@@ -206,17 +255,12 @@ async def get_panchang(
     ),
 ) -> dict[str, Any]:
 
-    async with httpx.AsyncClient(timeout=30.0) as client:
+    async def load():
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            return await fetch_panchang(client, day, latitude, longitude, timezone, hours, minutes)
 
-        result = await fetch_panchang(
-            client=client,
-            day=day,
-            latitude=latitude,
-            longitude=longitude,
-            timezone=timezone,
-            hours=hours,
-            minutes=minutes,
-        )
+    key = _panchang_cache_key("single", day, latitude, longitude, timezone, hours=hours, minutes=minutes)
+    result = await _cached_panchang(key, load)
 
     return {
         "provider": "Navamsha",
@@ -268,6 +312,7 @@ async def fetch_navamsha_route(
         "timezone": timezone,
     }
 
+    _panchang_usage["provider_calls"] += 1
     response = await client.post(
         f"{NAVAMSHA_BASE_URL}/{route.lstrip('/')}",
         headers={
@@ -276,7 +321,11 @@ async def fetch_navamsha_route(
         },
         json=payload,
     )
-    response.raise_for_status()
+    try:
+        response.raise_for_status()
+    except httpx.HTTPStatusError:
+        _panchang_usage["provider_errors"] += 1
+        raise
 
     body = response.json()
     if not isinstance(body, dict) or "output" not in body:
@@ -308,73 +357,41 @@ async def get_daily_panchang_with_timings(
         "abhijit_muhurat": "panchang/abhijit-muhurat",
     }
 
-    async with httpx.AsyncClient(timeout=30.0) as client:
-        tasks = {
-            key: fetch_navamsha_route(
-                client=client,
-                route=route,
-                day=day,
-                latitude=latitude,
-                longitude=longitude,
-                timezone=timezone,
-                # Noon is after local sunrise and preserves the
-                # sunrise-based weekday for this calendar date.
-                hours=12,
-                minutes=0,
-            )
-            for key, route in routes.items()
+    async def load_daily():
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            tasks = {
+                key: fetch_navamsha_route(client, route, day, latitude, longitude, timezone, hours=12, minutes=0)
+                for key, route in routes.items()
+            }
+            results = await asyncio.gather(*tasks.values(), return_exceptions=True)
+        data: dict[str, Any] = {}
+        unavailable: dict[str, str] = {}
+        for key, result in zip(tasks.keys(), results):
+            if isinstance(result, Exception):
+                if isinstance(result, httpx.HTTPStatusError):
+                    unavailable[key] = f"Navamsha HTTP {result.response.status_code}"
+                elif isinstance(result, httpx.RequestError):
+                    unavailable[key] = "Navamsha request failed"
+                else:
+                    unavailable[key] = str(result)[:240]
+            else:
+                data[key] = result
+        if "panchang" not in data:
+            raise HTTPException(status_code=502, detail={"message": "Could not retrieve core Panchangam data.", "unavailable": unavailable})
+        return {
+            "provider": "Navamsha", "tradition": "Telugu Drik", "date": day.isoformat(),
+            "location": {"latitude": latitude, "longitude": longitude, "timezone": timezone},
+            "data": data, "unavailable": unavailable, "data_complete": len(data) == len(routes),
+            "recommendations_ready": False,
+            "message": "Daily Panchangam and timing data retrieved. These timings are not, by themselves, an event-specific Muhurtham recommendation.",
         }
 
-        results = await asyncio.gather(
-            *tasks.values(),
-            return_exceptions=True,
-        )
-
-    data: dict[str, Any] = {}
-    unavailable: dict[str, str] = {}
-
-    for key, result in zip(tasks.keys(), results):
-        if isinstance(result, Exception):
-            if isinstance(result, httpx.HTTPStatusError):
-                unavailable[key] = (
-                    f"Navamsha HTTP {result.response.status_code}"
-                )
-            elif isinstance(result, httpx.RequestError):
-                unavailable[key] = "Navamsha request failed"
-            else:
-                unavailable[key] = str(result)[:240]
-        else:
-            data[key] = result
-
-    if "panchang" not in data:
-        raise HTTPException(
-            status_code=502,
-            detail={
-                "message": "Could not retrieve core Panchangam data.",
-                "unavailable": unavailable,
-            },
-        )
-
-    return {
-        "provider": "Navamsha",
-        "tradition": "Telugu Drik",
-        "date": day.isoformat(),
-        "location": {
-            "latitude": latitude,
-            "longitude": longitude,
-            "timezone": timezone,
-        },
-        "data": data,
-        "unavailable": unavailable,
-        "data_complete": len(data) == len(routes),
-        "recommendations_ready": False,
-        "message": (
-            "Daily Panchangam and timing data retrieved. "
-            "These timings are not, by themselves, an "
-            "event-specific Muhurtham recommendation."
-        ),
-    }
-
+    key = _panchang_cache_key("daily", day, latitude, longitude, timezone)
+    result = await _cached_panchang(key, load_daily)
+    if not result.get("data_complete"):
+        async with _panchang_cache_lock:
+            _panchang_cache.pop(key, None)
+    return result
 
 # --------------------------------------------------
 # MUHURTHAM SEARCH
