@@ -121,3 +121,10 @@ class SupabaseSmsHookSignatureTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+
+class IndiaTimezonePolicyTests(unittest.TestCase):
+    def test_indian_location_timezone_is_fixed_to_ist(self):
+        # All eight launch states are within India's single civil time zone.
+        self.assertEqual(main_module.INDIA_TIMEZONE, "Asia/Kolkata")
