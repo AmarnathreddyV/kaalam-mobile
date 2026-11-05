@@ -6,9 +6,9 @@ Drik Panchang city pages. The coordinates are KAALAM's resolved city coordinates
 small differences from the reference site's city-centre coordinates can affect
 sunrise by seconds.
 
-This is a diagnostic baseline, not state-wide certification. The validator
-requires at least ten independently sourced location/date rows per state before
-it can set `certification_ready=true`.
+This is a diagnostic baseline, not state-wide certification. The validator requires at least ten independently sourced location/date rows
+per state before it can set `certification_ready=true`. Four states still need
+nine additional city references each.
 
 ## Run
 
