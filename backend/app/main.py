@@ -828,7 +828,7 @@ class BirthChartRequest(BaseModel):
 # Nominatim's public service permits at most one request per second
 # across the whole application. Serialize calls and cache successful place
 # resolutions so reopening the app does not repeatedly geocode the same city.
-NOMINATIM_MIN_INTERVAL_SECONDS = 1.1
+INDIA_TIMEZONE = "Asia/Kolkata"\nNOMINATIM_MIN_INTERVAL_SECONDS = 1.1
 LOCATION_CACHE_TTL_SECONDS = 30 * 24 * 60 * 60
 _location_cache: dict[str, tuple[float, dict[str, Any]]] = {}
 _location_lookup_lock = asyncio.Lock()
@@ -904,24 +904,10 @@ async def resolve_location(request: LocationResolveRequest) -> dict[str, Any]:
         latitude = float(match["lat"])
         longitude = float(match["lon"])
 
-        try:
-            async with httpx.AsyncClient(timeout=12.0) as client:
-                timezone_response = await client.get(
-                    "https://timeapi.io/api/TimeZone/coordinate",
-                    params={"latitude": latitude, "longitude": longitude},
-                )
-                timezone_response.raise_for_status()
-                timezone_body = timezone_response.json()
-            timezone_name = (
-                timezone_body.get("timeZone")
-                or timezone_body.get("timeZoneId")
-                or timezone_body.get("ianaTimeId")
-            )
-        except (httpx.RequestError, httpx.HTTPStatusError, ValueError) as exc:
-            raise HTTPException(status_code=502, detail="Could not resolve the time zone for this location.") from exc
-
-        if not isinstance(timezone_name, str) or "/" not in timezone_name:
-            raise HTTPException(status_code=502, detail="Time zone provider returned an invalid IANA time zone.")
+        # India has one civil time zone across all launch states and
+        # locations. Avoid a second external lookup whose failure or incorrect
+        # result could shift sunrise-based Panchangam timings.
+        timezone_name = INDIA_TIMEZONE
 
         address = match.get("address") or {}
         state_name = str(address.get("state") or "").strip()
