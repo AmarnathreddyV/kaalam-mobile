@@ -131,8 +131,20 @@ def check_location(state: str, place: str) -> dict:
         raise AssertionError(f"incomplete daily response: {daily.get('unavailable')}")
     data = daily.get("data") or {}
     panchang = data.get("panchang") or {}
+    def limb_name(value):
+        if isinstance(value, str):
+            return value.strip()
+        if isinstance(value, dict):
+            for key in ("name", "value", "label", "display"):
+                candidate = value.get(key)
+                if isinstance(candidate, str) and candidate.strip():
+                    return candidate.strip()
+        return ""
+
+    limbs = {}
     for limb in ("tithi", "nakshatra", "yoga", "karana"):
-        if not isinstance(panchang.get(limb), dict) or not panchang[limb].get("name"):
+        limbs[limb] = limb_name(panchang.get(limb))
+        if not limbs[limb]:
             raise AssertionError(f"missing core Panchangam limb: {limb}")
     rise = (((data.get("sun_times") or {}).get("rise") or {}).get("local_datetime"))
     setting = (((data.get("sun_times") or {}).get("set") or {}).get("local_datetime"))
