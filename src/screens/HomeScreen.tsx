@@ -375,7 +375,7 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
             <Text style={styles.suggestionTitle}>{t(spiritualGuidance.deity)}</Text>
             <Text style={styles.guidanceLabel}>{t("TEMPLE SUGGESTION")}</Text><Text style={styles.horoscope}>{t(spiritualGuidance.temple)}</Text>
             <Text style={styles.guidanceLabel}>{t("PRAYER OR ACTIVITY")}</Text><Text style={styles.horoscope}>{t(spiritualGuidance.practice)}</Text>
-            {!!spiritualGuidance.tithiNote && <><Text style={styles.guidanceLabel}>{t("PANCHANGAM NOTE")}</Text><Text style={styles.horoscope}>{spiritualGuidance.tithiNote}</Text></>}
+            {!!spiritualGuidance.tithiNote && <><Text style={styles.guidanceLabel}>{t("PANCHANGAM NOTE")}</Text><Text style={styles.horoscope}>{t(spiritualGuidance.tithiNote)}</Text></>}
             <Text style={styles.guidanceLabel}>{t("A THOUGHT FOR TODAY")}</Text><Text style={styles.horoscope}>{t("Try to avoid harsh words and rushed decisions. Make space for patience, kindness and thoughtful action.")}</Text>
             <Text style={styles.smallNote}>{t("General spiritual inspiration based on common weekday devotional associations and returned Tithi. Traditions vary by family and region.")}</Text>
           </>
