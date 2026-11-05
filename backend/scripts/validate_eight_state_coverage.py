@@ -209,10 +209,9 @@ def main() -> int:
             except Exception as exc:
                 failures.append({"state": state, "place": place, "error": str(exc)})
                 print(f"FAIL {place}: {exc}", flush=True)
-            # Geocoder policy is one request/second; a small pause also spaces
-            # provider traffic across this end-to-end test. Each daily call fans
-            # out to six provider routes, so 2.1 seconds spaces bursts below
-            # the documented 10-requests-per-3-seconds free-tier ceiling.
+            # Geocoder policy is one request/second. The daily endpoint now
+            # makes one Navamsha request per uncached location/date; 2.1 seconds
+            # also keeps geocoder/provider traffic comfortably rate-limited.
             time.sleep(2.1)
 
     by_state = {
