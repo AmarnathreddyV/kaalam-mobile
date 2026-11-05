@@ -210,3 +210,27 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;
 }
 export function useLanguage() { return useContext(LanguageContext); }
+
+
+Object.assign(te, {
+"Choose your location":"మీ స్థానాన్ని ఎంచుకోండి",
+"Set Panchangam location":"పంచాంగ స్థానాన్ని సెట్ చేయండి",
+"Daily timings are calculated for this location. Use your device location or enter a city manually.":"ఈ ప్రాంతానికి అనుగుణంగా రోజువారీ సమయాలు లెక్కించబడతాయి. మీ ఫోన్ స్థానాన్ని ఉపయోగించండి లేదా నగరాన్ని మాన్యువల్‌గా నమోదు చేయండి.",
+"Use my current location":"నా ప్రస్తుత స్థానాన్ని ఉపయోగించండి",
+"OR ENTER A CITY":"లేదా నగరాన్ని నమోదు చేయండి",
+"Hyderabad, Telangana, India":"హైదరాబాద్, తెలంగాణ, భారతదేశం",
+"Save location":"స్థానాన్ని సేవ్ చేయండి",
+"Updating…":"అప్‌డేట్ అవుతోంది…",
+"Cancel":"రద్దు చేయండి"
+});
+Object.assign(hi, {
+"Choose your location":"अपना स्थान चुनें",
+"Set Panchangam location":"पंचांग का स्थान सेट करें",
+"Daily timings are calculated for this location. Use your device location or enter a city manually.":"दैनिक समय की गणना इस स्थान के अनुसार होगी। अपने डिवाइस का स्थान इस्तेमाल करें या शहर का नाम दर्ज करें।",
+"Use my current location":"मेरा वर्तमान स्थान उपयोग करें",
+"OR ENTER A CITY":"या शहर दर्ज करें",
+"Hyderabad, Telangana, India":"हैदराबाद, तेलंगाना, भारत",
+"Save location":"स्थान सहेजें",
+"Updating…":"अपडेट हो रहा है…",
+"Cancel":"रद्द करें"
+});
