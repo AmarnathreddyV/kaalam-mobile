@@ -204,7 +204,7 @@ def main() -> int:
         "reference_rows", "passed", "failed", "state_reference_counts",
         "missing_states", "states_with_fewer_than_10_reference_rows", "certification_ready"
     )}, indent=2))
-    # An incomplete reference sample is diagnostic, not a failed calculation.\n    # The report keeps certification_ready=false until every state has 10 rows.\n    return 0 if failed == 0 else 1
+    # Production certification is a hard gate: all eight states need at least\n    # ten independent reference rows, and every row must pass. A workflow must\n    # never show green while the reference sample is incomplete.\n    return 0 if certification_ready else 1
 
 
 if __name__ == "__main__":
