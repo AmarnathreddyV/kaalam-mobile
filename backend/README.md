@@ -51,12 +51,10 @@ The backend calls Navamsha's documented Panchangam routes. `GET /api/panchang/da
 `POST /api/muhurtham/search` currently searches the source-attributed dataset in `data/muhurtham_sources_2026_2027.json`. These are published listings marked unverified, not independently calculated or personalized Muhurtham approvals. The app must retain the disclaimer and source attribution. Event-specific Telugu Drik calculations, and Durmuhurtham/Subha Gadiyalu validation, remain future work.
 
 
-## Custom occasion AI analysis
+## Initial launch geography
 
-The app's "Other" occasion option sends the user's text to `POST /api/occasion/analyze`.
-Set these Render backend environment variables:
+KAALAM initially serves Telangana, Andhra Pradesh, Karnataka, Tamil Nadu, Kerala, Maharashtra, Gujarat and Rajasthan. Telangana (60 planned groups) and Andhra Pradesh (65) have the highest priority. The remaining planning allocation is Karnataka (30), Tamil Nadu (25), Maharashtra (30), Kerala (15), Gujarat (15) and Rajasthan (10), for 250 planned regional groups.
 
-- `OPENAI_API_KEY` — OpenAI API key
-- `OPENAI_MODEL` — optional; defaults to `gpt-5.5`
+The 250 groups are a target allocation, not a certified coordinate registry. Current Panchangam cache keys retain 0.01-degree coordinates plus date and timezone. Do not broaden cache cells or reuse location-dependent solar timings across locations until results are validated against Navamsha. The location resolver returns the resolved state and whether it is in the initial launch coverage. `GET /api/coverage` returns the coverage plan.
 
-The endpoint classifies the occasion and explains which traditional factors should be checked. It does not generate auspicious dates or timings. Actual date recommendations must be computed from verified Panchangam data and event-specific rules.
+KAALAM has no AI integrations. All calculations and recommendations must be deterministic and traceable to verified data.
