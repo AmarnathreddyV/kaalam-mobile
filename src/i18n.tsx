@@ -226,7 +226,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguageState] = useState<AppLanguage>("English");
   useEffect(() => {
     AsyncStorage.getItem("kaalam-language").then(value => {
-      if (["Telugu","Hindi","English","Tamil","Malayalam","Kannada","Gujarati","Marathi"].includes(value)) setLanguageState(value);
+      if (["Telugu","Hindi","English","Tamil","Malayalam","Kannada","Gujarati","Marathi"].includes(value || "")) setLanguageState(value as AppLanguage);
     }).catch(() => undefined);
   }, []);
   const setLanguage = (value: AppLanguage) => {
