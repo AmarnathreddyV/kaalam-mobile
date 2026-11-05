@@ -1,0 +1,45 @@
+name: KAALAM eight-state live coverage validation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/scripts/validate_eight_state_coverage.py"
+      - ".github/workflows/validate-eight-state-coverage.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kaalam-eight-state-live-validation
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    name: Test 80 locations across all eight launch states
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run live validation against deployed KAALAM API
+        env:
+          KAALAM_API_BASE: https://kaalam-mobile.onrender.com
+          KAALAM_TEST_DATE: "2026-11-05"
+        run: python backend/scripts/validate_eight_state_coverage.py
+
+      - name: Upload validation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kaalam-eight-state-coverage-validation
+          path: coverage-validation-report.json
+          if-no-files-found: warn
+          retention-days: 30
