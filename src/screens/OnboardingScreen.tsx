@@ -78,7 +78,7 @@ export function OnboardingScreen({
   }, []);
 
   const update = (key: string, value: string) => {
-    if (key === "preferred_language" && ["Telugu", "Hindi", "English"].includes(value)) setLanguage(value as "Telugu" | "Hindi" | "English");
+    if (key === "preferred_language" && ["Telugu","Hindi","English","Tamil","Malayalam","Kannada","Gujarati","Marathi"].includes(value)) setLanguage(value as import("../i18n").AppLanguage);
     setValues((old) => ({
       ...old,
       [key]: value,
@@ -336,7 +336,7 @@ export function OnboardingScreen({
       <Text style={styles.label}>{t("Preferred language")}</Text>
 
       <View style={styles.pills}>
-        {["Telugu", "English", "Hindi"].map((language) => {
+        {["Telugu", "English", "Hindi", "Tamil", "Malayalam", "Kannada", "Gujarati", "Marathi"].map((language) => {
           const selected =
             values.preferred_language === language;
 
