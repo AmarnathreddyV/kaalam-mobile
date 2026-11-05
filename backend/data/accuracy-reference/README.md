@@ -4,7 +4,7 @@ This file documents the independent-reference gate. The reference CSV is deliber
 not padded with values copied from KAALAM itself: every expected value must come
 from an attributable external Panchang source.
 
-## Current evidence inventory (5 November 2026)
+## Current evidence inventory (5–7 November 2026)
 
 The current CSV contains **96 reference rows** across **5, 6, and 7 November 2026**:
 
@@ -39,26 +39,29 @@ places per state**, and at least **3 distinct dates per state**. It also compare
 sunrise and sunset within 2 minutes and requires exact case-insensitive matches
 for tithi, nakshatra, yoga, and karana, plus the expected KAALAM engine metadata.
 
-Current data does **not** meet the coverage gates: Kerala, Maharashtra, Gujarat,
-and Rajasthan have fewer than 10 reference places, and every state has only one
-reference date. Do not mark the app independently certified until these gaps
-are filled with source-checked rows and the live comparison passes.
+The CSV now meets the validator's structural coverage requirements: 10 unique
+places and 3 distinct dates in each state. Structural coverage is not the same
+as a passing live comparison; do not mark the app independently certified until
+the current 96-row run passes and any reported mismatches are resolved.
 
 ## Separate operational coverage evidence
 
 The live operational coverage workflow tests **80 locations per day**
 (10 per state) for 5, 6, and 7 November 2026, with a separate job and report
-for each date. Jobs run sequentially to reduce pressure on the live API, and
-the HTTP client retries temporary gateway and network failures. It checks
-state attribution, coordinate round-tripping, timezone, Telugu Drik response
-metadata, completeness, and basic solar-time plausibility. This is useful operational evidence, but it is not independent
-astronomical accuracy certification.
+for each date. Jobs are configured to run sequentially to reduce pressure on
+the live API, and the HTTP client retries temporary gateway and network
+failures. An earlier parallel attempt encountered transient HTTP 502 errors;
+the serialized retry-enabled rerun is the one to use for sign-off. The workflow
+checks state attribution, coordinate round-tripping, timezone, Telugu Drik
+response metadata, completeness, and basic solar-time plausibility. This is
+useful operational evidence, but it is not independent astronomical accuracy
+certification.
 
-The latest completed comparison before the 80-place expansion tested 59 rows
-and reported **59 passed, 0 mismatches**. The current CSV now has 10 distinct places and 3 distinct dates in every state.
-The strict validator's structural coverage requirements are therefore met.
-A new live comparison is running against the 96-row reference set; inspect its
-final report for mismatches before sign-off. The earlier 44-row report is superseded.
+The latest completed 80-place comparison tested all 10 cities in every state
+for 5 November and reported **80 passed, 0 mismatches**. That run was not
+certifiable because it covered only one date. The current 96-row, three-date
+comparison is running; inspect its final report for mismatches before sign-off.
+The earlier 59-row and 44-row reports are superseded.
 
 ## Run
 
