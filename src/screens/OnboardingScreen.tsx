@@ -164,6 +164,10 @@ export function OnboardingScreen({
           longitude: number;
           timezone: string;
           display_name: string;
+          state: string | null;
+          coverage_supported: boolean;
+          coverage_priority: string;
+          regional_group_target: number;
         };
       }
 
@@ -171,6 +175,14 @@ export function OnboardingScreen({
         resolvePlace(values.birth_place.trim()),
         resolvePlace(values.current_location.trim()),
       ]);
+
+      if (!currentLocation.coverage_supported) {
+        throw new Error(
+          "KAALAM's initial launch currently covers Telangana, Andhra Pradesh, Karnataka, Tamil Nadu, Kerala, Maharashtra, Gujarat and Rajasthan. Your current location was resolved as " +
+          (currentLocation.state || "an unsupported state") +
+          ". Birthplace can still be anywhere in India."
+        );
+      }
 
       const chartResponse = await fetch(`${apiBase}/api/kundali/basic`, {
         method: "POST",
@@ -299,7 +311,7 @@ export function OnboardingScreen({
       <Text style={styles.title}>{t("Your details")}</Text>
 
       <Text style={styles.subtitle}>
-        {t("Your phone number is verified. Add your birth and current-location details to personalize KAALAM. You can enter any village, town or city in India.")}
+        {t("Your phone number is verified. Add your birth details and current location. KAALAM's initial launch covers eight states in South and West India.")}
       </Text>
 
       <TextInput
