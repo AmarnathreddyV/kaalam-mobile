@@ -66,14 +66,14 @@ export function DevotionalSongsScreen() {
   );
 }
 const styles = StyleSheet.create({
-  root: { flex: 1 }, content: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 36 },
-  intro: { marginBottom: 14 }, introTitle: { color: colors.maroonDark, fontSize: 17, fontWeight: "700", fontFamily: "Georgia" },
-  introText: { color: colors.muted, fontSize: 12, lineHeight: 18, marginTop: 6 },
-  song: { flexDirection: "row", alignItems: "center", padding: 13, borderRadius: 16, borderWidth: 1, borderColor: colors.line, backgroundColor: "rgba(255,247,230,0.94)", marginBottom: 10 },
+  root: { flex: 1 }, content: { paddingHorizontal: 22, paddingTop: 26, paddingBottom: 42 },
+  intro: { marginBottom: 18 }, introTitle: { color: colors.maroonDark, fontSize: 20, fontWeight: "500", fontFamily: "Georgia" },
+  introText: { color: colors.muted, fontSize: 12, lineHeight: 19, marginTop: 8 },
+  song: { flexDirection: "row", alignItems: "center", padding: 16, borderRadius: 10, borderWidth: 1, borderColor: colors.line, backgroundColor: "rgba(250,247,239,0.97)", marginBottom: 10 },
   songActive: { borderColor: colors.gold, backgroundColor: "rgba(239,218,175,0.55)" },
-  musicIcon: { width: 44, height: 44, borderRadius: 22, backgroundColor: "rgba(113,55,15,0.10)", alignItems: "center", justifyContent: "center" },
+  musicIcon: { width: 46, height: 46, borderRadius: 23, backgroundColor: "rgba(169,133,69,0.13)", alignItems: "center", justifyContent: "center" },
   musicGlyph: { color: colors.maroon, fontSize: 24 }, songInfo: { flex: 1, paddingHorizontal: 12 },
   songTitle: { color: colors.text, fontSize: 13, fontWeight: "700" }, deity: { color: colors.muted, fontSize: 11, marginTop: 4 },
-  state: { color: colors.gold, fontSize: 10, marginTop: 3 }, errorText: { color: "#B00020", fontSize: 10, marginTop: 3 }, playButton: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.maroon, alignItems: "center", justifyContent: "center" },
+  state: { color: colors.gold, fontSize: 10, marginTop: 3 }, errorText: { color: "#B00020", fontSize: 10, marginTop: 3 }, playButton: { width: 38, height: 38, borderRadius: 19, backgroundColor: colors.maroonDark, alignItems: "center", justifyContent: "center" },
   playGlyph: { color: "#FFFFFF", fontSize: 15, fontWeight: "700" }, footer: { color: colors.muted, fontSize: 10, lineHeight: 16, marginTop: 8, paddingHorizontal: 3 },
 });
