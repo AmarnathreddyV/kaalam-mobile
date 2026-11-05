@@ -121,3 +121,10 @@ The first EAS build may ask you to link this repository to an Expo project. Comp
 
 
 **Store branding:** square iOS/Android app icons are generated from the original KAALAM logo with proportional scaling and padding; the source artwork is not stretched.
+
+
+## Latest live validation (5 November 2026)
+
+- **80/80 operational location checks passed** across ten places in each of the eight launch states. The checks verified state attribution, coordinate round-tripping, IST offset, complete Telugu Drik data, four core Panchang limbs, apparent sunrise engine and local timing windows. This is a city/town smoke test, not proof for every village.
+- **44/44 independent reference rows passed**: sunrise/sunset within two minutes and Tithi, Nakshatra, Yoga and Karana exact matches. The independent reference sample currently has ten rows each for Telangana, Andhra Pradesh, Karnataka and Tamil Nadu, but only one each for Kerala, Maharashtra, Gujarat and Rajasthan. Therefore the eight-state independent accuracy gate remains **not certified** until those four states each have ten independent references.
+- GitHub Actions: [80-location live coverage run](https://github.com/AmarnathreddyV/kaalam-mobile/actions/runs/42030907790), [44-row independent reference run](https://github.com/AmarnathreddyV/kaalam-mobile/actions/runs/42030895942), [CI run](https://github.com/AmarnathreddyV/kaalam-mobile/actions/runs/42030907880).
