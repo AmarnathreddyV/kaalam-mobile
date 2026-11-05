@@ -29,7 +29,8 @@ function displayBirthDate(value?: string) {
 }
 
 function todayLabel(language: string) {
-  const locale = language === "Telugu" ? "te-IN" : language === "Hindi" ? "hi-IN" : "en-IN";
+  const localeMap: Record<string, string> = { Telugu: "te-IN", Hindi: "hi-IN", Tamil: "ta-IN", Malayalam: "ml-IN", Kannada: "kn-IN", Gujarati: "gu-IN", Marathi: "mr-IN", English: "en-IN" };
+  const locale = localeMap[language] || "en-IN";
   return new Intl.DateTimeFormat(locale, {
     weekday: "long", day: "2-digit", month: "long", year: "numeric",
   }).format(new Date()).toUpperCase().replace(",", " ·");
@@ -222,7 +223,8 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
   const name = profile?.full_name?.trim() || "there";
   const daily = result?.data;
   const userTimezone = profile?.current_timezone || "UTC";
-  const timeLocale = language === "Telugu" ? "te-IN" : language === "Hindi" ? "hi-IN" : "en-IN";
+  const localeMap: Record<string, string> = { Telugu: "te-IN", Hindi: "hi-IN", Tamil: "ta-IN", Malayalam: "ml-IN", Kannada: "kn-IN", Gujarati: "gu-IN", Marathi: "mr-IN", English: "en-IN" };
+  const timeLocale = localeMap[language] || "en-IN";
   const timeText = (value?: string) => {
     if (!value) return "Unavailable";
     const parsed = new Date(value);
