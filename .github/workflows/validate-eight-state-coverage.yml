@@ -8,7 +8,7 @@ on:
       - ".github/workflows/validate-eight-state-coverage.yml"
   workflow_dispatch:
 
-# Re-run against the current production build after the cache namespace rollout.
+# Final re-run after exact sunrise-second and cache-v2 deployment.
 permissions:
   contents: read
 
