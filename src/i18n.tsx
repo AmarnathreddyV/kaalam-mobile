@@ -138,6 +138,17 @@ Object.assign(hi, {
 "Telugu Drik":"तेलुगु दृक पंचांग","Tithi":"तिथि","Vara":"वार","Nakshatra":"नक्षत्र","Yoga":"योग","Karana":"करण","Abhijit Muhurat":"अभिजित मुहूर्त","Sun timings":"सूर्य समय","Avoidable periods":"वर्जित समय","Other daily windows":"अन्य दैनिक समय"
 });
 
+Object.assign(te, {
+"Siddha":"సిద్ధ","Sadhya":"సాధ్య","Shubha":"శుభ","Shukla":"శుక్ల పక్షం","Krishna":"కృష్ణ పక్షం",
+"Vishti":"విష్టి","Bava":"బవ","Balava":"బాలవ","Kaulava":"కౌలవ","Taitila":"తైతుల","Garaja":"గరజ","Vanija":"వణిజ","Kimstughna":"కింస్తుఘ్న",
+"Dhruva":"ధ్రువ","Vyaghata":"వ్యాఘాత","Harshana":"హర్షణ","Vajra":"వజ్ర","Siddhi":"సిద్ధి","Vyatipata":"వ్యతీపాత","Variyana":"వరీయాన్","Parigha":"పరిఘ","Shiva":"శివ","Sukarma":"సుకర్మ","Brahma":"బ్రహ్మ","Indra":"ఇంద్ర","Vaidhriti":"వైధృతి"
+});
+Object.assign(hi, {
+"Siddha":"सिद्ध","Sadhya":"साध्य","Shubha":"शुभ","Shukla":"शुक्ल पक्ष","Krishna":"कृष्ण पक्ष",
+"Vishti":"विष्टि","Bava":"बव","Balava":"बालव","Kaulava":"कौलव","Taitila":"तैतिल","Garaja":"गरज","Vanija":"वणिज","Kimstughna":"किंस्तुघ्न",
+"Dhruva":"ध्रुव","Vyaghata":"व्याघात","Harshana":"हर्षण","Vajra":"वज्र","Siddhi":"सिद्धि","Vyatipata":"व्यतीपात","Variyana":"वरीयान","Parigha":"परिघ","Shiva":"शिव","Sukarma":"सुकर्म","Brahma":"ब्रह्मा","Indra":"इन्द्र","Vaidhriti":"वैधृति"
+});
+
 const translations: Record<AppLanguage, Record<string, string>> = { English: {}, Telugu: te, Hindi: hi };
 type LanguageContextValue = { language: AppLanguage; setLanguage: (language: AppLanguage) => void; t: (text: string) => string };
 const LanguageContext = createContext<LanguageContextValue>({ language: "English", setLanguage: () => undefined, t: text => text });
