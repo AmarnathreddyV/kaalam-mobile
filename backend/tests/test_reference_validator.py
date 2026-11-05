@@ -13,6 +13,7 @@ def row(state="Telangana", place="Hyderabad", day="2026-11-05", lat="17.385", lo
         "latitude": lat, "longitude": lon, "timezone_offset_hours": "5.5",
         "reference_source": "Drik Panchang",
         "reference_url": "https://www.drikpanchang.com/panchang/day-panchang.html",
+        "sun_reference_url": "https://www.drikpanchang.com/astronomy/sunrisemoonrise/daily/sunrisemoonrise.html",
     }
 
 
@@ -47,3 +48,10 @@ def test_india_timezone_must_be_ist():
     bad["timezone_offset_hours"] = "0"
     errors, _ = validator.structural_errors([bad])
     assert any("india_timezone_must_be_utc_plus_5_5" in str(item) for item in errors)
+
+
+def test_sun_reference_url_must_be_on_allowlist():
+    bad = row()
+    bad["sun_reference_url"] = "https://example.com/sunrise"
+    errors, _ = validator.structural_errors([bad])
+    assert any("sun_reference_url_not_on_allowlist" in str(item) for item in errors)
