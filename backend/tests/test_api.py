@@ -61,6 +61,15 @@ class HealthEndpointTests(unittest.TestCase):
 
 
 class ExactLocationCacheKeyTests(unittest.TestCase):
+    def test_apparent_sunrise_algorithm_uses_a_new_cache_namespace(self):
+        legacy = main_module._panchang_cache_key(
+            "daily", date(2026, 11, 5), 17.360589, 78.4740613, 5.5, precision=6
+        )
+        current = main_module._panchang_cache_key(
+            "daily-apparent-v1", date(2026, 11, 5), 17.360589, 78.4740613, 5.5, precision=6
+        )
+        self.assertNotEqual(legacy, current)
+
     def test_nearby_coordinates_do_not_share_daily_cache_key(self):
         first = main_module._panchang_cache_key(
             "daily", date(2026, 11, 5), 17.385000, 78.486700, 5.5, precision=6
