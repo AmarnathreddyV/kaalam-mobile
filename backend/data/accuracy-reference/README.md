@@ -1,10 +1,12 @@
 # KAALAM independent Telugu Drik accuracy references
 
-The CSV contains eight initial reference cases (one representative location in
-each launch state) for 5 November 2026. Values are transcribed from the linked
-Drik Panchang city pages. The coordinates are KAALAM's resolved city coordinates;
-small differences from the reference site's city-centre coordinates can affect
-sunrise by seconds.
+The CSV now contains 44 reference cases for 5 November 2026: ten locations each
+in Telangana, Andhra Pradesh, Karnataka and Tamil Nadu, plus one representative
+location in Kerala, Maharashtra, Gujarat and Rajasthan. Values are transcribed
+from the linked Drik Panchang pages; the Srikakulam row uses NityaPanchangam as
+an additional independent Telugu reference. Coordinates are KAALAM's resolved
+city coordinates; small differences from the reference site's city-centre
+coordinates can affect sunrise by seconds.
 
 This is a diagnostic baseline, not state-wide certification. The validator requires at least ten independently sourced location/date rows
 per state before it can set `certification_ready=true`. Four states still need
