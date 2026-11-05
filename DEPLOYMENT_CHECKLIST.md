@@ -67,7 +67,7 @@ Never put either server API key in Expo/EAS client variables. After saving setti
 - Current location resolves inside one of the eight launch states; birth place remains available anywhere in India.
 - Device-location permission and manual city selection both work.
 - Validate the proposed 250 regional groups against precise-coordinate Navamsha results. Keep the groups separate from calculation coordinates.
-- Daily Telugu Drik Tithi, Nakshatra, Yoga, Karana, sunrise/sunset, Rahu Kalam, Yamagandam, Gulika, Choghadiya and Abhijit data load for the correct local date/time zone.
+- Daily Telugu Drik Tithi, Nakshatra, Yoga and Karana load just after apparent local sunrise; locally calculated sunrise/sunset and dependent Rahu Kalam, Yamagandam, Gulika, Choghadiya, Hora and Abhijit windows match independent city references.
 - Compare timing outputs with trusted Telugu Drik references for the same date and coordinates. Check partial-provider failures are visibly reported.
 - Muhurtham tab opens; published listings remain labelled unverified and show their source/disclaimer. Do not call them calculated or certified recommendations.
 - Each bundled devotional audio file plays, pauses and resumes offline.
