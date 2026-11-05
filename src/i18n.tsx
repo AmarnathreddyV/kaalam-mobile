@@ -219,6 +219,18 @@ const mr: Record<string, string> = {
 };
 
 const translations: Record<AppLanguage, Record<string, string>> = { English: {}, Telugu: te, Hindi: hi, Tamil: ta, Malayalam: ml, Kannada: kn, Gujarati: gu, Marathi: mr };
+
+const extended: Partial<Record<AppLanguage, Record<string,string>>> = {
+Tamil: {"Daily calendar":"தினசரி பஞ்சாங்கம்","Vara":"வாரம்","Sun timings":"சூரிய நேரங்கள்","Avoidable periods":"தவிர்க்க வேண்டிய நேரங்கள்","Other daily windows":"மற்ற தினசரி நேரங்கள்","Choghadiya day slots":"பகல் சோகடியா நேரங்கள்","REFRESH":"புதுப்பிக்கவும்","DATA: NAVAMSHA":"தரவு: நவாம்ஷா","Devotional Songs":"பக்திப் பாடல்கள்","A moment of devotion":"பக்திக்கான ஒரு தருணம்","ITEMS":"பொருட்கள்","Unavailable":"கிடைக்கவில்லை","Sunday":"ஞாயிறு","Monday":"திங்கள்","Tuesday":"செவ்வாய்","Wednesday":"புதன்","Thursday":"வியாழன்","Friday":"வெள்ளி","Saturday":"சனி"},
+Malayalam: {"Daily calendar":"ദൈനംദിന പഞ്ചാംഗം","Vara":"വാരം","Sun timings":"സൂര്യസമയങ്ങൾ","Avoidable periods":"ഒഴിവാക്കേണ്ട സമയങ്ങൾ","Other daily windows":"മറ്റ് ദൈനംദിന സമയങ്ങൾ","Choghadiya day slots":"പകൽ ചോഘഡിയ സമയങ്ങൾ","REFRESH":"പുതുക്കുക","DATA: NAVAMSHA":"ഡാറ്റ: നവാംശ","Devotional Songs":"ഭക്തിഗാനങ്ങൾ","A moment of devotion":"ഭക്തിയുടെ ഒരു നിമിഷം","ITEMS":"സാധനങ്ങൾ","Unavailable":"ലഭ്യമല്ല","Sunday":"ഞായറാഴ്ച","Monday":"തിങ്കളാഴ്ച","Tuesday":"ചൊവ്വാഴ്ച","Wednesday":"ബുധനാഴ്ച","Thursday":"വ്യാഴാഴ്ച","Friday":"വെള്ളിയാഴ്ച","Saturday":"ശനിയാഴ്ച"},
+Kannada: {"Daily calendar":"ದೈನಂದಿನ ಪಂಚಾಂಗ","Vara":"ವಾರ","Sun timings":"ಸೂರ್ಯ ಸಮಯಗಳು","Avoidable periods":"ತಪ್ಪಿಸಬೇಕಾದ ಸಮಯಗಳು","Other daily windows":"ಇತರ ದೈನಂದಿನ ಸಮಯಗಳು","Choghadiya day slots":"ಹಗಲಿನ ಚೋಘಡಿಯ ಸಮಯಗಳು","REFRESH":"ಮತ್ತೆ ಲೋಡ್ ಮಾಡಿ","DATA: NAVAMSHA":"ಮಾಹಿತಿ: ನವಾಂಶ","Devotional Songs":"ಭಕ್ತಿಗೀತೆಗಳು","A moment of devotion":"ಭಕ್ತಿಯ ಕ್ಷಣ","ITEMS":"ವಸ್ತುಗಳು","Unavailable":"ಲಭ್ಯವಿಲ್ಲ","Sunday":"ಭಾನುವಾರ","Monday":"ಸೋಮವಾರ","Tuesday":"ಮಂಗಳವಾರ","Wednesday":"ಬುಧವಾರ","Thursday":"ಗುರುವಾರ","Friday":"ಶುಕ್ರವಾರ","Saturday":"ಶನಿವಾರ"},
+Gujarati: {"Daily calendar":"દૈનિક પંચાંગ","Vara":"વાર","Sun timings":"સૂર્ય સમય","Avoidable periods":"ટાળવાના સમય","Other daily windows":"અન્ય દૈનિક સમય","Choghadiya day slots":"દિવસના ચોઘડિયા સમય","REFRESH":"ફરીથી લોડ કરો","DATA: NAVAMSHA":"માહિતી: નવાંશ","Devotional Songs":"ભક્તિ ગીતો","A moment of devotion":"ભક્તિની એક ક્ષણ","ITEMS":"વસ્તુઓ","Unavailable":"ઉપલબ્ધ નથી","Sunday":"રવિવાર","Monday":"સોમવાર","Tuesday":"મંગળવાર","Wednesday":"બુધવાર","Thursday":"ગુરુવાર","Friday":"શુક્રવાર","Saturday":"શનિવાર"},
+Marathi: {"Daily calendar":"दैनंदिन पंचांग","Vara":"वार","Sun timings":"सूर्य वेळा","Avoidable periods":"टाळण्याच्या वेळा","Other daily windows":"इतर दैनंदिन वेळा","Choghadiya day slots":"दिवसाचे चौघडिया वेळा","REFRESH":"पुन्हा लोड करा","DATA: NAVAMSHA":"माहिती: नवांश","Devotional Songs":"भक्तिगीते","A moment of devotion":"भक्तीचा एक क्षण","ITEMS":"वस्तू","Unavailable":"उपलब्ध नाही","Sunday":"रविवार","Monday":"सोमवार","Tuesday":"मंगळवार","Wednesday":"बुधवार","Thursday":"गुरुवार","Friday":"शुक्रवार","Saturday":"शनिवार"}
+};
+for (const [lang, dict] of Object.entries(extended)) Object.assign(translations[lang as AppLanguage], dict);
+const localeByLanguage: Record<AppLanguage,string> = {English:"en-IN",Telugu:"te-IN",Hindi:"hi-IN",Tamil:"ta-IN",Malayalam:"ml-IN",Kannada:"kn-IN",Gujarati:"gu-IN",Marathi:"mr-IN"};
+export function getAppLocale(language: AppLanguage): string { return localeByLanguage[language] || "en-IN"; }
+
 type LanguageContextValue = { language: AppLanguage; setLanguage: (language: AppLanguage) => void; t: (text: string) => string };
 const LanguageContext = createContext<LanguageContextValue>({ language: "English", setLanguage: () => undefined, t: text => text });
 
@@ -233,7 +245,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     setLanguageState(value);
     AsyncStorage.setItem("kaalam-language", value).catch(() => undefined);
   };
-  const value = useMemo(() => ({ language, setLanguage, t: (text: string) => translations[language][text] || text }), [language]);
+  const value = useMemo(() => ({ language, setLanguage, t: (text: string) => translations[language][text] || translations[language][text.trim()] || text }), [language]);
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;
 }
 export function useLanguage() { return useContext(LanguageContext); }
