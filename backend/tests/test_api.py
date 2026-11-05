@@ -61,12 +61,47 @@ class HealthEndpointTests(unittest.TestCase):
 
 
 class ExactLocationCacheKeyTests(unittest.TestCase):
+    def test_navamsha_request_includes_seconds_for_sunrise_boundary(self):
+        class FakeResponse:
+            def raise_for_status(self):
+                return None
+
+            def json(self):
+                return {"output": {"ok": True}}
+
+        class FakeClient:
+            def __init__(self):
+                self.payload = None
+
+            async def post(self, url, headers, json):
+                self.payload = json
+                return FakeResponse()
+
+        async def call_provider():
+            previous_key = main_module.NAVAMSHA_API_KEY
+            main_module.NAVAMSHA_API_KEY = "test-key"
+            client = FakeClient()
+            try:
+                await main_module.fetch_navamsha_route(
+                    client, "panchang/full", date(2026, 11, 5),
+                    12.869825, 74.843013, 5.5,
+                    hours=6, minutes=25, seconds=53,
+                )
+            finally:
+                main_module.NAVAMSHA_API_KEY = previous_key
+            return client.payload
+
+        payload = asyncio.run(call_provider())
+        self.assertEqual(payload["hours"], 6)
+        self.assertEqual(payload["minutes"], 25)
+        self.assertEqual(payload["seconds"], 53)
+
     def test_apparent_sunrise_algorithm_uses_a_new_cache_namespace(self):
         legacy = main_module._panchang_cache_key(
             "daily", date(2026, 11, 5), 17.360589, 78.4740613, 5.5, precision=6
         )
         current = main_module._panchang_cache_key(
-            "daily-apparent-v1", date(2026, 11, 5), 17.360589, 78.4740613, 5.5, precision=6
+            "daily-apparent-v2", date(2026, 11, 5), 17.360589, 78.4740613, 5.5, precision=6
         )
         self.assertNotEqual(legacy, current)
 
