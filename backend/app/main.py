@@ -107,6 +107,12 @@ app.add_middleware(
 )
 
 
+@app.get("/")
+async def root() -> dict[str, str]:
+    # Friendly root response for platform probes and quick manual checks.
+    return {"status": "ok", "service": "kaalam-api", "health": "/health"}
+
+
 @app.get("/health")
 async def health() -> dict[str, str]:
 
