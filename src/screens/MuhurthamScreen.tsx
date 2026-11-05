@@ -27,7 +27,15 @@ const periods = [
   { label: "Custom", type: "custom", value: 0 },
 ];
 
-type PanchangResult = { date: string; data: Record<string, any> };
+type PanchangResult = {
+  date: string;
+  start_time?: string;
+  end_time?: string;
+  reason?: string;
+  source?: string;
+  source_url?: string;
+  data?: Record<string, any>;
+};
 
 function formatDate(date: Date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
