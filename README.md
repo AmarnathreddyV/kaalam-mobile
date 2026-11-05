@@ -1,18 +1,17 @@
 # KAALAM Mobile
 
-KAALAM is a minimal React Native + Expo app with email registration, user onboarding and a Navamsha Panchangam data connection.
+KAALAM is a React Native + Expo app with India-first phone OTP authentication (Supabase Auth + MSG91), user onboarding and a Navamsha Panchangam data connection.
 
 ## Branding
 
-The KAALAM logo is included at `assets/kaalam-logo.png` and configured as the app icon, splash image and Android adaptive icon. It is also shown on the email authentication screen. After changing app icons/splash assets, create a new native app build to see the changes on an installed app.
+The KAALAM logo is included at `assets/kaalam-logo.png` and configured as the app icon, splash image and Android adaptive icon. It is also shown on the phone authentication screen. After changing app icons/splash assets, create a new native app build to see the changes on an installed app.
 
 ## User flow
 
-1. Register with email, name and password.
-2. Verify email if confirmation is enabled in Supabase.
-3. Sign in.
-4. Complete birth details, birthplace, current location, language and Panchangam tradition.
-5. Enter the app.
+1. Register or sign in with an Indian mobile number (+91).
+2. Verify the six-digit OTP delivered by MSG91 through the Supabase Auth Send SMS Hook.
+3. Complete birth details, birthplace, current location, language and Telugu Drik Panchangam preferences.
+4. The Supabase session persists securely between app launches; reopening the app does not send another OTP.
 
 There is no sample user profile or hardcoded Panchangam value presented as live data.
 
@@ -43,7 +42,7 @@ FastAPI backend and Navamsha proxy are in `backend/`. See `backend/README.md`. K
 
 ## Current limitations
 
-The app uses a private Supabase anonymous session and a completed profile before showing the main tabs. Daily Panchangam and timing data are retrieved from Navamsha, including sunrise/sunset, Rahu Kalam, Yamagandam, Gulika, Choghadiya, Hora and Abhijit Muhurat where provider routes return data. Validate every timing against trusted Telugu Drik references before production. Muhurtham currently searches source-attributed published listings; it does not independently calculate or certify personalized auspicious dates. A full horoscope is not currently exposed.
+The app requires a verified Supabase phone session and a completed profile before showing the main tabs. Daily Panchangam and timing data are retrieved from Navamsha, including sunrise/sunset, Rahu Kalam, Yamagandam, Gulika, Choghadiya, Hora and Abhijit Muhurat where provider routes return data. Validate every timing against trusted Telugu Drik references before production. Muhurtham currently searches source-attributed published listings; it does not independently calculate or certify personalized auspicious dates. A full horoscope is not currently exposed.
 
 No n8n dependency is used.
 
