@@ -47,6 +47,13 @@ SUPABASE_CACHE_KEY = (
     os.getenv("SUPABASE_SECRET_KEY", "").strip()
     or os.getenv("SUPABASE_SERVICE_ROLE_KEY", "").strip()
 )
+# Legacy service-role keys are JWTs and are accepted in Authorization.
+# New sb_secret_* keys are supplied via apikey; do not send them as Bearer JWTs.
+def _supabase_cache_headers() -> dict[str, str]:
+    headers = {"apikey": SUPABASE_CACHE_KEY}
+    if SUPABASE_CACHE_KEY.startswith("eyJ"):
+        headers["Authorization"] = f"Bearer {SUPABASE_CACHE_KEY}"
+    return headers
 _panchang_cache: dict[str, tuple[float, dict[str, Any]]] = {}
 _panchang_inflight: dict[str, asyncio.Task] = {}
 _panchang_cache_lock = asyncio.Lock()
@@ -72,7 +79,7 @@ async def _shared_cache_get(key: str):
             response = await client.get(
                 f"{SUPABASE_URL}/rest/v1/panchang_cache",
                 params={"cache_key": f"eq.{key}", "select": "payload,expires_at", "limit": "1"},
-                headers={"apikey": SUPABASE_CACHE_KEY, "Authorization": f"Bearer {SUPABASE_CACHE_KEY}"},
+                headers=_supabase_cache_headers(),
             )
             response.raise_for_status()
             rows = response.json()
@@ -97,8 +104,7 @@ async def _shared_cache_put(key: str, payload: dict[str, Any]):
                 f"{SUPABASE_URL}/rest/v1/panchang_cache",
                 params={"on_conflict": "cache_key"},
                 headers={
-                    "apikey": SUPABASE_CACHE_KEY,
-                    "Authorization": f"Bearer {SUPABASE_CACHE_KEY}",
+                    **_supabase_cache_headers(),
                     "Content-Type": "application/json",
                     "Prefer": "resolution=merge-duplicates,return=minimal",
                 },
