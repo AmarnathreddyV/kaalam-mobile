@@ -16,7 +16,7 @@ import { DailyDeityWelcome } from "./src/components/DailyDeityWelcome";
 import { LanguageProvider, useLanguage, AppLanguage } from "./src/i18n";
 
 type TabName = "Home" | "Panchangam" | "Pooja Items" | "Profile" | "Devotional Songs";
-const tabs: TabName[] = ["Home", "Panchangam", "Pooja Items", "Profile", "Devotional Songs"];
+const tabs: TabName[] = ["Home", "Panchangam", "Pooja Items", "Devotional Songs", "Profile"];
 
 function AppContent() {
   const { t, setLanguage } = useLanguage();
