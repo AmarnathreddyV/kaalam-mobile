@@ -7,7 +7,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { PageHeading, Panel } from "../components/Screen";
 import { colors } from "../theme/colors";
 import { supabase } from "../auth/supabase";
-import { useLanguage } from "../i18n";
+import { useLanguage, getAppLocale } from "../i18n";
 
 const API_BASE_URL = (process.env.EXPO_PUBLIC_API_BASE_URL || "https://kaalam-mobile.onrender.com").replace(/\/$/, "");
 
@@ -33,7 +33,7 @@ function formatDate(date: Date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 function displayDate(date: Date, language: string) {
-  const locale = language === "Telugu" ? "te-IN" : language === "Hindi" ? "hi-IN" : "en-IN";
+  const locale = getAppLocale(language as import("../i18n").AppLanguage);
   return date.toLocaleDateString(locale, { day: "2-digit", month: "long", year: "numeric" });
 }
 function addMonths(date: Date, months: number) {
