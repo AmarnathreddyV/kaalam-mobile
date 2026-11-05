@@ -7,7 +7,6 @@ import { useLanguage } from "../i18n";
 
 type Profile = {
   full_name?: string;
-  email?: string;
   date_of_birth?: string;
   time_of_birth?: string;
   birth_place?: string;
@@ -27,14 +26,19 @@ export function ProfileScreen() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [phone, setPhone] = useState("");
 
   useEffect(() => {
     let active = true;
     (async () => {
-      const { data, error: loadError } = await supabase.from("profiles")
-        .select("full_name,email,date_of_birth,time_of_birth,birth_place,current_location,preferred_language,panchangam_tradition")
-        .maybeSingle();
+      const [{ data, error: loadError }, { data: authData }] = await Promise.all([
+        supabase.from("profiles")
+          .select("full_name,date_of_birth,time_of_birth,birth_place,current_location,preferred_language,panchangam_tradition")
+          .maybeSingle(),
+        supabase.auth.getUser(),
+      ]);
       if (!active) return;
+      setPhone(authData.user?.phone || "Not available");
       if (loadError) setError(loadError.message);
       else setProfile(data as Profile | null);
       setLoading(false);
@@ -50,7 +54,7 @@ export function ProfileScreen() {
         {loading ? <ActivityIndicator color={colors.maroon} /> : error ? <Text style={styles.footnote}>{error}</Text> : (
           <>
             <LabelValue label={t("Name")} value={profile?.full_name || t("Not added")} />
-            <LabelValue label={t("Email")} value={profile?.email || t("Not added")} />
+            <LabelValue label={t("Phone number")} value={phone} />
             <LabelValue label={t("Date of birth")} value={profile?.date_of_birth ? displayBirthDate(profile.date_of_birth) : t("Not added")} />
             <LabelValue label={t("Time of birth")} value={profile?.time_of_birth || t("Not added")} />
             <LabelValue label={t("Place of birth")} value={profile?.birth_place || t("Not added")} last />
@@ -83,6 +87,9 @@ export function ProfileScreen() {
         </View>
       </Panel>
       <Text style={styles.footnote}>{t("Your profile and birth-chart data are read from the signed-in account and protected by Supabase row-level security. Profile editing will be added next.")}</Text>
+      <TouchableOpacity activeOpacity={0.8} onPress={() => supabase.auth.signOut()} style={styles.signOut}>
+        <Text style={styles.signOutText}>{t("Sign out")}</Text>
+      </TouchableOpacity>
     </Screen>
   );
 }
@@ -95,4 +102,6 @@ const styles = StyleSheet.create({
   section: { color: colors.gold, fontSize: 9, letterSpacing: 1.4, fontWeight: "700", marginBottom: 4 },
   heading: { color: colors.text, fontSize: 15, fontWeight: "700", marginTop: 25, marginBottom: 13 },
   footnote: { color: colors.muted, fontSize: 11, lineHeight: 17, marginTop: 17 },
+  signOut: { borderWidth: 1, borderColor: colors.line, borderRadius: 12, padding: 14, alignItems: "center", marginTop: 22, marginBottom: 24 },
+  signOutText: { color: colors.maroon, fontSize: 13, fontWeight: "700" },
 });
