@@ -55,8 +55,8 @@ _panchang_usage = {
     "provider_errors": 0, "shared_cache_hits": 0, "shared_cache_errors": 0,
 }
 
-def _panchang_cache_key(kind: str, day: date_type, latitude: float, longitude: float, timezone: float, **extra: Any) -> str:
-    parts = [kind, day.isoformat(), f"{latitude:.2f}", f"{longitude:.2f}", f"{timezone:.4f}"]
+def _panchang_cache_key(kind: str, day: date_type, latitude: float, longitude: float, timezone: float, precision: int = 5, **extra: Any) -> str:
+    parts = [kind, day.isoformat(), f"{latitude:.{precision}f}", f"{longitude:.{precision}f}", f"{timezone:.4f}"]
     parts.extend(f"{key}={extra[key]}" for key in sorted(extra))
     raw_key = "|".join(parts)
     return hashlib.sha256(raw_key.encode("utf-8")).hexdigest()
@@ -119,26 +119,26 @@ async def _cached_panchang(key: str, loader):
         task = _panchang_inflight.get(key)
         owner = task is None
         if owner:
-            task = asyncio.create_task(loader())
-            _panchang_inflight[key] = task
-    try:
-        if owner:
-            shared = await _shared_cache_get(key)
-            if shared is not None:
-                _panchang_usage["shared_cache_hits"] += 1
-                result = shared
-            else:
+            async def load_or_retrieve():
+                shared = await _shared_cache_get(key)
+                if shared is not None:
+                    _panchang_usage["shared_cache_hits"] += 1
+                    return shared
                 _panchang_usage["cache_misses"] += 1
-                result = await task
+                result = await loader()
                 if result.get("data_complete", True):
                     await _shared_cache_put(key, result)
+                return result
+            task = asyncio.create_task(load_or_retrieve())
+            _panchang_inflight[key] = task
+    try:
+        result = await task
+        if owner:
             async with _panchang_cache_lock:
                 if len(_panchang_cache) >= PANCHANG_CACHE_MAX_ENTRIES:
                     oldest = min(_panchang_cache, key=lambda k: _panchang_cache[k][0])
                     _panchang_cache.pop(oldest, None)
                 _panchang_cache[key] = (time.monotonic() + PANCHANG_CACHE_TTL_SECONDS, copy.deepcopy(result))
-        else:
-            result = await task
         return copy.deepcopy(result)
     finally:
         if owner:
@@ -605,7 +605,7 @@ async def get_daily_panchang_with_timings(
         }
 
 
-    key = _panchang_cache_key("daily", day, latitude, longitude, timezone)
+    key = _panchang_cache_key("daily", day, latitude, longitude, timezone, precision=2)
     result = await _cached_panchang(key, load_daily)
     if not result.get("data_complete"):
         async with _panchang_cache_lock:
