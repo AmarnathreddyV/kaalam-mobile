@@ -50,11 +50,13 @@ The live operational coverage workflow tests **80 locations per day**
 (10 per state) for 5, 6, and 7 November 2026, with a separate job and report
 for each date. Jobs are configured to run sequentially to reduce pressure on
 the live API, and the HTTP client retries temporary gateway and network
-failures. An earlier parallel attempt encountered transient HTTP 502 errors;
-the serialized retry-enabled rerun is the one to use for sign-off. The workflow
-checks state attribution, coordinate round-tripping, timezone, Telugu Drik
-response metadata, completeness, and basic solar-time plausibility. This is
-useful operational evidence, but it is not independent astronomical accuracy
+failures. An initial run without retries encountered transient HTTP 502 errors. After
+adding bounded retries, the three-date live test completed **240/240
+location-date checks with zero failures** (80 locations on each date). A
+serialized confirmation run is also queued. The workflow checks state
+attribution, coordinate round-tripping, timezone, Telugu Drik response
+metadata, completeness, and basic solar-time plausibility. This is useful
+operational evidence, but it is not independent astronomical accuracy
 certification.
 
 The latest completed 80-place comparison tested all 10 cities in every state
