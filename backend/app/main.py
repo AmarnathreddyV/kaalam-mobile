@@ -110,7 +110,7 @@ app.add_middleware(
 )
 
 
-@app.get("/")
+@app.api_route("/", methods=["GET", "HEAD"])
 async def root() -> dict[str, str]:
     # Friendly root response for platform probes and quick manual checks.
     return {"status": "ok", "service": "kaalam-api", "health": "/health"}
