@@ -152,6 +152,45 @@ Object.assign(hi, {
 Object.assign(te, {"FAVOURABLE TIMINGS":"ఈరోజు మీ శుభ సమయాలు"});
 Object.assign(hi, {"FAVOURABLE TIMINGS":"आज के आपके शुभ समय"});
 
+Object.assign(te, {
+  "TODAY'S SONG":"ఈరోజు పాట",
+  "Surya Devotional Prayer":"సూర్యదేవుని భక్తి గీతం",
+  "Lingashtakam":"లింగాష్టకం",
+  "Hanuman Chalisa":"హనుమాన్ చాలీసా",
+  "Ganpati Stotram":"గణపతి స్తోత్రం",
+  "Garuda Gamana Tava":"గరుడ గమన తవ",
+  "Lakshmi Devotional Prayer":"లక్ష్మీదేవి భక్తి గీతం",
+  "Sri Venkatesha Suprabhatam":"శ్రీ వేంకటేశ సుప్రభాతం",
+  "Lord Surya":"సూర్యదేవుడు",
+  "Lord Shiva":"పరమశివుడు",
+  "Lord Hanuman":"హనుమంతుడు",
+  "Lord Ganesha":"వినాయకుడు",
+  "Lord Maha Vishnu":"శ్రీ మహావిష్ణువు",
+  "Goddess Lakshmi":"మహాలక్ష్మీదేవి",
+  "Lord Venkateswara":"శ్రీ వేంకటేశ్వరస్వామి",
+  "Play today's song":"ఈరోజు పాట వినండి",
+  "Pause today's song":"ఈరోజు పాట ఆపండి"
+});
+Object.assign(hi, {
+  "TODAY'S SONG":"आज का भक्ति गीत",
+  "Surya Devotional Prayer":"सूर्य देव का भक्ति गीत",
+  "Lingashtakam":"लिंगाष्टकम्",
+  "Hanuman Chalisa":"हनुमान चालीसा",
+  "Ganpati Stotram":"गणपति स्तोत्र",
+  "Garuda Gamana Tava":"गरुड़ गमन तव",
+  "Lakshmi Devotional Prayer":"माता लक्ष्मी का भक्ति गीत",
+  "Sri Venkatesha Suprabhatam":"श्री वेंकटेश सुप्रभातम्",
+  "Lord Surya":"सूर्य देव",
+  "Lord Shiva":"भगवान शिव",
+  "Lord Hanuman":"हनुमान जी",
+  "Lord Ganesha":"भगवान गणेश",
+  "Lord Maha Vishnu":"भगवान महाविष्णु",
+  "Goddess Lakshmi":"माता लक्ष्मी",
+  "Lord Venkateswara":"श्री वेंकटेश्वर स्वामी",
+  "Play today's song":"आज का गीत सुनें",
+  "Pause today's song":"आज का गीत रोकें"
+});
+
 const translations: Record<AppLanguage, Record<string, string>> = { English: {}, Telugu: te, Hindi: hi };
 type LanguageContextValue = { language: AppLanguage; setLanguage: (language: AppLanguage) => void; t: (text: string) => string };
 const LanguageContext = createContext<LanguageContextValue>({ language: "English", setLanguage: () => undefined, t: text => text });
