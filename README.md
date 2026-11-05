@@ -63,7 +63,7 @@ KAALAM's initial launch coverage is limited to these eight states:
 | Rajasthan | 10 |
 | **Total** | **250** |
 
-Telangana and Andhra Pradesh are the highest-priority markets. The 250 regional groups are a planning target, not yet a validated list of 250 production coordinates. Current daily Panchangam cache keys continue to use a 0.01-degree coordinate grid, date and timezone. Do not widen the grid or reuse location-sensitive timings across regions until sunrise, sunset and dependent timing outputs have passed comparison tests against Navamsha.
+Telangana and Andhra Pradesh are the highest-priority markets. The 250 regional groups are a planning target, not yet a validated list of 250 production coordinates. Daily Panchangam calculations use each user's resolved coordinates without regional rounding; cache keys preserve six decimal places plus date and timezone. The 250 groups are not calculation centres and do not cause nearby users to share location-sensitive timings.
 
 The onboarding flow accepts birthplaces anywhere in India, but the current location must resolve to one of the eight initial launch states. The backend exposes `GET /api/coverage` and includes state coverage metadata in `POST /api/location/resolve`.
 
