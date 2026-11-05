@@ -120,4 +120,4 @@ npx eas-cli@latest build -p android --profile production
 The first EAS build may ask you to link this repository to an Expo project. Complete that step in your Expo account. Keep `NAVAMSHA_API_KEY` and other server-only secrets only in Render environment variables; never add server secrets to the mobile app.
 
 
-**Store branding note:** the wide KAALAM logo is retained for the splash screen. A square app-icon source is still required before App Store / Play Store submission; do not stretch the wide logo to fill a square.
+**Store branding:** square iOS/Android app icons are generated from the original KAALAM logo with proportional scaling and padding; the source artwork is not stretched.
