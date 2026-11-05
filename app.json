@@ -10,7 +10,11 @@
       "bundleIdentifier": "com.kaalam.app"
     },
     "android": {
-      "package": "com.kaalam.app"
+      "package": "com.kaalam.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/kaalam-adaptive-icon.png",
+        "backgroundColor": "#F7F3EB"
+      }
     },
     "scheme": "kaalam",
     "plugins": [
@@ -29,6 +33,7 @@
           "backgroundColor": "#F7F3EB"
         }
       ]
-    ]
+    ],
+    "icon": "./assets/kaalam-app-icon.png"
   }
 }
