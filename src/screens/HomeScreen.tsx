@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Alert, Modal, TextInput, View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
+import { Alert, AppState, Modal, TextInput, View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
 import * as Location from "expo-location";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
@@ -186,6 +186,17 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
       );
     }, 900);
     return () => { alive = false; clearTimeout(timer); };
+  }, [useDeviceLocation]);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", state => {
+      if (state === "active") {
+        Location.getForegroundPermissionsAsync().then(permission => {
+          if (permission.status === "granted") void useDeviceLocation(false);
+        }).catch(() => undefined);
+      }
+    });
+    return () => subscription.remove();
   }, [useDeviceLocation]);
 
   useEffect(() => {
