@@ -102,3 +102,11 @@ The first EAS build may ask you to link the repository to an Expo project. Compl
 - Decide separately whether a full Jathakam/horoscope feature should return; it is currently not exposed in the app.
 
 - Before store submission, add a square KAALAM app-icon asset and configure `expo.icon` plus Android adaptive foreground image. The current wide logo remains the splash-screen image; it is not stretched into an icon.
+
+
+## Latest automated validation results (5 November 2026)
+
+- 80/80 operational place checks passed (10 each across all eight launch states): [GitHub run](https://github.com/AmarnathreddyV/kaalam-mobile/actions/runs/42030907790).
+- 44/44 independent reference rows passed; however, independent references are not yet evenly distributed across all states. Telangana, Andhra Pradesh, Karnataka and Tamil Nadu have 10 each; Kerala, Maharashtra, Gujarat and Rajasthan have one each. **Do not mark eight-state astronomical accuracy certified yet.** [GitHub run](https://github.com/AmarnathreddyV/kaalam-mobile/actions/runs/42030895942).
+- Latest Expo/TypeScript/backend CI passed: [GitHub run](https://github.com/AmarnathreddyV/kaalam-mobile/actions/runs/42030907880).
+- Live OTP delivery remains unverified until the Supabase Send SMS Auth Hook is configured with the MSG91 template and signed-hook secret, then tested using a real +91 number.
