@@ -44,6 +44,11 @@ function AppContent() {
       if (!mounted) return;
       if (error) {
         setSession(null);
+      } else if (data.session?.user.is_anonymous) {
+        // Older development builds created anonymous guest sessions. Clear them
+        // so every account must pass the new phone OTP registration flow.
+        await supabase.auth.signOut();
+        setSession(null);
       } else {
         setSession(data.session);
       }
