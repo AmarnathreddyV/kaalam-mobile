@@ -66,7 +66,7 @@ Never put either server API key in Expo/EAS client variables. After saving setti
 - Supabase profile row is saved and remains after app restart.
 - Current location resolves inside one of the eight launch states; birth place remains available anywhere in India.
 - Device-location permission and manual city selection both work.
-- Validate the proposed 250 regional groups against precise-coordinate Navamsha results before widening the current cache grid.
+- Validate the proposed 250 regional groups against precise-coordinate Navamsha results. Keep the groups separate from calculation coordinates.
 - Daily Telugu Drik Tithi, Nakshatra, Yoga, Karana, sunrise/sunset, Rahu Kalam, Yamagandam, Gulika, Choghadiya and Abhijit data load for the correct local date/time zone.
 - Compare timing outputs with trusted Telugu Drik references for the same date and coordinates. Check partial-provider failures are visibly reported.
 - Muhurtham tab opens; published listings remain labelled unverified and show their source/disclaimer. Do not call them calculated or certified recommendations.
@@ -93,7 +93,7 @@ The first EAS build may ask you to link the repository to an Expo project. Compl
 
 ## Known product work not required to create a test APK
 
-- Build and validate the actual 250 regional reference-coordinate registry. The current state allocation is a planning target only; current 0.01-degree cache precision remains unchanged until validation passes.
+- Build and validate the actual 250 regional reference-coordinate registry. The current state allocation is a planning target only; calculations must continue using each user's exact resolved coordinates.
 
 - Event-specific Telugu Drik Muhurtham calculation and independent validation. Current date results are source-attributed published listings, not certified recommendations.
 - Profile editing and birth-chart recalculation workflow.
