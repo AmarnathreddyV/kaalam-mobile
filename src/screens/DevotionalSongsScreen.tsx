@@ -55,7 +55,7 @@ export function DevotionalSongsScreen() {
               <Text style={styles.songTitle}>{t(song.title)}</Text>
               <Text style={styles.deity}>{t(song.deity)}</Text>
               {selected && status.isBuffering && <Text style={styles.state}>{t("Loading audio…")}</Text>}
-              {selected && status.error && <Text style={styles.errorText}>{String(status.error)}</Text>}
+              {selected && status.error && <Text style={styles.errorText}>{t(String(status.error))}</Text>}
             </View>
             <View style={styles.playButton}><Text style={styles.playGlyph}>{selected && status.playing ? "Ⅱ" : "▶"}</Text></View>
           </TouchableOpacity>
