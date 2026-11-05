@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
+import { Alert, Modal, TextInput, View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
+import * as Location from "expo-location";
 import { setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
 import { Screen, SectionTitle, Panel, LabelValue } from "../components/Screen";
 import { colors } from "../theme/colors";
@@ -43,6 +44,79 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
   const songPlayer = useAudioPlayer(null);
   const songStatus = useAudioPlayerStatus(songPlayer);
   const [songStarted, setSongStarted] = useState(false);
+  const [activeLocation, setActiveLocation] = useState<{ latitude: number; longitude: number; timezone: string } | null>(null);
+  const [locationLabel, setLocationLabel] = useState("");
+  const [locationModal, setLocationModal] = useState(false);
+  const [manualLocation, setManualLocation] = useState("");
+  const [locationBusy, setLocationBusy] = useState(false);
+
+  const applyLocation = useCallback(async (location: { latitude: number; longitude: number; timezone: string; display_name: string }) => {
+    const { data: auth } = await supabase.auth.getUser();
+    if (!auth.user) throw new Error("Please reopen KAALAM and try again.");
+    const update = {
+      current_location: location.display_name,
+      current_latitude: location.latitude,
+      current_longitude: location.longitude,
+      current_timezone: location.timezone,
+    };
+    const { error: saveError } = await supabase.from("profiles").update(update).eq("id", auth.user.id);
+    if (saveError) throw saveError;
+    setActiveLocation({ latitude: location.latitude, longitude: location.longitude, timezone: location.timezone });
+    setLocationLabel(location.display_name);
+    setProfile(current => ({ ...(current || {}), ...update }));
+    setLoading(true);
+    setError("");
+    try {
+      setResult(await fetchDailyPanchangam(new Date(), { latitude: location.latitude, longitude: location.longitude, timezone: location.timezone }));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Unable to refresh Panchangam for this location.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const useDeviceLocation = useCallback(async (requestPermission = true) => {
+    setLocationBusy(true);
+    try {
+      let permission = await Location.getForegroundPermissionsAsync();
+      if (permission.status !== "granted" && requestPermission) permission = await Location.requestForegroundPermissionsAsync();
+      if (permission.status !== "granted") throw new Error("Location permission was not granted. Choose a city manually instead.");
+      const position = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      const [address] = await Location.reverseGeocodeAsync({ latitude: position.coords.latitude, longitude: position.coords.longitude }).catch(() => []);
+      const parts = [address?.city || address?.district || address?.subregion, address?.region, address?.country].filter(Boolean);
+      const display_name = parts.join(", ") || `${position.coords.latitude.toFixed(3)}, ${position.coords.longitude.toFixed(3)}`;
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "Asia/Kolkata";
+      await applyLocation({ latitude: position.coords.latitude, longitude: position.coords.longitude, timezone, display_name });
+      setLocationModal(false);
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "Unable to read device location.";
+      setError(message);
+      setLocationModal(true);
+    } finally {
+      setLocationBusy(false);
+    }
+  }, [applyLocation]);
+
+  const saveManualLocation = useCallback(async () => {
+    if (!manualLocation.trim() || locationBusy) return;
+    setLocationBusy(true);
+    try {
+      const apiBase = (process.env.EXPO_PUBLIC_API_BASE_URL || "https://kaalam-mobile.onrender.com").replace(/\\/$/, "");
+      const response = await fetch(`${apiBase}/api/location/resolve`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ place: manualLocation.trim() }),
+      });
+      const body = await response.json();
+      if (!response.ok) throw new Error(body?.detail || "Could not find that location. Include city, state and country.");
+      await applyLocation({ latitude: body.latitude, longitude: body.longitude, timezone: body.timezone, display_name: body.display_name });
+      setManualLocation("");
+      setLocationModal(false);
+    } catch (e) {
+      Alert.alert("Location not found", e instanceof Error ? e.message : "Please try another city name.");
+    } finally {
+      setLocationBusy(false);
+    }
+  }, [manualLocation, locationBusy, applyLocation]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -64,11 +138,10 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
       if (profileData?.current_latitude == null || profileData?.current_longitude == null || !profileData?.current_timezone) {
         throw new Error("Your current location has not been resolved yet. Please update your profile details.");
       }
-      setResult(await fetchDailyPanchangam(new Date(), {
-        latitude: profileData.current_latitude,
-        longitude: profileData.current_longitude,
-        timezone: profileData.current_timezone,
-      }));
+      const savedLocation = { latitude: profileData.current_latitude, longitude: profileData.current_longitude, timezone: profileData.current_timezone };
+      setActiveLocation(savedLocation);
+      setLocationLabel(profileData.current_location || "Saved location");
+      setResult(await fetchDailyPanchangam(new Date(), savedLocation));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to load today's Panchangam.");
     } finally {
@@ -77,6 +150,21 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      Alert.alert(
+        "Location for accurate Panchangam",
+        "KAALAM uses your location only while the app is open to calculate local sunrise, Rahu Kalam, Yamagandam and other timings. You can also choose a city manually.",
+        [
+          { text: "Choose city", onPress: () => setLocationModal(true) },
+          { text: "Allow location", onPress: () => { void useDeviceLocation(true); } },
+        ],
+        { cancelable: false }
+      );
+    }, 900);
+    return () => clearTimeout(timer);
+  }, [useDeviceLocation]);
 
   useEffect(() => {
     setAudioModeAsync({ playsInSilentMode: true, shouldPlayInBackground: false }).catch(() => {});
@@ -172,6 +260,9 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
 
   return (
     <Screen>
+      <TouchableOpacity style={styles.locationPill> onPress={() => { setManualLocation(locationLabel); setLocationModal(true); }} activeOpacity={0.8}>
+        <Text style={styles.locationPillText}>⌖  {locationLabel || t("Choose your location")}  ▾</Text>
+      </TouchableOpacity>
       <Text style={styles.date}>{todayLabel(language)}</Text>
       <Text style={styles.greeting}>{t("Namaskaram")}, {name}</Text>
       <Text style={styles.name}>{t("Your day, in alignment.")}</Text>
@@ -266,6 +357,24 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
 
       <Text style={styles.note}>Panchangam data is provided by Navamsha using your saved location. General daily indicators are not a guarantee of personal outcomes and do not replace event-specific Telugu Drik Muhurtham analysis.</Text>
 
+      <Modal visible={locationModal} transparent animationType="fade" onRequestClose={() => setLocationModal(false)}>
+        <View style={styles.modalBackdrop}>
+          <View style={styles.locationModalCard}>
+            <Text style={styles.locationModalTitle}>{t("Set Panchangam location")}</Text>
+            <Text style={styles.locationModalBody}>{t("Daily timings are calculated for this location. Use your device location or enter a city manually.")}</Text>
+            <TouchableOpacity style={styles.locationAction} disabled={locationBusy} onPress={() => { void useDeviceLocation(true); }}>
+              {locationBusy ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.locationActionText}>{t("Use my current location")}</Text>}
+            </TouchableOpacity>
+            <Text style={styles.locationOr}>{t("OR ENTER A CITY")}</Text>
+            <TextInput value={manualLocation} onChangeText={setManualLocation} placeholder={t("Hyderabad, Telangana, India")} placeholderTextColor={colors.muted} style={styles.locationInput} />
+            <TouchableOpacity style={styles.locationSave} disabled={locationBusy} onPress={() => { void saveManualLocation(); }}>
+              <Text style={styles.locationSaveText}>{locationBusy ? t("Updating…") : t("Save location")}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setLocationModal(false)} style={styles.locationCancel}><Text style={styles.locationCancelText}>{t("Cancel")}</Text></TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
       <TouchableOpacity style={styles.poojaShortcut} onPress={onOpenPoojaItems}>
         <View style={styles.poojaShortcutText}>
           <Text style={styles.poojaShortcutTitle}>{t("Pooja Items & Samagri")}</Text>
@@ -278,6 +387,20 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
 }
 
 const styles = StyleSheet.create({
+  locationPill: { alignSelf: "flex-start", marginTop: 8, paddingVertical: 7, paddingHorizontal: 11, borderRadius: 18, backgroundColor: "rgba(169,133,69,0.12)", borderWidth: 1, borderColor: "rgba(169,133,69,0.35)" },
+  locationPillText: { color: colors.maroonDark, fontSize: 11, fontWeight: "600" },
+  modalBackdrop: { flex: 1, backgroundColor: "rgba(25,15,12,0.52)", justifyContent: "center", padding: 22 },
+  locationModalCard: { backgroundColor: "#FAF7EF", borderRadius: 16, padding: 20, borderWidth: 1, borderColor: colors.gold },
+  locationModalTitle: { color: colors.maroonDark, fontFamily: "Georgia", fontSize: 21, fontWeight: "700" },
+  locationModalBody: { color: colors.muted, fontSize: 12, lineHeight: 18, marginTop: 8, marginBottom: 16 },
+  locationAction: { minHeight: 46, borderRadius: 10, backgroundColor: colors.maroonDark, alignItems: "center", justifyContent: "center" },
+  locationActionText: { color: "#FFFFFF", fontSize: 13, fontWeight: "700" },
+  locationOr: { color: colors.muted, fontSize: 9, letterSpacing: 1.3, textAlign: "center", marginVertical: 14 },
+  locationInput: { borderWidth: 1, borderColor: colors.line, borderRadius: 9, padding: 12, color: colors.text, fontSize: 13 },
+  locationSave: { backgroundColor: "rgba(169,133,69,0.18)", borderRadius: 9, padding: 13, alignItems: "center", marginTop: 10 },
+  locationSaveText: { color: colors.maroonDark, fontSize: 13, fontWeight: "700" },
+  locationCancel: { alignItems: "center", padding: 10, marginTop: 3 },
+  locationCancelText: { color: colors.muted, fontSize: 12 },
   poojaShortcut: { marginTop: 18, marginBottom: 8, padding: 16, borderRadius: 10, backgroundColor: "#3B1019", borderWidth: 1, borderColor: "rgba(169,133,69,0.55)", flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   poojaShortcutText: { flex: 1 },
   poojaShortcutTitle: { color: "#FFF7E9", fontSize: 16, fontWeight: "600", letterSpacing: 0.1, letterSpacing: 0.15 },
