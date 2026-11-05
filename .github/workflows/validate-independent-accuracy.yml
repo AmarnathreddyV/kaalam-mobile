@@ -9,6 +9,7 @@ on:
       - ".github/workflows/validate-independent-accuracy.yml"
   workflow_dispatch:
 
+# Re-run after the deployed apparent-sunrise and cache-version rollout.
 permissions:
   contents: read
 
