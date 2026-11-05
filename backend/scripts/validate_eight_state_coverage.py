@@ -183,8 +183,10 @@ def main() -> int:
                 failures.append({"state": state, "place": place, "error": str(exc)})
                 print(f"FAIL {place}: {exc}", flush=True)
             # Geocoder policy is one request/second; a small pause also spaces
-            # provider traffic across this end-to-end test.
-            time.sleep(1.2)
+            # provider traffic across this end-to-end test. Each daily call fans
+            # out to six provider routes, so 2.1 seconds spaces bursts below
+            # the documented 10-requests-per-3-seconds free-tier ceiling.
+            time.sleep(2.1)
 
     by_state = {
         state: {
