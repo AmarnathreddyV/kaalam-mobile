@@ -67,6 +67,19 @@ final report for mismatches before sign-off. The earlier 44-row report is supers
 The GitHub Actions workflow uploads a JSON report even when the comparison
 fails, so missing coverage and calculation mismatches remain visible.
 
+
+## Source verification boundary
+
+The validator checks that both source URLs are HTTPS and use an allowlisted
+host, then compares KAALAM's live output with the expected values stored in the
+CSV. It does **not** currently download and parse every source page to prove
+that each CSV value is present in the page. The reference values and URLs were
+manually transcribed from the cited Drik Panchang pages (with the one documented
+NityaPanchangam exception). Treat the URL allowlist as provenance metadata, not
+as automated proof that every source page was re-read during CI. A later
+hardening step should archive source snapshots or add a robust source-page
+parser before making a stronger source-verification claim.
+
 ## Important limits
 
 - This is a release gate, not a universal-accuracy guarantee for every village.
