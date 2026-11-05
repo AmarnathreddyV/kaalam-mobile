@@ -770,78 +770,110 @@ class BirthChartRequest(BaseModel):
     timezone: str = Field(min_length=1, max_length=80)
 
 
+# Nominatim's public service permits at most one request per second
+# across the whole application. Serialize calls and cache successful place
+# resolutions so reopening the app does not repeatedly geocode the same city.
+NOMINATIM_MIN_INTERVAL_SECONDS = 1.1
+LOCATION_CACHE_TTL_SECONDS = 30 * 24 * 60 * 60
+_location_cache: dict[str, tuple[float, dict[str, Any]]] = {}
+_location_lookup_lock = asyncio.Lock()
+_last_nominatim_request_at = 0.0
+
+
 @app.post("/api/location/resolve")
 async def resolve_location(request: LocationResolveRequest) -> dict[str, Any]:
-    """Resolve a user-entered place to coordinates and an IANA timezone."""
-    query = request.place.strip()
-    try:
-        async with httpx.AsyncClient(
-            timeout=15.0,
-            headers={"User-Agent": "KAALAM/1.0 (location lookup)"},
-        ) as client:
-            response = await client.get(
-                "https://nominatim.openstreetmap.org/search",
-                params={
-                    "q": query,
-                    "format": "jsonv2",
-                    "limit": 10,
-                    "countrycodes": "in",
-                    "addressdetails": 1,
-                },
+    """Resolve an Indian place to coordinates and an IANA timezone."""
+    global _last_nominatim_request_at
+
+    query = " ".join(request.place.strip().split())
+    cache_key = query.casefold()
+    now = time.monotonic()
+    cached = _location_cache.get(cache_key)
+    if cached and cached[0] > now:
+        return copy.deepcopy(cached[1])
+
+    # Keep the lock until timezone resolution and cache insertion finish. This
+    # also coalesces simultaneous onboarding requests for the same city.
+    async with _location_lookup_lock:
+        now = time.monotonic()
+        cached = _location_cache.get(cache_key)
+        if cached and cached[0] > now:
+            return copy.deepcopy(cached[1])
+
+        elapsed = now - _last_nominatim_request_at
+        if elapsed < NOMINATIM_MIN_INTERVAL_SECONDS:
+            await asyncio.sleep(NOMINATIM_MIN_INTERVAL_SECONDS - elapsed)
+
+        _last_nominatim_request_at = time.monotonic()
+        try:
+            async with httpx.AsyncClient(
+                timeout=15.0,
+                headers={"User-Agent": "KAALAM/1.0 (https://github.com/AmarnathreddyV/kaalam-mobile)"},
+            ) as client:
+                response = await client.get(
+                    "https://nominatim.openstreetmap.org/search",
+                    params={
+                        "q": query,
+                        "format": "jsonv2",
+                        "limit": 10,
+                        "countrycodes": "in",
+                        "addressdetails": 1,
+                    },
+                )
+                response.raise_for_status()
+                matches = response.json()
+        except (httpx.RequestError, httpx.HTTPStatusError, ValueError) as exc:
+            raise HTTPException(status_code=502, detail="Location lookup is temporarily unavailable. Please retry shortly.") from exc
+
+        india_matches = [
+            item for item in matches
+            if isinstance(item, dict)
+            and (item.get("address") or {}).get("country_code", "").lower() == "in"
+        ]
+        if not india_matches:
+            raise HTTPException(
+                status_code=404,
+                detail=(
+                    f"Could not find an Indian location matching '{query}'. "
+                    "Enter a village, town, city, district or state in India."
+                ),
             )
-            response.raise_for_status()
-            matches = response.json()
-    except (httpx.RequestError, httpx.HTTPStatusError, ValueError) as exc:
-        raise HTTPException(status_code=502, detail="Location lookup is temporarily unavailable.") from exc
 
-    india_matches = [
-        item for item in matches
-        if isinstance(item, dict)
-        and (item.get("address") or {}).get("country_code", "").lower() == "in"
-    ]
-    if not india_matches:
-        raise HTTPException(
-            status_code=404,
-            detail=(
-                f"Could not find an Indian location matching '{query}'. "
-                "Enter a village, town, city, district or state in India."
-            ),
-        )
+        match = india_matches[0]
+        latitude = float(match["lat"])
+        longitude = float(match["lon"])
 
-    # Nominatim ranks the most relevant Indian match first. Keep the complete
-    # display label so the app can identify the resolved village/town/city.
-    match = india_matches[0]
-
-    latitude = float(match["lat"])
-    longitude = float(match["lon"])
-    # Resolve IANA timezone through TimeAPI instead of compiling timezonefinder/h3
-    # during Render deployment. The returned IANA zone also handles historical DST.
-    try:
-        async with httpx.AsyncClient(timeout=12.0) as client:
-            timezone_response = await client.get(
-                "https://timeapi.io/api/TimeZone/coordinate",
-                params={"latitude": latitude, "longitude": longitude},
+        try:
+            async with httpx.AsyncClient(timeout=12.0) as client:
+                timezone_response = await client.get(
+                    "https://timeapi.io/api/TimeZone/coordinate",
+                    params={"latitude": latitude, "longitude": longitude},
+                )
+                timezone_response.raise_for_status()
+                timezone_body = timezone_response.json()
+            timezone_name = (
+                timezone_body.get("timeZone")
+                or timezone_body.get("timeZoneId")
+                or timezone_body.get("ianaTimeId")
             )
-            timezone_response.raise_for_status()
-            timezone_body = timezone_response.json()
-        timezone_name = (
-            timezone_body.get("timeZone")
-            or timezone_body.get("timeZoneId")
-            or timezone_body.get("ianaTimeId")
+        except (httpx.RequestError, httpx.HTTPStatusError, ValueError) as exc:
+            raise HTTPException(status_code=502, detail="Could not resolve the time zone for this location.") from exc
+
+        if not isinstance(timezone_name, str) or "/" not in timezone_name:
+            raise HTTPException(status_code=502, detail="Time zone provider returned an invalid IANA time zone.")
+
+        result = {
+            "query": query,
+            "display_name": match.get("display_name", query),
+            "latitude": latitude,
+            "longitude": longitude,
+            "timezone": timezone_name,
+        }
+        _location_cache[cache_key] = (
+            time.monotonic() + LOCATION_CACHE_TTL_SECONDS,
+            copy.deepcopy(result),
         )
-    except (httpx.RequestError, httpx.HTTPStatusError, ValueError) as exc:
-        raise HTTPException(status_code=502, detail="Could not resolve the time zone for this location.") from exc
-
-    if not isinstance(timezone_name, str) or "/" not in timezone_name:
-        raise HTTPException(status_code=502, detail="Time zone provider returned an invalid IANA time zone.")
-
-    return {
-        "query": query,
-        "display_name": match.get("display_name", query),
-        "latitude": latitude,
-        "longitude": longitude,
-        "timezone": timezone_name,
-    }
+        return result
 
 
 @app.post("/api/kundali/basic")
