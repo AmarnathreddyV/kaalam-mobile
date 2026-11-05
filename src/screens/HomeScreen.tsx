@@ -76,7 +76,7 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
 
   const p = result?.data?.panchang;
   const translatePanchang = (value?: string) => value
-    ? value.split(/(\\s+|·|,|\\/|-)/).map(part => /^[\\s·,\\/-]+$/.test(part) ? part : t(part)).join("")
+    ? value.split(/(\s+|[·,\/-])/).map(part => /^[\s·,\/-]+$/.test(part) ? part : t(part)).join("")
     : "—";
   const tithi = [p?.tithi?.name, p?.tithi?.paksha].filter(Boolean).map(translatePanchang).join(" · ") || "—";
   const nakshatra = translatePanchang(p?.nakshatra?.name);
