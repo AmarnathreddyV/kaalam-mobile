@@ -22,6 +22,14 @@
       }
     },
     "icon": "./assets/kaalam-logo.png",
-    "scheme": "kaalam"
+    "scheme": "kaalam",
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Allow KAALAM to use your location while the app is open to calculate accurate local Panchangam timings."
+        }
+      ]
+    ]
   }
 }
