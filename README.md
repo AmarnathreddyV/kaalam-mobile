@@ -42,7 +42,7 @@ FastAPI backend and Navamsha proxy are in `backend/`. See `backend/README.md`. K
 
 ## Current limitations
 
-The app requires a verified Supabase phone session and a completed profile before showing the main tabs. Daily Panchangam and timing data are retrieved from Navamsha, including sunrise/sunset, Rahu Kalam, Yamagandam, Gulika, Choghadiya, Hora and Abhijit Muhurat where provider routes return data. Validate every timing against trusted Telugu Drik references before production. Muhurtham currently searches source-attributed published listings; it does not independently calculate or certify personalized auspicious dates. A full horoscope is not currently exposed.
+The app requires a verified Supabase phone session and a completed profile before showing the main tabs. Navamsha supplies the Lahiri sidereal Panchang limbs (Tithi, Nakshatra, Yoga and Karana). KAALAM calculates apparent local sunrise/sunset and the dependent Rahu Kalam, Yamagandam, Gulika, Choghadiya, Hora and Abhijit windows using each user's exact coordinates. The solar engine is tested against independent Drik city references; continue expanding the reference set before state-wide certification. Muhurtham currently searches source-attributed published listings; it does not independently calculate or certify personalized auspicious dates. A full horoscope is not currently exposed.
 
 No n8n dependency is used.
 
