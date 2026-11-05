@@ -178,8 +178,8 @@ def main() -> int:
     results = []
     for row in rows:
         results.append(validate_row(row))
-        # Each daily request fans out to six provider calls. Keep this
-        # diagnostic run below the documented free-tier burst limit.
+        # Each uncached daily request currently makes one Navamsha provider call.
+        # Keep a conservative pause between independent reference checks.
         time.sleep(2.1)
     passed = sum(1 for result in results if result["passed"])
     failed = len(results) - passed
