@@ -288,7 +288,7 @@ async def send_supabase_auth_sms(request: Request) -> dict[str, str]:
 
 
 @app.get("/health")
-async def health() -> dict[str, str]:
+async def health() -> dict[str, Any]:
 
     return {"status": "ok", "service": "kaalam-api", "panchang_usage": _panchang_usage_snapshot()}
 
