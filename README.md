@@ -74,3 +74,35 @@ npx expo start -c
 ```
 
 The background video is bundled locally; it does not need an internet connection at runtime.
+
+
+## Android build (EAS)
+
+1. Install dependencies and verify the project:
+
+```bash
+npm install
+npx expo install --fix
+npm run typecheck
+npx expo-doctor
+```
+
+2. Configure the Expo project and add these **public app** environment variables in the Expo project settings:
+   - `EXPO_PUBLIC_SUPABASE_URL`
+   - `EXPO_PUBLIC_SUPABASE_ANON_KEY`
+   - `EXPO_PUBLIC_API_BASE_URL=https://kaalam-mobile.onrender.com`
+
+3. Sign in to EAS and create an internal Android APK for device testing:
+
+```bash
+npx eas-cli@latest login
+npx eas-cli@latest build -p android --profile preview
+```
+
+4. After all device and data-validation checks pass, create the Play Store Android App Bundle:
+
+```bash
+npx eas-cli@latest build -p android --profile production
+```
+
+The first EAS build may ask you to link this repository to an Expo project. Complete that step in your Expo account. Keep `NAVAMSHA_API_KEY` and `OPENAI_API_KEY` only in Render backend environment variables; never add server secrets to the mobile app.
