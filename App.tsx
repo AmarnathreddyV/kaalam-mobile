@@ -4,6 +4,7 @@ import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Session } from "@supabase/supabase-js";
 import { supabase, supabaseConfigured } from "./src/auth/supabase";
+import { AuthScreen } from "./src/screens/AuthScreen";
 import { OnboardingScreen } from "./src/screens/OnboardingScreen";
 import { HomeScreen } from "./src/screens/HomeScreen";
 import { PanchangamScreen } from "./src/screens/PanchangamScreen";
@@ -24,7 +25,6 @@ function AppContent() {
   const [session, setSession] = useState<Session | null>(null);
   const [authReady, setAuthReady] = useState(false);
   const [profileReady, setProfileReady] = useState(false);
-  const [authError, setAuthError] = useState("");
   const [profileLoading, setProfileLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<TabName>("Home");
   const [showDailyWelcome, setShowDailyWelcome] = useState(true);
@@ -40,33 +40,12 @@ function AppContent() {
     });
 
     (async () => {
-      const { data, error: sessionError } = await supabase.auth.getSession();
+      const { data, error } = await supabase.auth.getSession();
       if (!mounted) return;
-      if (sessionError) {
-        setAuthError(sessionError.message);
-        setAuthReady(true);
-        return;
-      }
-
-      if (data.session) {
-        setSession(data.session);
-        setAuthReady(true);
-        return;
-      }
-
-      // Create a private anonymous session in the background. No login,
-      // phone number, email, or OTP is shown or requested from the user.
-      const { data: anonymousData, error: anonymousError } =
-        await supabase.auth.signInAnonymously();
-
-      if (!mounted) return;
-      if (anonymousError || !anonymousData.session) {
-        setAuthError(
-          anonymousError?.message ||
-          "Could not start a guest session. Enable Anonymous Sign-Ins in Supabase Authentication settings."
-        );
+      if (error) {
+        setSession(null);
       } else {
-        setSession(anonymousData.session);
+        setSession(data.session);
       }
       setAuthReady(true);
     })();
@@ -99,7 +78,6 @@ function AppContent() {
     return () => { alive = false; };
   }, [session]);
 
-
   if (!authReady || (session && profileLoading)) {
     return <SafeAreaProvider><AppBackground /><SafeAreaView style={styles.center}><ActivityIndicator color={colors.maroon} /></SafeAreaView></SafeAreaProvider>;
   }
@@ -115,15 +93,7 @@ function AppContent() {
   }
 
   if (!session) {
-    return (
-      <SafeAreaProvider><AppBackground /><SafeAreaView style={styles.config}>
-        <Text style={styles.brand}>KAALAM</Text>
-        <Text style={styles.configTitle}>Guest access setup needed</Text>
-        <Text style={styles.configBody}>
-          {authError || "Enable Anonymous Sign-Ins in Supabase Authentication settings, then restart KAALAM."}
-        </Text>
-      </SafeAreaView></SafeAreaProvider>
-    );
+    return <SafeAreaProvider><AppBackground /><SafeAreaView style={styles.safe}><StatusBar style="dark" /><AuthScreen /></SafeAreaView></SafeAreaProvider>;
   }
 
   if (!profileReady) {
@@ -146,10 +116,7 @@ function AppContent() {
       <AppBackground />
       <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
         <StatusBar style="dark" />
-        <View style={styles.header}>
-          <Text style={styles.headerBrand}>KAALAM</Text>
-          
-        </View>
+        <View style={styles.header}><Text style={styles.headerBrand}>KAALAM</Text></View>
         <View style={styles.content}>{renderScreen()}</View>
         <DailyDeityWelcome visible={showDailyWelcome} onContinue={() => setShowDailyWelcome(false)} />
         <View style={styles.tabBar}>
