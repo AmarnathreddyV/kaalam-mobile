@@ -82,7 +82,7 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
       let permission = await Location.getForegroundPermissionsAsync();
       if (permission.status !== "granted" && requestPermission) permission = await Location.requestForegroundPermissionsAsync();
       if (permission.status !== "granted") throw new Error("Location permission was not granted. Choose a city manually instead.");
-      const position = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      const position = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
       const [address] = await Location.reverseGeocodeAsync({ latitude: position.coords.latitude, longitude: position.coords.longitude }).catch(() => []);
       const parts = [address?.city || address?.district || address?.subregion, address?.region, address?.country].filter(Boolean);
       const display_name = parts.join(", ") || `${position.coords.latitude.toFixed(3)}, ${position.coords.longitude.toFixed(3)}`;
