@@ -302,6 +302,7 @@ async def fetch_panchang(
     timezone: float,
     hours: int = 12,
     minutes: int = 0,
+    seconds: int = 0,
 ) -> dict[str, Any]:
 
     if not NAVAMSHA_API_KEY:
@@ -317,6 +318,7 @@ async def fetch_panchang(
         "date": day.day,
         "hours": hours,
         "minutes": minutes,
+        "seconds": seconds,
         "latitude": latitude,
         "longitude": longitude,
         "timezone": timezone,
@@ -535,9 +537,9 @@ async def get_daily_panchang_with_timings(
 
         sunrise_value = timing_data["sun_times"]["rise"]["local_datetime"]
         sunrise = datetime.fromisoformat(sunrise_value)
-        panchang_at = sunrise + timedelta(minutes=1)
-        if panchang_at.second or panchang_at.microsecond:
-            panchang_at = panchang_at.replace(second=0, microsecond=0) + timedelta(minutes=1)
+        # Preserve the exact sunrise boundary. The provider accepts seconds;
+        # a full extra minute can cross a Tithi/Yoga transition near sunrise.
+        panchang_at = sunrise + timedelta(seconds=1)
 
         async with httpx.AsyncClient(timeout=30.0) as client:
             panchang = await fetch_navamsha_route(
@@ -549,6 +551,7 @@ async def get_daily_panchang_with_timings(
                 timezone,
                 hours=panchang_at.hour,
                 minutes=panchang_at.minute,
+                seconds=panchang_at.second,
             )
 
         data: dict[str, Any] = {
@@ -568,13 +571,13 @@ async def get_daily_panchang_with_timings(
             "unavailable": {},
             "data_complete": True,
             "recommendations_ready": False,
-            "panchang_reference": "apparent_local_sunrise_plus_one_minute",
+            "panchang_reference": "apparent_local_sunrise_plus_one_second",
             "calculation_metadata": {
-                "panchang_limbs": "Navamsha Lahiri sidereal calculation at apparent local sunrise + 1 minute",
+                "panchang_limbs": "Navamsha Lahiri sidereal calculation at apparent local sunrise + 1 second",
                 "sunrise_sunset": "KAALAM NOAA apparent-sunrise calculation, zenith 90.8333 degrees",
                 "daily_periods": "KAALAM local sunrise/sunset and weekday-based calculation",
                 "provider_calls_per_daily_location": 1,
-                "cache_namespace": "daily-apparent-v1",
+                "cache_namespace": "daily-apparent-v2",
             },
             "message": "Panchangam limbs are evaluated just after apparent local sunrise. Daily timing windows are calculated for the selected coordinates. This is not, by itself, an event-specific Muhurtham recommendation.",
         }
