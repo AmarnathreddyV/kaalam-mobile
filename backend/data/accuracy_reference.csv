@@ -1,1 +1,9 @@
 state,place_name,date,latitude,longitude,timezone_offset_hours,reference_source,reference_url,expected_sunrise_local,expected_sunset_local,expected_tithi,expected_nakshatra,expected_yoga,expected_karana
+Telangana,Hyderabad,2026-11-05,17.360589,78.4740613,5.5,Drik Panchang,https://www.drikpanchang.com/telugu/panchanga/telugu-day-panchanga.html?geoname-id=1269843,06:16,17:43,Ekadashi,Uttara Phalguni,Indra,Balava
+Andhra Pradesh,Visakhapatnam,2026-11-05,17.6935526,83.2921297,5.5,Drik Panchang,https://www.drikpanchang.com/telugu/panchanga/telugu-day-panchanga.html?geoname-id=1253102,05:58,17:24,Ekadashi,Uttara Phalguni,Indra,Balava
+Karnataka,Bengaluru,2026-11-05,12.9767936,77.590082,5.5,Drik Panchang,https://www.drikpanchang.com/panchang/day-panchang.html?geoname-id=1277333,06:14,17:52,Ekadashi,Uttara Phalguni,Indra,Balava
+Tamil Nadu,Chennai,2026-11-05,13.0800915,80.2807978,5.5,Drik Panchang,https://www.drikpanchang.com/telugu/panchanga/telugu-day-panchanga.html?geoname-id=1264527,06:04,17:41,Ekadashi,Uttara Phalguni,Indra,Balava
+Kerala,Thiruvananthapuram,2026-11-05,8.4882267,76.947551,5.5,Drik Panchang,https://www.drikpanchang.com/panchang/day-panchang.html?geoname-id=1254163,06:12,18:00,Ekadashi,Uttara Phalguni,Indra,Balava
+Maharashtra,Mumbai,2026-11-05,19.054999,72.8692035,5.5,Drik Panchang,https://www.drikpanchang.com/panchang/day-panchang.html?date=05%2F11%2F2026&geoname-id=1275339,06:41,18:03,Ekadashi,Uttara Phalguni,Vaidhriti,Balava
+Gujarat,Ahmedabad,2026-11-05,23.0215374,72.5800568,5.5,Drik Panchang,https://www.drikpanchang.com/gujarati/panchang/gujarati-day-panchang.html?geoname-id=1279233,06:47,17:59,Ekadashi,Uttara Phalguni,Vaidhriti,Balava
+Rajasthan,Jaipur,2026-11-05,26.9154576,75.8189817,5.5,Drik Panchang,https://www.drikpanchang.com/panchang/month-panchang.html?geoname-id=1269515,06:39,17:41,Ekadashi,Uttara Phalguni,Vaidhriti,Balava
