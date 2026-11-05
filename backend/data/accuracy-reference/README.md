@@ -6,7 +6,7 @@ from an attributable external Panchang source.
 
 ## Current evidence inventory (5 November 2026)
 
-The current CSV contains **59 reference rows**, all for **2026-11-05**:
+The current CSV contains **80 reference rows**, all for **2026-11-05**:
 
 | State | Reference rows | Unique places | Distinct dates |
 |---|---:|---:|---:|
@@ -14,17 +14,21 @@ The current CSV contains **59 reference rows**, all for **2026-11-05**:
 | Andhra Pradesh | 10 | 10 | 1 |
 | Karnataka | 10 | 10 | 1 |
 | Tamil Nadu | 10 | 10 | 1 |
-| Kerala | 5 | 5 | 1 |
-| Maharashtra | 4 | 4 | 1 |
-| Gujarat | 5 | 5 | 1 |
-| Rajasthan | 5 | 5 | 1 |
-| **Total** | **59** | **59** | **1** |
+| Kerala | 10 | 10 | 1 |
+| Maharashtra | 10 | 10 | 1 |
+| Gujarat | 10 | 10 | 1 |
+| Rajasthan | 10 | 10 | 1 |
+| **Total** | **80** | **80** | **1** |
 
-The Drik Panchang URLs in the CSV are date-pinned to 5 November 2026 so that
-future reruns do not silently compare against a moving "today" page. One
-Srikakulam row currently cites NityaPanchangam rather than Drik Panchang; it is
-an explicitly identified non-Drik exception and must be replaced with a verified
-Drik Panchang reference before Telugu Drik-only certification.
+The CSV separates `reference_url` (Panchang limbs) from
+`sun_reference_url` (sunrise/sunset evidence). Both URLs must use an approved
+independent source host. Existing rows point both fields to the same daily
+Panchang page; newly added rows use separate Drik Panchang daily-Panchang and
+sunrise pages. URLs are date-pinned to 5 November 2026 so future reruns do not
+silently compare against a moving "today" page. One Srikakulam row currently
+cites NityaPanchangam rather than Drik Panchang; it remains an explicitly
+identified non-Drik exception and must be replaced with a verified Drik
+Panchang reference before Telugu Drik-only certification.
 
 ## Acceptance gates
 
@@ -40,20 +44,19 @@ are filled with source-checked rows and the live comparison passes.
 
 ## Separate operational coverage evidence
 
-The live operational coverage workflow previously tested **80/80 locations**
-(10 per state) for 5 November 2026. It checked state attribution, coordinate
-round-tripping, timezone, Telugu Drik response metadata, completeness, and
-basic solar-time plausibility. This is useful operational evidence, but it is
-not independent astronomical accuracy certification.
+The live operational coverage workflow now tests **80 locations per day**
+(10 per state) for 5, 6, and 7 November 2026, with a separate job and report
+for each date. It checks state attribution, coordinate round-tripping,
+timezone, Telugu Drik response metadata, completeness, and basic solar-time
+plausibility. This is useful operational evidence, but it is not independent
+astronomical accuracy certification.
 
-The latest completed comparison before URL pinning tested all 59 current rows
-and reported **59 passed, 0 mismatches**. It still reported
-`certification_ready=false`: Kerala had 5 reference places, Maharashtra 4,
-Gujarat 5, and Rajasthan 5; the then-active gate required 10 rows in every
-state. The stricter current validator additionally requires 3 distinct dates
-per state. A new live comparison is running against the date-pinned CSV; its
-final result must be checked before sign-off. The earlier 44-row report is
-superseded and should not be used as the current inventory.
+The latest completed comparison before the 80-place expansion tested 59 rows
+and reported **59 passed, 0 mismatches**. The current CSV now has 10 distinct
+places in every state, but still only one date per state. The strict validator
+requires 3 distinct dates per state. A new live comparison is running against
+the expanded 80-place CSV; inspect its final report for mismatches before
+sign-off. The earlier 44-row report is superseded.
 
 ## Run
 
