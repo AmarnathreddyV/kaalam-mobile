@@ -47,7 +47,7 @@ export function PanchangamScreen() {
   const p = result?.data?.panchang;
   const d = result?.data;
   const translatePanchang = (value?: string) => value
-    ? value.split(/(\\s+|·|,|\\/|-)/).map(part => /^[\\s·,\\/-]+$/.test(part) ? part : t(part)).join("")
+    ? value.split(/(\s+|[·,\/-])/).map(part => /^[\s·,\/-]+$/.test(part) ? part : t(part)).join("")
     : "—";
   const formatTime = (value?: string) => {
     if (!value) return "Unavailable";
