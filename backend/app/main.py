@@ -6,6 +6,7 @@ import time
 from pathlib import Path
 
 from datetime import date as date_type
+from datetime import datetime
 from datetime import timedelta
 from typing import Any
 
@@ -359,12 +360,48 @@ async def get_daily_panchang_with_timings(
 
     async def load_daily():
         async with httpx.AsyncClient(timeout=30.0) as client:
+            # First obtain local sunrise. The five Panchang limbs must be
+            # calculated just after sunrise so the response represents the
+            # sunrise-based Panchang day, not an arbitrary noon snapshot.
+            sun_times = await fetch_navamsha_route(
+                client, routes["sun_times"], day, latitude, longitude, timezone,
+                hours=12, minutes=0,
+            )
+            sunrise_value = (sun_times.get("rise") or {}).get("local_datetime")
+            if not isinstance(sunrise_value, str):
+                raise HTTPException(
+                    status_code=502,
+                    detail="Navamsha did not return a usable local sunrise time.",
+                )
+            try:
+                sunrise = datetime.fromisoformat(sunrise_value)
+            except ValueError as exc:
+                raise HTTPException(
+                    status_code=502,
+                    detail="Navamsha returned an invalid local sunrise time.",
+                ) from exc
+
+            # Add one minute to avoid evaluating at the exact sunrise boundary.
+            panchang_minute = sunrise.minute + 1
+            panchang_hour = sunrise.hour
+            if panchang_minute >= 60:
+                panchang_minute = 0
+                panchang_hour = (panchang_hour + 1) % 24
+
+            remaining_routes = {
+                key: route for key, route in routes.items()
+                if key != "sun_times"
+            }
             tasks = {
-                key: fetch_navamsha_route(client, route, day, latitude, longitude, timezone, hours=12, minutes=0)
-                for key, route in routes.items()
+                key: fetch_navamsha_route(
+                    client, route, day, latitude, longitude, timezone,
+                    hours=panchang_hour, minutes=panchang_minute,
+                )
+                for key, route in remaining_routes.items()
             }
             results = await asyncio.gather(*tasks.values(), return_exceptions=True)
-        data: dict[str, Any] = {}
+
+        data: dict[str, Any] = {"sun_times": sun_times}
         unavailable: dict[str, str] = {}
         for key, result in zip(tasks.keys(), results):
             if isinstance(result, Exception):
@@ -377,14 +414,16 @@ async def get_daily_panchang_with_timings(
             else:
                 data[key] = result
         if "panchang" not in data:
-            raise HTTPException(status_code=502, detail={"message": "Could not retrieve core Panchangam data.", "unavailable": unavailable})
+            raise HTTPException(status_code=502, detail={"message": "Could not retrieve core sunrise-based Panchangam data.", "unavailable": unavailable})
         return {
             "provider": "Navamsha", "tradition": "Telugu Drik", "date": day.isoformat(),
             "location": {"latitude": latitude, "longitude": longitude, "timezone": timezone},
             "data": data, "unavailable": unavailable, "data_complete": len(data) == len(routes),
             "recommendations_ready": False,
-            "message": "Daily Panchangam and timing data retrieved. These timings are not, by themselves, an event-specific Muhurtham recommendation.",
+            "panchang_reference": "local_sunrise_plus_one_minute",
+            "message": "Daily Panchangam limbs are evaluated just after local sunrise. Daily timing data is not, by itself, an event-specific Muhurtham recommendation.",
         }
+
 
     key = _panchang_cache_key("daily", day, latitude, longitude, timezone)
     result = await _cached_panchang(key, load_daily)
