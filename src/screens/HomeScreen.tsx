@@ -254,7 +254,7 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
   const basicDetails = useMemo(() => [
     ["Rashi", profile?.birth_chart_summary?.rashi || "Not calculated"],
     ["Janma Nakshatra", profile?.birth_chart_summary?.nakshatra || "Not calculated"],
-    ["Birth date", displayBirthDate(profile?.date_of_birth) || "Not provided"],
+    ["Birth date", displayBirthDate(profile?.date_of_birth ?? undefined) || "Not provided"],
     ["Birth place", profile?.birth_place || "Not provided"],
   ], [profile]);
 
@@ -347,7 +347,7 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
         )}
       </Panel>
 
-      <SectionTitle>{t("SUNRISE & SUNSET")} · {profile?.current_location?.toUpperCase() || t("YOUR LOCATION")}</SectionTitle>
+      <SectionTitle>{`${t("SUNRISE & SUNSET")} · ${profile?.current_location?.toUpperCase() || t("YOUR LOCATION")}`}</SectionTitle>
       <Panel>
         <LabelValue label={t("Sunrise")} value={timeText(sunrise)} />
         <LabelValue label={t("Sunset")} value={timeText(sunset)} last />
@@ -405,7 +405,7 @@ const styles = StyleSheet.create({
   locationCancelText: { color: colors.muted, fontSize: 12 },
   poojaShortcut: { marginTop: 18, marginBottom: 8, padding: 16, borderRadius: 10, backgroundColor: "#3B1019", borderWidth: 1, borderColor: "rgba(169,133,69,0.55)", flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   poojaShortcutText: { flex: 1 },
-  poojaShortcutTitle: { color: "#FFF7E9", fontSize: 16, fontWeight: "600", letterSpacing: 0.1, letterSpacing: 0.15 },
+  poojaShortcutTitle: { color: "#FFF7E9", fontSize: 16, fontWeight: "600", letterSpacing: 0.15 },
   poojaShortcutSubtitle: { color: "#F0D8B8", fontSize: 11, marginTop: 6, letterSpacing: 0.15 },
   poojaShortcutArrow: { color: "#F7D99F", fontSize: 9, fontWeight: "800", letterSpacing: 1, marginLeft: 8 },
   todaySongPanel: { flexDirection: "row", alignItems: "center", gap: 12 },
