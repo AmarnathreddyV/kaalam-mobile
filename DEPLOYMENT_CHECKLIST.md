@@ -100,3 +100,5 @@ The first EAS build may ask you to link the repository to an Expo project. Compl
 - Account linking/recovery for anonymous users.
 - Verify provider coverage for Durmuhurtham and Subha Gadiyalu before displaying them.
 - Decide separately whether a full Jathakam/horoscope feature should return; it is currently not exposed in the app.
+
+- Before store submission, add a square KAALAM app-icon asset and configure `expo.icon` plus Android adaptive foreground image. The current wide logo remains the splash-screen image; it is not stretched into an icon.
