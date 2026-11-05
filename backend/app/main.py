@@ -1,7 +1,10 @@
 import os
 import json
 import asyncio
+import base64
 import copy
+import hashlib
+import hmac
 import time
 from pathlib import Path
 
@@ -13,7 +16,7 @@ from typing import Any
 import httpx
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, model_validator
 
@@ -111,6 +114,97 @@ app.add_middleware(
 async def root() -> dict[str, str]:
     # Friendly root response for platform probes and quick manual checks.
     return {"status": "ok", "service": "kaalam-api", "health": "/health"}
+
+
+
+
+# --------------------------------------------------
+# SUPABASE AUTH -> MSG91 SMS DELIVERY
+# Supabase generates/verifies the OTP. MSG91 only delivers it.
+# --------------------------------------------------
+
+MSG91_AUTHKEY = os.getenv("MSG91_AUTHKEY", "").strip()
+MSG91_OTP_TEMPLATE_ID = os.getenv("MSG91_OTP_TEMPLATE_ID", "").strip()
+SUPABASE_AUTH_SMS_HOOK_SECRET = os.getenv("SUPABASE_AUTH_SMS_HOOK_SECRET", "").strip()
+
+
+def verify_supabase_sms_hook(request: Request, raw_body: bytes) -> bool:
+    """Verify the Standard Webhooks signature sent by Supabase Auth."""
+    secret = SUPABASE_AUTH_SMS_HOOK_SECRET
+    webhook_id = request.headers.get("webhook-id", "")
+    timestamp = request.headers.get("webhook-timestamp", "")
+    signature_header = request.headers.get("webhook-signature", "")
+    if not (secret and webhook_id and timestamp and signature_header):
+        return False
+
+    try:
+        timestamp_seconds = int(timestamp)
+        if abs(time.time() - timestamp_seconds) > 300:
+            return False
+        encoded_secret = secret.removeprefix("whsec_")
+        key = base64.b64decode(encoded_secret, validate=True)
+    except (ValueError, TypeError):
+        return False
+
+    signed_content = webhook_id.encode() + b"." + timestamp.encode() + b"." + raw_body
+    digest = base64.b64encode(hmac.new(key, signed_content, hashlib.sha256).digest()).decode()
+    expected = f"v1,{digest}"
+    supplied = [part.strip() for part in signature_header.split() if part.strip()]
+    return any(hmac.compare_digest(expected, candidate) for candidate in supplied)
+
+
+@app.post("/api/auth/send-sms")
+async def send_supabase_auth_sms(request: Request) -> dict[str, str]:
+    """Deliver Supabase-generated phone OTPs through the MSG91 India route."""
+    raw_body = await request.body()
+    if not verify_supabase_sms_hook(request, raw_body):
+        raise HTTPException(status_code=401, detail="Invalid or expired authentication webhook signature.")
+
+    if not MSG91_AUTHKEY or not MSG91_OTP_TEMPLATE_ID:
+        raise HTTPException(status_code=503, detail="MSG91 SMS delivery is not configured.")
+
+    try:
+        event = json.loads(raw_body)
+        phone = str((event.get("user") or {}).get("phone") or "")
+        otp = str((event.get("sms") or {}).get("otp") or "")
+    except (ValueError, AttributeError, TypeError) as exc:
+        raise HTTPException(status_code=400, detail="Invalid SMS hook payload.") from exc
+
+    # KAALAM is India-only at launch. Never send international SMS by mistake.
+    if not phone.startswith("+91") or len(phone) != 13 or not phone[3:].isdigit() or phone[3] not in "6789":
+        raise HTTPException(status_code=400, detail="Only valid +91 Indian mobile numbers are supported.")
+    if len(otp) != 6 or not otp.isdigit():
+        raise HTTPException(status_code=400, detail="Supabase did not provide a valid six-digit OTP.")
+
+    try:
+        async with httpx.AsyncClient(timeout=8.0) as client:
+            response = await client.post(
+                "https://control.msg91.com/api/v5/otp",
+                params={
+                    "template_id": MSG91_OTP_TEMPLATE_ID,
+                    "mobile": phone,
+                    "otp": otp,
+                    "otp_length": "6",
+                    "otp_expiry": "5",
+                    "unicode": "0",
+                },
+                headers={
+                    "authkey": MSG91_AUTHKEY,
+                    "Content-Type": "application/json",
+                },
+                json={},
+            )
+            response.raise_for_status()
+            provider_result = response.json()
+            if not isinstance(provider_result, dict) or provider_result.get("type") != "success":
+                raise HTTPException(status_code=502, detail="MSG91 did not accept the OTP message.")
+    except HTTPException:
+        raise
+    except (httpx.HTTPError, ValueError) as exc:
+        # Do not log or return the OTP, authkey, or full provider payload.
+        raise HTTPException(status_code=502, detail="MSG91 could not deliver the verification message.") from exc
+
+    return {"status": "sent"}
 
 
 @app.get("/health")
