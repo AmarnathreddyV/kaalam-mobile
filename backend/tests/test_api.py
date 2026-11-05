@@ -1,8 +1,16 @@
 import asyncio
+import base64
+import hashlib
+import hmac
+import time
 import unittest
 from datetime import date
 
 from pydantic import ValidationError
+from types import SimpleNamespace
+
+import app.main as main_module
+from app.main import verify_supabase_sms_hook
 
 from app.main import MuhurthamSearchRequest, health, normalize_occasion
 
@@ -50,6 +58,39 @@ class HealthEndpointTests(unittest.TestCase):
         self.assertEqual(response["status"], "ok")
         self.assertEqual(response["service"], "kaalam-api")
         self.assertIn("panchang_usage", response)
+
+class SupabaseSmsHookSignatureTests(unittest.TestCase):
+    def _signed_request(self, body: bytes, secret: bytes, timestamp: int):
+        webhook_id = "msg_test_123"
+        signed = webhook_id.encode() + b"." + str(timestamp).encode() + b"." + body
+        digest = base64.b64encode(hmac.new(secret, signed, hashlib.sha256).digest()).decode()
+        headers = {
+            "webhook-id": webhook_id,
+            "webhook-timestamp": str(timestamp),
+            "webhook-signature": f"v1,{digest}",
+        }
+        return SimpleNamespace(headers=headers)
+
+    def test_accepts_valid_signature(self):
+        secret = b"kaalam-test-secret"
+        main_module.SUPABASE_AUTH_SMS_HOOK_SECRET = "whsec_" + base64.b64encode(secret).decode()
+        body = b'{"user":{"phone":"+919876543210"},"sms":{"otp":"123456"}}'
+        request = self._signed_request(body, secret, int(time.time()))
+        self.assertTrue(verify_supabase_sms_hook(request, body))
+
+    def test_rejects_tampered_body(self):
+        secret = b"kaalam-test-secret"
+        main_module.SUPABASE_AUTH_SMS_HOOK_SECRET = "whsec_" + base64.b64encode(secret).decode()
+        body = b'{"sms":{"otp":"123456"}}'
+        request = self._signed_request(body, secret, int(time.time()))
+        self.assertFalse(verify_supabase_sms_hook(request, body + b" "))
+
+    def test_rejects_expired_signature(self):
+        secret = b"kaalam-test-secret"
+        main_module.SUPABASE_AUTH_SMS_HOOK_SECRET = "whsec_" + base64.b64encode(secret).decode()
+        body = b'{"sms":{"otp":"123456"}}'
+        request = self._signed_request(body, secret, int(time.time()) - 600)
+        self.assertFalse(verify_supabase_sms_hook(request, body))
 
 
 if __name__ == "__main__":
