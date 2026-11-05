@@ -43,16 +43,16 @@ FastAPI backend and Navamsha proxy are in `backend/`. See `backend/README.md`. K
 
 ## Current limitations
 
-The app now requires a real Supabase account and completed profile before showing the main tabs. Panchangam live integration currently fetches tithi, nakshatra, yoga, karana and weekday. Daily timing calculations, full horoscope, and event-specific Muhurtham search are still to be implemented and validated; the app must not invent those values.
+The app uses a private Supabase anonymous session and a completed profile before showing the main tabs. Daily Panchangam and timing data are retrieved from Navamsha, including sunrise/sunset, Rahu Kalam, Yamagandam, Gulika, Choghadiya, Hora and Abhijit Muhurat where provider routes return data. Validate every timing against trusted Telugu Drik references before production. Muhurtham currently searches source-attributed published listings; it does not independently calculate or certify personalized auspicious dates. A full horoscope is not currently exposed.
 
 No n8n dependency is used.
 
 
 ## Custom occasion analysis with AI
 
-When a user chooses **Other**, they can type an occasion in their own words. The app sends it to the FastAPI endpoint `/api/occasion/analyze`, which uses Gemini on the server to explain the occasion and identify traditional factors to check.
+When a user chooses **Other**, they can type an occasion in their own words. The app sends it to the FastAPI endpoint `/api/occasion/analyze`, which uses OpenAI on the server to explain the occasion and identify traditional factors to check.
 
-Add `GEMINI_API_KEY` to the Render backend's Environment settings. Optionally set `GEMINI_MODEL` (default: `gemini-3.8-flash`). Redeploy the backend after adding the variables and pushing the code.
+Add `OPENAI_API_KEY` to the Render backend's Environment settings. Optionally set `OPENAI_MODEL` (default: `gpt-5.5`). Redeploy the backend after adding the variables and pushing the code.
 
 The AI analysis is not itself a Muhurtham calculation. KAALAM must still evaluate candidate dates against verified local Panchangam data and the applicable event-specific rules before recommending dates.
 
