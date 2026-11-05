@@ -75,9 +75,16 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
   useEffect(() => { load(); }, [load]);
 
   const p = result?.data?.panchang;
-  const translatePanchang = (value?: string) => value
-    ? value.split(/(\s+|[·,\/-])/).map(part => /^[\s·,\/-]+$/.test(part) ? part : t(part)).join("")
-    : "—";
+  const translatePanchang = (value?: string) => {
+    if (!value?.trim()) return "—";
+    const normalized = value.trim();
+    const exactTranslation = t(normalized);
+    if (exactTranslation !== normalized) return exactTranslation;
+    return normalized
+      .split(/(\s+|[·,\/-])/)
+      .map(part => /^[\s·,\/-]+$/.test(part) ? part : t(part))
+      .join("");
+  };
   const tithi = [p?.tithi?.name, p?.tithi?.paksha].filter(Boolean).map(translatePanchang).join(" · ") || "—";
   const nakshatra = translatePanchang(p?.nakshatra?.name);
   const yoga = translatePanchang(p?.yoga?.name);
