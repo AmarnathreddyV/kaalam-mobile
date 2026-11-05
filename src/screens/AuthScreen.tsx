@@ -1,40 +1,43 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Image, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { supabase, supabaseConfigured } from "../auth/supabase";
 import { colors } from "../theme/colors";
 
-type AuthScreenProps = { recoveryMode?: boolean; onRecoveryComplete?: () => void };
-
-export function AuthScreen(_props: AuthScreenProps) {
+export function AuthScreen() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [verifiedPhone, setVerifiedPhone] = useState("");
   const [busy, setBusy] = useState(false);
+  const [resendSeconds, setResendSeconds] = useState(0);
   const [message, setMessage] = useState("");
   const [messageIsError, setMessageIsError] = useState(false);
+
+  useEffect(() => {
+    if (resendSeconds <= 0) return;
+    const timer = setTimeout(() => setResendSeconds(value => Math.max(0, value - 1)), 1000);
+    return () => clearTimeout(timer);
+  }, [resendSeconds]);
 
   function showMessage(value: string, isError = false) {
     setMessage(value);
     setMessageIsError(isError);
   }
 
-  function normalizePhone(value: string) {
-    const trimmed = value.trim().replace(/[\\s()-]/g, "");
-    if (trimmed.startsWith("+")) return trimmed;
-    const digits = trimmed.replace(/\\D/g, "");
-    if (digits.length === 10) return `+91${digits}`;
-    if (digits.length === 12 && digits.startsWith("91")) return `+${digits}`;
-    return "";
+  function normalizeIndianPhone(value: string) {
+    const digits = value.replace(/\D/g, "");
+    const national = digits.startsWith("91") && digits.length === 12 ? digits.slice(2) : digits;
+    if (!/^[6-9]\d{9}$/.test(national)) return "";
+    return `+91${national}`;
   }
 
-  async function sendOtp() {
-    if (busy) return;
+  async function sendOtp(isResend = false) {
+    if (busy || (isResend && resendSeconds > 0)) return;
     if (!supabaseConfigured) return showMessage("Phone sign-in is not configured. Please try again later.", true);
-    const normalized = normalizePhone(phone);
-    if (!normalized || !/^\\+[1-9]\\d{7,14}$/.test(normalized)) {
-      return showMessage("Enter a valid phone number with country code. For India, enter your 10-digit mobile number.", true);
+    const normalized = normalizeIndianPhone(phone);
+    if (!normalized) {
+      return showMessage("Enter a valid 10-digit Indian mobile number beginning with 6, 7, 8 or 9.", true);
     }
 
     setBusy(true);
@@ -51,9 +54,10 @@ export function AuthScreen(_props: AuthScreenProps) {
       setVerifiedPhone(normalized);
       setOtpSent(true);
       setOtp("");
+      setResendSeconds(60);
       showMessage(`A verification code has been sent to ${normalized}.`);
     } catch (e) {
-      showMessage(e instanceof Error ? e.message : "Unable to send the verification code.", true);
+      showMessage(e instanceof Error ? e.message : "Unable to send the verification code. Please try again later.", true);
     } finally {
       setBusy(false);
     }
@@ -61,7 +65,7 @@ export function AuthScreen(_props: AuthScreenProps) {
 
   async function verifyOtp() {
     if (busy) return;
-    if (!/^\\d{6}$/.test(otp.trim())) return showMessage("Enter the 6-digit verification code.", true);
+    if (!/^\d{6}$/.test(otp.trim())) return showMessage("Enter the 6-digit verification code.", true);
     setBusy(true);
     setMessage("");
     try {
@@ -71,7 +75,7 @@ export function AuthScreen(_props: AuthScreenProps) {
         type: "sms",
       });
       if (error) throw error;
-      // Supabase auth state listener in App.tsx handles the new session.
+      // App.tsx observes the Supabase auth event and loads the user's profile.
     } catch (e) {
       showMessage(e instanceof Error ? e.message : "The verification code could not be verified.", true);
     } finally {
@@ -85,60 +89,46 @@ export function AuthScreen(_props: AuthScreenProps) {
         <Image source={require("../../assets/kaalam-logo.png")} style={styles.logo} resizeMode="contain" />
         <Text style={styles.title}>{otpSent ? "Verify your number" : "Continue with phone"}</Text>
         <Text style={styles.subtitle}>
-          {otpSent ? `Enter the 6-digit code sent to ${verifiedPhone}.` : "Sign in or create your KAALAM account securely using a one-time password."}
+          {otpSent ? `Enter the 6-digit code sent to ${verifiedPhone}.` : "Create your KAALAM account or sign in securely using your Indian mobile number."}
         </Text>
 
         {!otpSent ? (
           <>
-            <TextInput
-              value={name}
-              onChangeText={setName}
-              placeholder="Your name (optional)"
-              placeholderTextColor={colors.muted}
-              autoCapitalize="words"
-              style={styles.input}
-            />
-            <TextInput
-              value={phone}
-              onChangeText={setPhone}
-              placeholder="Mobile number (e.g. 9876543210)"
-              placeholderTextColor={colors.muted}
-              keyboardType="phone-pad"
-              autoComplete="tel"
-              textContentType="telephoneNumber"
-              style={styles.input}
-            />
-            <TouchableOpacity disabled={busy} onPress={sendOtp} style={[styles.button, busy && styles.disabled]}>
+            <TextInput value={name} onChangeText={setName} placeholder="Your name (optional)"
+              placeholderTextColor={colors.muted} autoCapitalize="words" style={styles.input} />
+            <View style={styles.phoneRow}>
+              <View style={styles.countryCode}><Text style={styles.countryCodeText}>🇮🇳  +91</Text></View>
+              <TextInput value={phone} onChangeText={value => setPhone(value.replace(/\D/g, "").slice(0, 10))}
+                placeholder="10-digit mobile number" placeholderTextColor={colors.muted}
+                keyboardType="number-pad" autoComplete="tel-national" textContentType="telephoneNumber"
+                maxLength={10} style={[styles.input, styles.phoneInput]} />
+            </View>
+            <TouchableOpacity disabled={busy} onPress={() => sendOtp(false)} style={[styles.button, busy && styles.disabled]}>
               {busy ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.buttonText}>Send OTP</Text>}
             </TouchableOpacity>
           </>
         ) : (
           <>
-            <TextInput
-              value={otp}
-              onChangeText={value => setOtp(value.replace(/\\D/g, "").slice(0, 6))}
-              placeholder="6-digit OTP"
-              placeholderTextColor={colors.muted}
-              keyboardType="number-pad"
-              textContentType="oneTimeCode"
-              autoComplete="sms-otp"
-              maxLength={6}
-              style={[styles.input, styles.otpInput]}
-            />
+            <TextInput value={otp} onChangeText={value => setOtp(value.replace(/\D/g, "").slice(0, 6))}
+              placeholder="6-digit OTP" placeholderTextColor={colors.muted} keyboardType="number-pad"
+              textContentType="oneTimeCode" autoComplete="sms-otp" maxLength={6}
+              style={[styles.input, styles.otpInput]} />
             <TouchableOpacity disabled={busy} onPress={verifyOtp} style={[styles.button, busy && styles.disabled]}>
               {busy ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.buttonText}>Verify & Continue</Text>}
             </TouchableOpacity>
-            <TouchableOpacity disabled={busy} onPress={sendOtp} style={styles.textButton}>
-              <Text style={styles.link}>Resend OTP</Text>
+            <TouchableOpacity disabled={busy || resendSeconds > 0} onPress={() => sendOtp(true)} style={styles.textButton}>
+              <Text style={[styles.link, (busy || resendSeconds > 0) && styles.linkDisabled]}>
+                {resendSeconds > 0 ? `Resend OTP in 00:${String(resendSeconds).padStart(2, "0")}` : "Resend OTP"}
+              </Text>
             </TouchableOpacity>
-            <TouchableOpacity disabled={busy} onPress={() => { setOtpSent(false); setOtp(""); setMessage(""); }}>
+            <TouchableOpacity disabled={busy} onPress={() => { setOtpSent(false); setOtp(""); setMessage(""); setResendSeconds(0); }}>
               <Text style={styles.switchText}>Change phone number</Text>
             </TouchableOpacity>
           </>
         )}
 
         {!!message && <Text accessibilityRole="alert" style={[styles.message, messageIsError && styles.messageError]}>{message}</Text>}
-        <Text style={styles.terms}>By continuing, you agree to use KAALAM's astrology information as traditional guidance, not guaranteed predictions.</Text>
+        <Text style={styles.terms}>By continuing, you agree to use KAALAM's traditional Panchangam guidance responsibly.</Text>
       </View>
     </KeyboardAvoidingView>
   );
@@ -151,12 +141,17 @@ const styles = StyleSheet.create({
   title: { color: colors.maroonDark, fontSize: 29, fontWeight: "600", fontFamily: "Georgia" },
   subtitle: { color: colors.muted, fontSize: 13, lineHeight: 19, marginTop: 8, marginBottom: 24 },
   input: { backgroundColor: "rgba(255, 248, 234, 0.96)", borderColor: colors.line, borderWidth: 1, borderRadius: 12, paddingHorizontal: 15, paddingVertical: 15, color: colors.text, fontSize: 15, marginBottom: 12 },
+  phoneRow: { flexDirection: "row", alignItems: "center", gap: 8 },
+  countryCode: { backgroundColor: "rgba(255, 248, 234, 0.96)", borderColor: colors.line, borderWidth: 1, borderRadius: 12, paddingHorizontal: 12, height: 52, justifyContent: "center", marginBottom: 12 },
+  countryCodeText: { color: colors.text, fontSize: 14, fontWeight: "600" },
+  phoneInput: { flex: 1, marginBottom: 12 },
   otpInput: { textAlign: "center", fontSize: 23, letterSpacing: 9, fontWeight: "700" },
   button: { backgroundColor: "#71370F", padding: 16, borderRadius: 12, alignItems: "center", justifyContent: "center", minHeight: 52, marginTop: 7 },
   disabled: { opacity: 0.6 },
   buttonText: { color: "#FFFFFF", fontWeight: "700", fontSize: 14 },
   textButton: { alignItems: "center", paddingTop: 17 },
   link: { color: colors.maroon, fontSize: 13, fontWeight: "700" },
+  linkDisabled: { opacity: 0.5 },
   switchText: { color: colors.maroon, fontSize: 13, fontWeight: "600", textAlign: "center", marginTop: 17 },
   message: { color: "#27633A", fontSize: 12, lineHeight: 18, marginTop: 15, textAlign: "center" },
   messageError: { color: "#9B2525" },
