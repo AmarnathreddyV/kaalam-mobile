@@ -5,11 +5,6 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
-    "splash": {
-      "image": "./assets/kaalam-logo.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#F7F3EB"
-    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.kaalam.app"
@@ -28,6 +23,15 @@
         "expo-location",
         {
           "locationWhenInUsePermission": "Allow KAALAM to use your location while the app is open to calculate accurate local Panchangam timings."
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/kaalam-logo.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#F7F3EB"
         }
       ]
     ]
