@@ -58,3 +58,8 @@ KAALAM initially serves Telangana, Andhra Pradesh, Karnataka, Tamil Nadu, Kerala
 The 250 groups are a target allocation, not a certified coordinate registry. Daily Panchangam uses each user's resolved coordinates and cache keys preserve six decimal places, date and timezone; nearby users do not share location-sensitive timing results merely because they belong to one regional group. The location resolver returns the resolved state and whether it is in the initial launch coverage. `GET /api/coverage` returns the coverage plan.
 
 KAALAM has no AI integrations. All calculations and recommendations must be deterministic and traceable to verified data.
+
+
+## India timezone policy
+
+All Indian locations use the single civil timezone `Asia/Kolkata` (UTC+05:30). The location resolver no longer depends on a separate timezone API, preventing external timezone lookup failures from affecting sunrise-based Panchangam calculations. The eight-state live validation suite and independent-reference acceptance tool are documented in `backend/scripts/`.
