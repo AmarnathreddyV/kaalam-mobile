@@ -47,14 +47,27 @@ The app requires a verified Supabase phone session and a completed profile befor
 No n8n dependency is used.
 
 
-## Custom occasion analysis with AI
+## Initial launch geography and regional caching
 
-When a user chooses **Other**, they can type an occasion in their own words. The app sends it to the FastAPI endpoint `/api/occasion/analyze`, which uses OpenAI on the server to explain the occasion and identify traditional factors to check.
+KAALAM's initial launch coverage is limited to these eight states:
 
-Add `OPENAI_API_KEY` to the Render backend's Environment settings. Optionally set `OPENAI_MODEL` (default: `gpt-5.5`). Redeploy the backend after adding the variables and pushing the code.
+| State | Regional group planning target |
+|---|---:|
+| Telangana | 60 |
+| Andhra Pradesh | 65 |
+| Karnataka | 30 |
+| Tamil Nadu | 25 |
+| Maharashtra | 30 |
+| Kerala | 15 |
+| Gujarat | 15 |
+| Rajasthan | 10 |
+| **Total** | **250** |
 
-The AI analysis is not itself a Muhurtham calculation. KAALAM must still evaluate candidate dates against verified local Panchangam data and the applicable event-specific rules before recommending dates.
+Telangana and Andhra Pradesh are the highest-priority markets. The 250 regional groups are a planning target, not yet a validated list of 250 production coordinates. Current daily Panchangam cache keys continue to use a 0.01-degree coordinate grid, date and timezone. Do not widen the grid or reuse location-sensitive timings across regions until sunrise, sunset and dependent timing outputs have passed comparison tests against Navamsha.
 
+The onboarding flow accepts birthplaces anywhere in India, but the current location must resolve to one of the eight initial launch states. The backend exposes `GET /api/coverage` and includes state coverage metadata in `POST /api/location/resolve`.
+
+KAALAM is AI-free. No OpenAI, Gemini, Claude or other generative-AI service is required or used. Recommendations and calculations must use deterministic, documented rules and verified Panchangam data.
 
 ## KAALAM moving mandala background
 
@@ -104,4 +117,4 @@ npx eas-cli@latest build -p android --profile preview
 npx eas-cli@latest build -p android --profile production
 ```
 
-The first EAS build may ask you to link this repository to an Expo project. Complete that step in your Expo account. Keep `NAVAMSHA_API_KEY` and `OPENAI_API_KEY` only in Render backend environment variables; never add server secrets to the mobile app.
+The first EAS build may ask you to link this repository to an Expo project. Complete that step in your Expo account. Keep `NAVAMSHA_API_KEY` and other server-only secrets only in Render environment variables; never add server secrets to the mobile app.
