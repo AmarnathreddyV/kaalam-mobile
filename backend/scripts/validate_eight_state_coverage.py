@@ -132,7 +132,7 @@ def check_location(state: str, place: str) -> dict:
         raise AssertionError(f"daily endpoint is not using the apparent-sunrise engine: {metadata}")
     if metadata.get("provider_calls_per_daily_location") != 1:
         raise AssertionError(f"unexpected provider-call budget: {metadata}")
-    if daily.get("panchang_reference") != "apparent_local_sunrise_plus_one_minute":
+    if daily.get("panchang_reference") != "apparent_local_sunrise_plus_one_second":
         raise AssertionError("Panchang limbs were not anchored to apparent local sunrise")
     if daily.get("data_complete") is not True:
         raise AssertionError(f"incomplete daily response: {daily.get('unavailable')}")
