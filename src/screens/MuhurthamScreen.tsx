@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import {
-  ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity,
+  ActivityIndicator, Linking, ScrollView, StyleSheet, Text, TouchableOpacity,
   View, Platform, TextInput,
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -227,6 +227,8 @@ export function MuhurthamScreen() {
             <Text style={styles.resultDate}>{active.date}</Text>
             <Text style={styles.resultTime}>{active.start_time} – {active.end_time}</Text>
             {!!active.reason && <Text style={styles.reason}>{t(active.reason)}</Text>}
+            {!!active.source && <Text style={styles.sourceLabel}>{t("Source")}: {active.source}</Text>}
+            {!!active.source_url && <TouchableOpacity onPress={() => { void Linking.openURL(active.source_url); }} accessibilityRole="link"><Text style={styles.sourceLink}>{t("Open original calendar source")} ↗</Text></TouchableOpacity>}
             <View style={styles.navigation}>
               <TouchableOpacity disabled={activeResult === 0} onPress={() => setActiveResult(index => Math.max(0, index - 1))} style={[styles.navButton, activeResult === 0 && styles.disabled]}>
                 <Text style={styles.navText}>{t("Previous date")}</Text>
@@ -269,6 +271,8 @@ const styles = StyleSheet.create({
   resultDate: { color: colors.maroonDark, fontFamily: "Georgia", fontSize: 24, fontWeight: "700", marginTop: 11 },
   resultTime: { color: colors.maroon, fontSize: 17, fontWeight: "700", marginTop: 8 },
   reason: { color: colors.muted, fontSize: 12, lineHeight: 18, marginTop: 10 },
+  sourceLabel: { color: colors.muted, fontSize: 11, marginTop: 10 },
+  sourceLink: { color: colors.gold, fontSize: 11, fontWeight: "700", marginTop: 7, textDecorationLine: "underline" },
   navigation: { flexDirection: "row", justifyContent: "space-between", gap: 10, marginTop: 18 },
   navButton: { backgroundColor: colors.pale, padding: 12, borderRadius: 10, flex: 1, alignItems: "center" },
   navText: { color: colors.maroonDark, fontSize: 11, fontWeight: "700" },
