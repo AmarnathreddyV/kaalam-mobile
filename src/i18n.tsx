@@ -128,6 +128,16 @@ Object.assign(hi, {
 "Try to avoid harsh words and rushed decisions. Make space for patience, kindness and thoughtful action.":"कठोर शब्दों और जल्दबाजी में फैसलों से बचें। धैर्य, दयालुता और सोच-समझकर काम करने को महत्व दें।"
 });
 
+
+Object.assign(te, {
+"Rashi":"రాశి","Aries":"మేషం","Taurus":"వృషభం","Gemini":"మిథునం","Cancer":"కర్కాటకం","Leo":"సింహం","Virgo":"కన్య","Libra":"తుల","Scorpio":"వృశ్చికం","Sagittarius":"ధనుస్సు","Capricorn":"మకరం","Aquarius":"కుంభం","Pisces":"మీనం",
+"Telugu Drik":"తెలుగు దృక్ పంచాంగం","Daily calendar":"రోజువారీ పంచాంగం","Tithi":"తిథి","Vara":"వారం","Nakshatra":"నక్షత్రం","Yoga":"యోగం","Karana":"కరణం","Abhijit Muhurat":"అభిజిత్ ముహూర్తం","Sun timings":"సూర్య సమయాలు","Avoidable periods":"వర్జ్య సమయాలు","Other daily windows":"ఇతర దైనందిన సమయాలు"
+});
+Object.assign(hi, {
+"Rashi":"राशि","Aries":"मेष","Taurus":"वृषभ","Gemini":"मिथुन","Cancer":"कर्क","Leo":"सिंह","Virgo":"कन्या","Libra":"तुला","Scorpio":"वृश्चिक","Sagittarius":"धनु","Capricorn":"मकर","Aquarius":"कुंभ","Pisces":"मीन",
+"Telugu Drik":"तेलुगु दृक पंचांग","Tithi":"तिथि","Vara":"वार","Nakshatra":"नक्षत्र","Yoga":"योग","Karana":"करण","Abhijit Muhurat":"अभिजित मुहूर्त","Sun timings":"सूर्य समय","Avoidable periods":"वर्जित समय","Other daily windows":"अन्य दैनिक समय"
+});
+
 const translations: Record<AppLanguage, Record<string, string>> = { English: {}, Telugu: te, Hindi: hi };
 type LanguageContextValue = { language: AppLanguage; setLanguage: (language: AppLanguage) => void; t: (text: string) => string };
 const LanguageContext = createContext<LanguageContextValue>({ language: "English", setLanguage: () => undefined, t: text => text });
