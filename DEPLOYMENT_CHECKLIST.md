@@ -9,7 +9,8 @@ This checklist separates repository work from account/device actions. KAALAM sup
 - Muhurtham date labels use the selected app locale.
 - Expo-compatible Android date-picker dependency is declared.
 - EAS development, preview APK and production build profiles are configured in `eas.json`.
-- AI environment-variable documentation now matches the backend implementation (`OPENAI_API_KEY`, optional `OPENAI_MODEL`).
+- Initial eight-state launch coverage and 250-group planning allocation are documented.
+- OpenAI occasion-analysis endpoint and AI environment configuration have been removed; KAALAM is AI-free.
 - README documents the build commands and current limitations.
 - `.gitignore` excludes environment files, signing credentials and generated build artifacts; safe environment templates are included.
 - GitHub Actions runs TypeScript, Expo Doctor, backend compilation and backend unit tests on pushes and pull requests.
@@ -54,18 +55,18 @@ Confirm the web service uses:
 
 Set server-only environment variables:
 - `NAVAMSHA_API_KEY`
-- `OPENAI_API_KEY` (only needed for custom-occasion AI analysis)
-- Optional `OPENAI_MODEL` (default: `gpt-5.5`)
 - Optional `CORS_ORIGINS`
 
-Never put either server API key in Expo/EAS client variables. After saving settings, redeploy and verify `/health`, `/docs`, `/api/panchang/daily`, `/api/location/resolve`, `/api/kundali/basic`, `/api/muhurtham/search` and `/api/occasion/analyze`.
+Never put either server API key in Expo/EAS client variables. After saving settings, redeploy and verify `/health`, `/docs`, `/api/coverage`, `/api/panchang/daily`, `/api/location/resolve`, `/api/kundali/basic` and `/api/muhurtham/search`.
 
 ## 4. Device acceptance tests
 
 - Fresh install creates an anonymous session and opens onboarding.
 - Onboarding accepts a real birth date/time and resolves both locations.
 - Supabase profile row is saved and remains after app restart.
+- Current location resolves inside one of the eight launch states; birth place remains available anywhere in India.
 - Device-location permission and manual city selection both work.
+- Validate the proposed 250 regional groups against precise-coordinate Navamsha results before widening the current cache grid.
 - Daily Telugu Drik Tithi, Nakshatra, Yoga, Karana, sunrise/sunset, Rahu Kalam, Yamagandam, Gulika, Choghadiya and Abhijit data load for the correct local date/time zone.
 - Compare timing outputs with trusted Telugu Drik references for the same date and coordinates. Check partial-provider failures are visibly reported.
 - Muhurtham tab opens; published listings remain labelled unverified and show their source/disclaimer. Do not call them calculated or certified recommendations.
@@ -91,6 +92,8 @@ npx eas-cli@latest build -p android --profile production
 The first EAS build may ask you to link the repository to an Expo project. Complete that in your Expo account. The Google Play Console listing, privacy policy, Data Safety form, content rating, screenshots, app access declarations and final release submission must be completed by the account owner.
 
 ## Known product work not required to create a test APK
+
+- Build and validate the actual 250 regional reference-coordinate registry. The current state allocation is a planning target only; current 0.01-degree cache precision remains unchanged until validation passes.
 
 - Event-specific Telugu Drik Muhurtham calculation and independent validation. Current date results are source-attributed published listings, not certified recommendations.
 - Profile editing and birth-chart recalculation workflow.
