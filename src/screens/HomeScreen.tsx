@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Alert, Modal, TextInput, View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
 import * as Location from "expo-location";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
 import { Screen, SectionTitle, Panel, LabelValue } from "../components/Screen";
 import { colors } from "../theme/colors";
@@ -101,7 +102,7 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
     if (!manualLocation.trim() || locationBusy) return;
     setLocationBusy(true);
     try {
-      const apiBase = (process.env.EXPO_PUBLIC_API_BASE_URL || "https://kaalam-mobile.onrender.com").replace(/\\/$/, "");
+      const apiBase = (process.env.EXPO_PUBLIC_API_BASE_URL || "https://kaalam-mobile.onrender.com").replace(/\/$/, "");
       const response = await fetch(`${apiBase}/api/location/resolve`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ place: manualLocation.trim() }),
@@ -152,7 +153,17 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
   useEffect(() => { load(); }, [load]);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
+    let alive = true;
+    const timer = setTimeout(async () => {
+      const permission = await Location.getForegroundPermissionsAsync();
+      if (!alive) return;
+      if (permission.status === "granted") {
+        void useDeviceLocation(false);
+        return;
+      }
+      const alreadyAsked = await AsyncStorage.getItem("kaalam-location-explained");
+      if (!alive || alreadyAsked === "yes") return;
+      await AsyncStorage.setItem("kaalam-location-explained", "yes");
       Alert.alert(
         "Location for accurate Panchangam",
         "KAALAM uses your location only while the app is open to calculate local sunrise, Rahu Kalam, Yamagandam and other timings. You can also choose a city manually.",
@@ -163,7 +174,7 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
         { cancelable: false }
       );
     }, 900);
-    return () => clearTimeout(timer);
+    return () => { alive = false; clearTimeout(timer); };
   }, [useDeviceLocation]);
 
   useEffect(() => {
@@ -260,7 +271,7 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
 
   return (
     <Screen>
-      <TouchableOpacity style={styles.locationPill> onPress={() => { setManualLocation(locationLabel); setLocationModal(true); }} activeOpacity={0.8}>
+      <TouchableOpacity style={styles.locationPill} onPress={() => { setManualLocation(locationLabel); setLocationModal(true); }} activeOpacity={0.8}>
         <Text style={styles.locationPillText}>⌖  {locationLabel || t("Choose your location")}  ▾</Text>
       </TouchableOpacity>
       <Text style={styles.date}>{todayLabel(language)}</Text>
