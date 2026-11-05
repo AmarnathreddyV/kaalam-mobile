@@ -1,0 +1,53 @@
+name: KAALAM independent Telugu Drik accuracy comparison
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/data/accuracy_reference.csv"
+      - "backend/scripts/validate_reference_accuracy.py"
+      - ".github/workflows/validate-independent-accuracy.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kaalam-independent-accuracy
+  cancel-in-progress: false
+
+jobs:
+  compare:
+    name: Compare live KAALAM with independent Drik references
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run independent reference comparison
+        id: compare
+        continue-on-error: true
+        env:
+          KAALAM_API_BASE: https://kaalam-mobile.onrender.com
+        run: python backend/scripts/validate_reference_accuracy.py
+
+      - name: Upload independent accuracy report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kaalam-independent-accuracy-report
+          path: independent-accuracy-report.json
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Fail if reference comparison is not certified
+        if: steps.compare.outcome == 'failure'
+        run: |
+          echo "Independent accuracy comparison found mismatches or insufficient state samples."
+          exit 1
