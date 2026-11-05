@@ -581,7 +581,7 @@ async def get_daily_panchang_with_timings(
     # Six decimal places preserve resolved coordinates and prevent nearby
     # locations from sharing potentially different sunrise/tithi boundaries.
     key = _panchang_cache_key(
-        "daily", day, latitude, longitude, timezone, precision=6
+        "daily-apparent-v1", day, latitude, longitude, timezone, precision=6
     )
     result = await _cached_panchang(key, load_daily)
     if not result.get("data_complete"):
