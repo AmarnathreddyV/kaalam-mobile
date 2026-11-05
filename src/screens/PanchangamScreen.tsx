@@ -46,9 +46,16 @@ export function PanchangamScreen() {
 
   const p = result?.data?.panchang;
   const d = result?.data;
-  const translatePanchang = (value?: string) => value
-    ? value.split(/(\s+|[·,\/-])/).map(part => /^[\s·,\/-]+$/.test(part) ? part : t(part)).join("")
-    : "—";
+  const translatePanchang = (value?: string) => {
+    if (!value?.trim()) return "—";
+    const normalized = value.trim();
+    const exactTranslation = t(normalized);
+    if (exactTranslation !== normalized) return exactTranslation;
+    return normalized
+      .split(/(\s+|[·,\/-])/)
+      .map(part => /^[\s·,\/-]+$/.test(part) ? part : t(part))
+      .join("");
+  };
   const formatTime = (value?: string) => {
     if (!value) return "Unavailable";
     const parsed = new Date(value);
