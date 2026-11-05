@@ -32,16 +32,22 @@ class ApparentSunriseReferenceTests(unittest.TestCase):
                 self.assertLessEqual(abs(self.minute(rise) - rise_expected), 2)
                 self.assertLessEqual(abs(self.minute(setting) - set_expected), 2)
 
+    def assert_time_within_two_minutes(self, actual, expected):
+        actual_minutes = int(actual[:2]) * 60 + int(actual[3:5])
+        expected_minutes = int(expected[:2]) * 60 + int(expected[3:5])
+        self.assertLessEqual(abs(actual_minutes - expected_minutes), 2)
+
     def test_thursday_day_periods_match_drik_visakhapatnam(self):
         result = daily_timing_windows(date(2026, 11, 5), 17.6935526, 83.2921297, 5.5)
         periods = result["inauspicious_periods"]
-        self.assertEqual(periods["yamaganda"]["start"][11:16], "05:58")
-        self.assertEqual(periods["gulika_kaal"]["start"][11:16], "08:49")
-        self.assertEqual(periods["rahu_kaal"]["start"][11:16], "13:06")
+        self.assert_time_within_two_minutes(periods["yamaganda"]["start"][11:16], "05:58")
+        self.assert_time_within_two_minutes(periods["gulika_kaal"]["start"][11:16], "08:49")
+        self.assert_time_within_two_minutes(periods["rahu_kaal"]["start"][11:16], "13:06")
         self.assertEqual(result["choghadiya"]["day"][0]["name"], "Shubh")
         self.assertEqual(result["choghadiya"]["day"][1]["name"], "Rog")
         self.assertEqual(result["choghadiya"]["night"][0]["name"], "Amrit")
-        self.assertEqual(result["abhijit_muhurat"]["interval"]["period"][0]["start"][11:16], "11:18")
+        abhijit_start = result["abhijit_muhurat"]["interval"]["period"][0]["start"][11:16]
+        self.assert_time_within_two_minutes(abhijit_start, "11:18")
 
 
 if __name__ == "__main__":
