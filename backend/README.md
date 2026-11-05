@@ -46,9 +46,9 @@ For production, deploy this backend over HTTPS and set `EXPO_PUBLIC_API_BASE_URL
 
 ## Current integration scope
 
-The backend currently calls Navamsha's documented `POST /api/v1/panchang/full` endpoint. The mobile Panchangam screen displays tithi, nakshatra, yoga, karana and weekday from the live response.
+The backend calls Navamsha's documented Panchangam routes. `GET /api/panchang/daily` aggregates `panchang/full`, `panchang/sun-times`, `panchang/inauspicious-periods`, `panchang/choghadiya`, `panchang/hora` and `panchang/abhijit-muhurat`. The Home screen displays the returned sunrise/sunset, Rahu Kalam, Yamagandam, Gulika, favourable Choghadiya windows and Abhijit Muhurat when available. Check the response `unavailable` map: provider route failures are reported rather than replaced with invented values.
 
-Rahu Kaal, Yamaganda, Gulika, sunrise/sunset, Abhijit and other timing routes are not yet wired into the UI. Durmuhurtham and Subha Gadiyalu must be confirmed against the provider's endpoint coverage and the selected regional tradition before displaying them as calculated values.
+`POST /api/muhurtham/search` currently searches the source-attributed dataset in `data/muhurtham_sources_2026_2027.json`. These are published listings marked unverified, not independently calculated or personalized Muhurtham approvals. The app must retain the disclaimer and source attribution. Event-specific Telugu Drik calculations, and Durmuhurtham/Subha Gadiyalu validation, remain future work.
 
 
 ## Custom occasion AI analysis
