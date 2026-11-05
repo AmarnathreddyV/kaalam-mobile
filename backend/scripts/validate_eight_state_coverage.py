@@ -127,6 +127,13 @@ def check_location(state: str, place: str) -> dict:
         raise AssertionError("UTC offset was changed by the daily endpoint")
     if daily.get("tradition") != "Telugu Drik":
         raise AssertionError(f"unexpected Panchangam tradition: {daily.get('tradition')!r}")
+    metadata = daily.get("calculation_metadata") or {}
+    if metadata.get("sunrise_sunset", "").startswith("KAALAM NOAA apparent-sunrise") is False:
+        raise AssertionError(f"daily endpoint is not using the apparent-sunrise engine: {metadata}")
+    if metadata.get("provider_calls_per_daily_location") != 1:
+        raise AssertionError(f"unexpected provider-call budget: {metadata}")
+    if daily.get("panchang_reference") != "apparent_local_sunrise_plus_one_minute":
+        raise AssertionError("Panchang limbs were not anchored to apparent local sunrise")
     if daily.get("data_complete") is not True:
         raise AssertionError(f"incomplete daily response: {daily.get('unavailable')}")
     data = daily.get("data") or {}
@@ -158,6 +165,14 @@ def check_location(state: str, place: str) -> dict:
         raise AssertionError(f"sunrise outside broad plausibility window: {rise}")
     if not (16 <= set_dt.hour <= 20):
         raise AssertionError(f"sunset outside broad plausibility window: {setting}")
+    if rise_dt.date().isoformat() != TEST_DATE or set_dt.date().isoformat() != TEST_DATE:
+        raise AssertionError("solar times do not belong to the requested local date")
+    if not (data.get("choghadiya") or {}).get("day") or not (data.get("hora") or {}).get("day"):
+        raise AssertionError("local Choghadiya or Hora windows are missing")
+    if not (data.get("inauspicious_periods") or {}).get("rahu_kaal"):
+        raise AssertionError("local inauspicious periods are missing")
+    if not (((data.get("abhijit_muhurat") or {}).get("interval") or {}).get("period")):
+        raise AssertionError("local Abhijit Muhurat window is missing")
     return {
         "state": state,
         "place_query": place,
@@ -176,7 +191,7 @@ def check_location(state: str, place: str) -> dict:
         "checks_passed": [
             "state_attribution", "coordinate_round_trip", "timezone_offset",
             "telugu_drik_source", "complete_provider_response", "core_panchang_limbs",
-            "sunrise_sunset_order", "solar_time_plausibility",
+            "sunrise_sunset_order", "solar_time_plausibility", "apparent_sunrise_engine", "local_daily_windows",
         ],
     }
 
