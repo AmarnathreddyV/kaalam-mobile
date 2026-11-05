@@ -67,8 +67,8 @@ export function DailyDeityWelcome({ visible, onContinue }: { visible: boolean; o
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: "#100905", alignItems: "center", justifyContent: "center" },
-  image: { ...StyleSheet.absoluteFillObject, width: "100%", height: "100%" },
-  scrim: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(12, 7, 4, 0.12)" },
+  image: { ...StyleSheet.absoluteFill, width: "100%", height: "100%" },
+  scrim: { ...StyleSheet.absoluteFill, backgroundColor: "rgba(12, 7, 4, 0.12)" },
   content: { position: "absolute", left: 0, right: 0, bottom: 0, paddingHorizontal: 26, paddingTop: 34, paddingBottom: 42, backgroundColor: "rgba(18, 10, 6, 0.48)", borderTopWidth: 1, borderTopColor: "rgba(232, 200, 141, 0.28)" },
   eyebrow: { color: "#F0D7A8", fontSize: 9, letterSpacing: 2, fontWeight: "700", fontFamily: "sans-serif" },
   deity: { color: "#FFF7E9", fontSize: 34, fontFamily: "serif", fontWeight: "600", letterSpacing: 0.2, marginTop: 13, textShadowColor: "rgba(0,0,0,0.65)", textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 5 },
