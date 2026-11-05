@@ -26,7 +26,7 @@ REQUIRED_STATES = {
 }
 REQUIRED_COLUMNS = {
     "state", "place_name", "date", "latitude", "longitude",
-    "timezone_offset_hours", "reference_source", "reference_url",
+    "timezone_offset_hours", "reference_source", "reference_url", "sun_reference_url",
     "expected_sunrise_local", "expected_sunset_local",
     "expected_tithi", "expected_nakshatra", "expected_yoga", "expected_karana",
 }
@@ -107,9 +107,10 @@ def structural_errors(rows: list[dict[str, str]]) -> tuple[list[dict], dict]:
             datetime.strptime(day, "%Y-%m-%d")
         except ValueError:
             row_errors.append("invalid_date")
-        parsed_url = urllib.parse.urlparse((row.get("reference_url") or "").strip())
-        if parsed_url.scheme != "https" or parsed_url.hostname not in ALLOWED_REFERENCE_HOSTS:
-            row_errors.append("reference_url_not_on_allowlist")
+        for field in ("reference_url", "sun_reference_url"):
+            parsed_url = urllib.parse.urlparse((row.get(field) or "").strip())
+            if parsed_url.scheme != "https" or parsed_url.hostname not in ALLOWED_REFERENCE_HOSTS:
+                row_errors.append(f"{field}_not_on_allowlist")
         if not (row.get("reference_source") or "").strip():
             row_errors.append("missing_reference_source")
         key = (state, place, day, round(lat, 6), round(lon, 6))
@@ -222,7 +223,7 @@ def validate_row(row: dict[str, str]) -> dict:
     return {
         "state": state, "place_name": row["place_name"], "date": row["date"],
         "reference_source": row["reference_source"], "reference_url": row["reference_url"],
-        "actual": actual, "expected": expected, "differences_minutes": differences,
+        "sun_reference_url": row["sun_reference_url"], "actual": actual, "expected": expected, "differences_minutes": differences,
         "passed": not errors, "errors": errors,
     }
 
