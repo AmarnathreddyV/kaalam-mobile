@@ -90,7 +90,7 @@ export function PoojaItemsScreen() {
           </View>
         ))}
       </Panel>
-      <Text style={styles.footer}>This checklist is a planning aid, not a definitive ritual prescription. Your family priest's instructions take priority.</Text>
+      <Text style={styles.footer}>{t("This checklist is a planning aid, not a definitive ritual prescription. Your family priest's instructions take priority.")}</Text>
     </ScrollView>
   );
 }
