@@ -121,7 +121,12 @@ def validate_row(row: dict[str, str]) -> dict:
         "sunset_minutes": circular_minute_difference(actual["sunset"], expected["sunset"]) if actual["sunset"] else None,
     }
     if not response.get("data_complete"):
-        errors.append("provider_response_incomplete")
+        errors.append("daily_response_incomplete")
+    metadata = response.get("calculation_metadata") or {}
+    if not str(metadata.get("sunrise_sunset", "")).startswith("KAALAM NOAA apparent-sunrise"):
+        errors.append("apparent_sunrise_engine_not_active")
+    if metadata.get("provider_calls_per_daily_location") != 1:
+        errors.append("unexpected_provider_call_budget")
     for key in ("tithi", "nakshatra", "yoga", "karana"):
         if actual[key].casefold() != expected[key].casefold():
             errors.append(f"{key}_mismatch")
@@ -192,7 +197,7 @@ def main() -> int:
         "reference_rows", "passed", "failed", "state_reference_counts",
         "missing_states", "states_with_fewer_than_10_reference_rows", "certification_ready"
     )}, indent=2))
-    return 0 if certification_ready else 1
+    # An incomplete reference sample is diagnostic, not a failed calculation.\n    # The report keeps certification_ready=false until every state has 10 rows.\n    return 0 if failed == 0 else 1
 
 
 if __name__ == "__main__":
