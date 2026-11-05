@@ -14,6 +14,7 @@ import csv
 import json
 import os
 import sys
+import time
 import urllib.parse
 import urllib.request
 from collections import Counter
@@ -162,7 +163,12 @@ def main() -> int:
     counts = Counter((row.get("state") or "").strip() for row in rows)
     missing_states = sorted(REQUIRED_STATES - set(counts))
     under_sampled = {state: count for state, count in counts.items() if state in REQUIRED_STATES and count < 10}
-    results = [validate_row(row) for row in rows]
+    results = []
+    for row in rows:
+        results.append(validate_row(row))
+        # Each daily request fans out to six provider calls. Keep this
+        # diagnostic run below the documented free-tier burst limit.
+        time.sleep(2.1)
     passed = sum(1 for result in results if result["passed"])
     failed = len(results) - passed
     certification_ready = not missing_states and not under_sampled and failed == 0
