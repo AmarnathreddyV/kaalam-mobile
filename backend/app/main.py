@@ -13,6 +13,8 @@ from datetime import datetime
 from datetime import timedelta
 from typing import Any
 
+from app.coverage import coverage_for_state, launch_coverage_summary
+
 import httpx
 
 from dotenv import load_dotenv
@@ -26,16 +28,7 @@ load_dotenv()
 
 NAVAMSHA_URL = "https://api.navamsha.in/api/v1/panchang/full"
 
-OPENAI_URL = "https://api.openai.com/v1/responses"
-
 NAVAMSHA_API_KEY = os.getenv("NAVAMSHA_API_KEY", "").strip()
-
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "").strip()
-
-OPENAI_MODEL = os.getenv(
-    "OPENAI_MODEL",
-    "gpt-5.5"
-).strip()
 
 # Shared Supabase Postgres cache + a small process-local hot cache.
 # Coordinates are grouped to 0.01 degrees (~1.1 km); daily results use the
@@ -809,171 +802,6 @@ async def search_muhurtham(
 
 
 # --------------------------------------------------
-# AI OCCASION ANALYSIS
-# --------------------------------------------------
-
-
-class OccasionAnalysisRequest(BaseModel):
-
-    occasion: str = Field(
-        min_length=3,
-        max_length=160
-    )
-
-    location: str = Field(
-        default="Not provided",
-        max_length=120
-    )
-
-    tradition: str = Field(
-        default="Telugu Drik Panchangam",
-        max_length=80
-    )
-
-    language: str = Field(
-        default="English",
-        max_length=30
-    )
-
-
-@app.post("/api/occasion/analyze")
-async def analyze_custom_occasion(
-    request: OccasionAnalysisRequest
-) -> dict[str, Any]:
-
-    if not OPENAI_API_KEY:
-
-        raise HTTPException(
-            status_code=503,
-            detail="OpenAI is not configured."
-        )
-
-    language_instructions = {
-        "Telugu": "Write the entire response in natural, clear Telugu (తెలుగు). Do not use English headings or English explanatory sentences. Keep traditional Sanskrit terms in common Telugu script.",
-        "Hindi": "Write the entire response in natural, clear Hindi (हिन्दी). Do not use English headings or English explanatory sentences. Keep traditional Sanskrit terms in common Devanagari script.",
-        "English": "Write the entire response in clear English.",
-    }
-    requested_language = request.language if request.language in language_instructions else "English"
-
-    prompt = f"""
-A user entered an occasion for KAALAM.
-
-Occasion: {request.occasion}
-Location: {request.location}
-Tradition: {request.tradition}
-Required response language: {requested_language}
-Language rule: {language_instructions[requested_language]}
-Every heading, bullet, explanation, warning and concluding sentence must be in the required response language. Do not switch to English unless English was selected. Preserve the user's occasion name if it is a proper name, but explain it in the required response language.
-
-Analyze the occasion and identify relevant traditional
-Hindu Muhurtham considerations.
-
-Use these headings:
-
-1. Occasion understood
-2. Relevant traditional considerations
-3. Details needed
-4. What KAALAM should check before suggesting a date
-
-Rules:
-
-- Never invent auspicious dates or timings.
-- Never invent Panchangam values.
-- Never claim a date is auspicious without verified data.
-- Consider Telugu Drik traditions.
-- Mention when customs differ between families.
-- Treat astrology as traditional cultural guidance.
-- Keep the answer concise.
-"""
-
-    try:
-
-        async with httpx.AsyncClient(timeout=45.0) as client:
-
-            response = await client.post(
-                OPENAI_URL,
-
-                headers={
-                    "Authorization": f"Bearer {OPENAI_API_KEY}",
-                    "Content-Type": "application/json",
-                },
-
-                json={
-                    "model": OPENAI_MODEL,
-
-                    "instructions": (
-                        "You are KAALAM, a careful assistant "
-                        "specializing in Hindu Panchangam and "
-                        "Muhurtham traditions. Never fabricate "
-                        "astronomical or Panchangam data. Follow "
-                        "the response language explicitly requested "
-                        "in the user input for every part of the answer."
-                    ),
-
-                    "input": prompt,
-
-                    "max_output_tokens": 700,
-
-                    "store": False,
-                },
-            )
-
-        response.raise_for_status()
-
-        result = response.json()
-
-        answer_parts = []
-
-        for item in result.get("output", []):
-
-            if item.get("type") == "message":
-
-                for content in item.get("content", []):
-
-                    if content.get("type") == "output_text":
-
-                        answer_parts.append(
-                            content.get("text", "")
-                        )
-
-        answer = "\n".join(answer_parts).strip()
-
-        if not answer:
-
-            raise ValueError(
-                "OpenAI returned an empty response."
-            )
-
-    except httpx.HTTPStatusError as exc:
-
-        raise HTTPException(
-            status_code=502,
-            detail=(
-                f"OpenAI returned HTTP "
-                f"{exc.response.status_code}."
-            )
-        ) from exc
-
-    except (
-        httpx.RequestError,
-        ValueError,
-        KeyError
-    ) as exc:
-
-        raise HTTPException(
-            status_code=502,
-            detail="Could not analyze this occasion with OpenAI."
-        ) from exc
-
-    return {
-        "provider": "OpenAI",
-        "model": OPENAI_MODEL,
-        "occasion": request.occasion,
-        "analysis": answer,
-    }
-
-
-# --------------------------------------------------
 # USER-SPECIFIC BIRTH PLACE RESOLUTION AND BIRTH CHART
 # --------------------------------------------------
 
@@ -1003,6 +831,12 @@ LOCATION_CACHE_TTL_SECONDS = 30 * 24 * 60 * 60
 _location_cache: dict[str, tuple[float, dict[str, Any]]] = {}
 _location_lookup_lock = asyncio.Lock()
 _last_nominatim_request_at = 0.0
+
+
+@app.get("/api/coverage")
+async def get_launch_coverage() -> dict[str, Any]:
+    """Return KAALAM's initial eight-state launch scope and planning allocation."""
+    return launch_coverage_summary()
 
 
 @app.post("/api/location/resolve")
@@ -1087,9 +921,17 @@ async def resolve_location(request: LocationResolveRequest) -> dict[str, Any]:
         if not isinstance(timezone_name, str) or "/" not in timezone_name:
             raise HTTPException(status_code=502, detail="Time zone provider returned an invalid IANA time zone.")
 
+        address = match.get("address") or {}
+        state_name = str(address.get("state") or "").strip()
+        coverage = coverage_for_state(state_name)
+
         result = {
             "query": query,
             "display_name": match.get("display_name", query),
+            "state": state_name or None,
+            "coverage_supported": coverage["supported"],
+            "coverage_priority": coverage["priority"],
+            "regional_group_target": coverage["regional_group_target"],
             "latitude": latitude,
             "longitude": longitude,
             "timezone": timezone_name,
