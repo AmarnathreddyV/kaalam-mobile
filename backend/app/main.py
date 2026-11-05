@@ -828,7 +828,8 @@ class BirthChartRequest(BaseModel):
 # Nominatim's public service permits at most one request per second
 # across the whole application. Serialize calls and cache successful place
 # resolutions so reopening the app does not repeatedly geocode the same city.
-INDIA_TIMEZONE = "Asia/Kolkata"\nNOMINATIM_MIN_INTERVAL_SECONDS = 1.1
+INDIA_TIMEZONE = "Asia/Kolkata"
+NOMINATIM_MIN_INTERVAL_SECONDS = 1.1
 LOCATION_CACHE_TTL_SECONDS = 30 * 24 * 60 * 60
 _location_cache: dict[str, tuple[float, dict[str, Any]]] = {}
 _location_lookup_lock = asyncio.Lock()
