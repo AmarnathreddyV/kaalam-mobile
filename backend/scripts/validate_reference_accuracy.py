@@ -285,10 +285,13 @@ def main() -> int:
         "important": "Passing this suite is a validation gate, not a claim of universal accuracy for every village. References must be independently sourced and span distinct places and dates.",
     }
     REPORT_PATH.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(json.dumps({key: report[key] for key in (
+    summary = {key: report[key] for key in (
         "reference_rows", "passed", "failed", "state_reference_counts",
         "state_coverage", "structural_errors", "certification_ready"
-    )}, ensure_ascii=False, indent=2))
+    )}
+    if failed:
+        summary["failed_results"] = [result for result in results if not result["passed"]]
+    print(json.dumps(summary, ensure_ascii=False, indent=2))
     return 0 if certification_ready else 1
 
 
