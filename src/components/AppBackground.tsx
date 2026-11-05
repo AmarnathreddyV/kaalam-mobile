@@ -26,7 +26,7 @@ export function AppBackground() {
 
 const styles = StyleSheet.create({
   tint: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: "rgba(67, 29, 4, 0.16)",
   },
 });
