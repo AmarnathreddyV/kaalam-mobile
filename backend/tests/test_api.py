@@ -59,6 +59,32 @@ class HealthEndpointTests(unittest.TestCase):
         self.assertEqual(response["service"], "kaalam-api")
         self.assertIn("panchang_usage", response)
 
+
+class ExactLocationCacheKeyTests(unittest.TestCase):
+    def test_nearby_coordinates_do_not_share_daily_cache_key(self):
+        first = main_module._panchang_cache_key(
+            "daily", date(2026, 11, 5), 17.385000, 78.486700, 5.5, precision=6
+        )
+        nearby = main_module._panchang_cache_key(
+            "daily", date(2026, 11, 5), 17.389000, 78.489000, 5.5, precision=6
+        )
+        self.assertNotEqual(first, nearby)
+
+    def test_same_exact_location_reuses_cache_key(self):
+        first = main_module._panchang_cache_key(
+            "daily", date(2026, 11, 5), 17.385000, 78.486700, 5.5, precision=6
+        )
+        second = main_module._panchang_cache_key(
+            "daily", date(2026, 11, 5), 17.385000, 78.486700, 5.5, precision=6
+        )
+        self.assertEqual(first, second)
+
+    def test_usage_snapshot_does_not_advertise_coordinate_grid(self):
+        snapshot = main_module._panchang_usage_snapshot()
+        self.assertIsNone(snapshot["coordinate_grid_degrees"])
+        self.assertEqual(snapshot["calculation_location_policy"], "exact_resolved_user_coordinates")
+
+
 class SupabaseSmsHookSignatureTests(unittest.TestCase):
     def _signed_request(self, body: bytes, secret: bytes, timestamp: int):
         webhook_id = "msg_test_123"
