@@ -31,8 +31,8 @@ NAVAMSHA_URL = "https://api.navamsha.in/api/v1/panchang/full"
 NAVAMSHA_API_KEY = os.getenv("NAVAMSHA_API_KEY", "").strip()
 
 # Shared Supabase Postgres cache + a small process-local hot cache.
-# Coordinates are grouped to 0.01 degrees (~1.1 km); daily results use the
-# same rounded coordinates for the provider request and response metadata.
+# Location-sensitive calculations and cache keys preserve resolved coordinates;
+# regional coverage groups are never used as substitute calculation locations.
 PANCHANG_CACHE_TTL_SECONDS = max(60, int(os.getenv("PANCHANG_CACHE_TTL_SECONDS", "86400")))
 PANCHANG_CACHE_MAX_ENTRIES = max(100, int(os.getenv("PANCHANG_CACHE_MAX_ENTRIES", "2000")))
 SUPABASE_URL = os.getenv("SUPABASE_URL", "").strip().rstrip("/")
@@ -152,7 +152,9 @@ def _panchang_usage_snapshot() -> dict[str, Any]:
         "cache_ttl_seconds": PANCHANG_CACHE_TTL_SECONDS,
         "cache_scope": "Supabase shared cache when configured; process-local fallback",
         "shared_cache_configured": _shared_cache_configured(),
-        "coordinate_grid_degrees": 0.01,
+        "coordinate_grid_degrees": None,
+        "coordinate_precision_decimals": 6,
+        "calculation_location_policy": "exact_resolved_user_coordinates",
     }
 
 app = FastAPI(
@@ -522,12 +524,9 @@ async def get_daily_panchang_with_timings(
     This endpoint reports source data; it does not certify
     event-specific Muhurtham suitability.
     """
-    # Group nearby users into a ~1.1 km grid to reuse identical daily
-    # Panchang calculations. The rounded coordinates are used consistently
-    # for the provider request and the location metadata returned to clients.
-    latitude = round(latitude, 2)
-    longitude = round(longitude, 2)
-
+    # Never round or replace a user's resolved coordinates for a location-
+    # sensitive Panchang calculation. The regional 250-group plan is only a
+    # coverage/catchment index; it is not a calculation coordinate grid.
     routes = {
         "panchang": "panchang/full",
         "sun_times": "panchang/sun-times",
@@ -604,7 +603,10 @@ async def get_daily_panchang_with_timings(
         }
 
 
-    key = _panchang_cache_key("daily", day, latitude, longitude, timezone, precision=2)
+    # Six decimal places preserve the geocoder's WGS84 coordinate precision
+    # (~0.11 m latitude resolution) and prevent nearby towns from sharing
+    # potentially different sunrise/tithi boundary results.
+    key = _panchang_cache_key("daily", day, latitude, longitude, timezone, precision=6)
     result = await _cached_panchang(key, load_daily)
     if not result.get("data_complete"):
         async with _panchang_cache_lock:
