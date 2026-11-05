@@ -86,7 +86,18 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
       const [address] = await Location.reverseGeocodeAsync({ latitude: position.coords.latitude, longitude: position.coords.longitude }).catch(() => []);
       const parts = [address?.city || address?.district || address?.subregion, address?.region, address?.country].filter(Boolean);
       const display_name = parts.join(", ") || `${position.coords.latitude.toFixed(3)}, ${position.coords.longitude.toFixed(3)}`;
-      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "Asia/Kolkata";
+      const apiBase = (process.env.EXPO_PUBLIC_API_BASE_URL || "https://kaalam-mobile.onrender.com").replace(/\/$/, "");
+      let timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "Asia/Kolkata";
+      if (display_name) {
+        try {
+          const resolvedResponse = await fetch(`${apiBase}/api/location/resolve`, {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ place: display_name }),
+          });
+          const resolved = await resolvedResponse.json();
+          if (resolvedResponse.ok && typeof resolved.timezone === "string") timezone = resolved.timezone;
+        } catch { /* Keep the device timezone as a fallback. */ }
+      }
       await applyLocation({ latitude: position.coords.latitude, longitude: position.coords.longitude, timezone, display_name });
       setLocationModal(false);
     } catch (e) {
