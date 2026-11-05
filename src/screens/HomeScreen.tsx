@@ -75,10 +75,13 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
   useEffect(() => { load(); }, [load]);
 
   const p = result?.data?.panchang;
-  const tithi = [p?.tithi?.name, p?.tithi?.paksha].filter(Boolean).join(" · ") || "—";
-  const nakshatra = p?.nakshatra?.name || "—";
-  const yoga = p?.yoga?.name || "—";
-  const karana = p?.karana?.name || "—";
+  const translatePanchang = (value?: string) => value
+    ? value.split(/(\\s+|·|,|\\/|-)/).map(part => /^[\\s·,\\/-]+$/.test(part) ? part : t(part)).join("")
+    : "—";
+  const tithi = [p?.tithi?.name, p?.tithi?.paksha].filter(Boolean).map(translatePanchang).join(" · ") || "—";
+  const nakshatra = translatePanchang(p?.nakshatra?.name);
+  const yoga = translatePanchang(p?.yoga?.name);
+  const karana = translatePanchang(p?.karana?.name);
   const name = profile?.full_name?.trim() || "there";
   const daily = result?.data;
   const userTimezone = profile?.current_timezone || "UTC";
