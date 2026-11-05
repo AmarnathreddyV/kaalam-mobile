@@ -56,7 +56,7 @@ Rahu Kaal, Yamaganda, Gulika, sunrise/sunset, Abhijit and other timing routes ar
 The app's "Other" occasion option sends the user's text to `POST /api/occasion/analyze`.
 Set these Render backend environment variables:
 
-- `GEMINI_API_KEY` — Google AI Studio API key
-- `GEMINI_MODEL` — optional; defaults to `gemini-3.8-flash`
+- `OPENAI_API_KEY` — OpenAI API key
+- `OPENAI_MODEL` — optional; defaults to `gpt-5.5`
 
 The endpoint classifies the occasion and explains which traditional factors should be checked. It does not generate auspicious dates or timings. Actual date recommendations must be computed from verified Panchangam data and event-specific rules.
