@@ -9,7 +9,7 @@ import { useLanguage } from "../i18n";
 type LocationProfile = { current_location?: string; current_latitude?: number; current_longitude?: number; current_timezone?: string };
 
 export function PanchangamScreen() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [result, setResult] = useState<DailyPanchangamResponse | null>(null);
   const [place, setPlace] = useState("");
   const [timezone, setTimezone] = useState("UTC");
@@ -50,7 +50,7 @@ export function PanchangamScreen() {
     if (!value) return "Unavailable";
     const parsed = new Date(value);
     if (Number.isNaN(parsed.getTime())) return "Unavailable";
-    return new Intl.DateTimeFormat("en-IN", {
+    return new Intl.DateTimeFormat(language === "Telugu" ? "te-IN" : language === "Hindi" ? "hi-IN" : "en-IN", {
       hour: "numeric", minute: "2-digit", hour12: true, timeZone: timezone,
     }).format(parsed);
   };
@@ -59,7 +59,7 @@ export function PanchangamScreen() {
 
   return (
     <Screen>
-      <PageHeading title={t("Panchangam")} subtitle={result ? `${result.date} · ${place} · Telugu Drik` : t("Daily calendar")} />
+      <PageHeading title={t("Panchangam")} subtitle={result ? `${result.date} · ${place} · ${t("Telugu Drik")}` : t("Daily calendar")} />
       {loading ? (
         <Panel><ActivityIndicator color={colors.maroon} /><Text style={styles.status}>{t("Loading Panchangam…")}</Text></Panel>
       ) : error ? (
