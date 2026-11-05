@@ -37,18 +37,76 @@ OPENAI_MODEL = os.getenv(
     "gpt-5.5"
 ).strip()
 
-# Process-local cache; use Redis for multi-instance production deployments.
+# Shared Supabase Postgres cache + a small process-local hot cache.
+# Coordinates are grouped to 0.01 degrees (~1.1 km); daily results use the
+# same rounded coordinates for the provider request and response metadata.
 PANCHANG_CACHE_TTL_SECONDS = max(60, int(os.getenv("PANCHANG_CACHE_TTL_SECONDS", "86400")))
 PANCHANG_CACHE_MAX_ENTRIES = max(100, int(os.getenv("PANCHANG_CACHE_MAX_ENTRIES", "2000")))
+SUPABASE_URL = os.getenv("SUPABASE_URL", "").strip().rstrip("/")
+SUPABASE_CACHE_KEY = (
+    os.getenv("SUPABASE_SECRET_KEY", "").strip()
+    or os.getenv("SUPABASE_SERVICE_ROLE_KEY", "").strip()
+)
 _panchang_cache: dict[str, tuple[float, dict[str, Any]]] = {}
 _panchang_inflight: dict[str, asyncio.Task] = {}
 _panchang_cache_lock = asyncio.Lock()
-_panchang_usage = {"provider_calls": 0, "cache_hits": 0, "cache_misses": 0, "provider_errors": 0}
+_panchang_usage = {
+    "provider_calls": 0, "cache_hits": 0, "cache_misses": 0,
+    "provider_errors": 0, "shared_cache_hits": 0, "shared_cache_errors": 0,
+}
 
 def _panchang_cache_key(kind: str, day: date_type, latitude: float, longitude: float, timezone: float, **extra: Any) -> str:
-    parts = [kind, day.isoformat(), f"{latitude:.5f}", f"{longitude:.5f}", f"{timezone:.4f}"]
+    parts = [kind, day.isoformat(), f"{latitude:.2f}", f"{longitude:.2f}", f"{timezone:.4f}"]
     parts.extend(f"{key}={extra[key]}" for key in sorted(extra))
-    return "|".join(parts)
+    raw_key = "|".join(parts)
+    return hashlib.sha256(raw_key.encode("utf-8")).hexdigest()
+
+def _shared_cache_configured() -> bool:
+    return bool(SUPABASE_URL and SUPABASE_CACHE_KEY)
+
+async def _shared_cache_get(key: str):
+    if not _shared_cache_configured():
+        return None
+    try:
+        async with httpx.AsyncClient(timeout=4.0) as client:
+            response = await client.get(
+                f"{SUPABASE_URL}/rest/v1/panchang_cache",
+                params={"cache_key": f"eq.{key}", "select": "payload,expires_at", "limit": "1"},
+                headers={"apikey": SUPABASE_CACHE_KEY, "Authorization": f"Bearer {SUPABASE_CACHE_KEY}"},
+            )
+            response.raise_for_status()
+            rows = response.json()
+        if not rows:
+            return None
+        row = rows[0]
+        expiry = datetime.fromisoformat(str(row["expires_at"]).replace("Z", "+00:00")).timestamp()
+        if expiry <= time.time():
+            return None
+        return row["payload"]
+    except (httpx.HTTPError, ValueError, KeyError, TypeError, IndexError):
+        _panchang_usage["shared_cache_errors"] += 1
+        return None
+
+async def _shared_cache_put(key: str, payload: dict[str, Any]):
+    if not _shared_cache_configured():
+        return
+    expires_at = datetime.fromtimestamp(time.time() + PANCHANG_CACHE_TTL_SECONDS, tz=__import__("datetime").timezone.utc).isoformat()
+    try:
+        async with httpx.AsyncClient(timeout=4.0) as client:
+            response = await client.post(
+                f"{SUPABASE_URL}/rest/v1/panchang_cache",
+                params={"on_conflict": "cache_key"},
+                headers={
+                    "apikey": SUPABASE_CACHE_KEY,
+                    "Authorization": f"Bearer {SUPABASE_CACHE_KEY}",
+                    "Content-Type": "application/json",
+                    "Prefer": "resolution=merge-duplicates,return=minimal",
+                },
+                json={"cache_key": key, "payload": payload, "expires_at": expires_at, "updated_at": datetime.now().astimezone().isoformat()},
+            )
+            response.raise_for_status()
+    except (httpx.HTTPError, ValueError, TypeError):
+        _panchang_usage["shared_cache_errors"] += 1
 
 async def _cached_panchang(key: str, loader):
     async with _panchang_cache_lock:
@@ -58,20 +116,29 @@ async def _cached_panchang(key: str, loader):
             return copy.deepcopy(cached[1])
         if cached:
             _panchang_cache.pop(key, None)
-        _panchang_usage["cache_misses"] += 1
         task = _panchang_inflight.get(key)
         owner = task is None
         if owner:
             task = asyncio.create_task(loader())
             _panchang_inflight[key] = task
     try:
-        result = await task
         if owner:
+            shared = await _shared_cache_get(key)
+            if shared is not None:
+                _panchang_usage["shared_cache_hits"] += 1
+                result = shared
+            else:
+                _panchang_usage["cache_misses"] += 1
+                result = await task
+                if result.get("data_complete", True):
+                    await _shared_cache_put(key, result)
             async with _panchang_cache_lock:
                 if len(_panchang_cache) >= PANCHANG_CACHE_MAX_ENTRIES:
                     oldest = min(_panchang_cache, key=lambda k: _panchang_cache[k][0])
                     _panchang_cache.pop(oldest, None)
                 _panchang_cache[key] = (time.monotonic() + PANCHANG_CACHE_TTL_SECONDS, copy.deepcopy(result))
+        else:
+            result = await task
         return copy.deepcopy(result)
     finally:
         if owner:
@@ -80,7 +147,14 @@ async def _cached_panchang(key: str, loader):
                     _panchang_inflight.pop(key, None)
 
 def _panchang_usage_snapshot() -> dict[str, Any]:
-    return {**_panchang_usage, "cache_entries": len(_panchang_cache), "cache_ttl_seconds": PANCHANG_CACHE_TTL_SECONDS, "cache_scope": "single backend instance; resets on restart"}
+    return {
+        **_panchang_usage,
+        "cache_entries": len(_panchang_cache),
+        "cache_ttl_seconds": PANCHANG_CACHE_TTL_SECONDS,
+        "cache_scope": "Supabase shared cache when configured; process-local fallback",
+        "shared_cache_configured": _shared_cache_configured(),
+        "coordinate_grid_degrees": 0.01,
+    }
 
 app = FastAPI(
     title="KAALAM API",
@@ -449,6 +523,12 @@ async def get_daily_panchang_with_timings(
     This endpoint reports source data; it does not certify
     event-specific Muhurtham suitability.
     """
+    # Group nearby users into a ~1.1 km grid to reuse identical daily
+    # Panchang calculations. The rounded coordinates are used consistently
+    # for the provider request and the location metadata returned to clients.
+    latitude = round(latitude, 2)
+    longitude = round(longitude, 2)
+
     routes = {
         "panchang": "panchang/full",
         "sun_times": "panchang/sun-times",
