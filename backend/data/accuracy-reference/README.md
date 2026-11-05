@@ -46,11 +46,14 @@ round-tripping, timezone, Telugu Drik response metadata, completeness, and
 basic solar-time plausibility. This is useful operational evidence, but it is
 not independent astronomical accuracy certification.
 
-A historical independent comparison ran 44 reference rows and reported 44
-passes, 0 mismatches, but `certification_ready=false` because Kerala,
-Maharashtra, Gujarat, and Rajasthan each had only one reference row at that
-time. That report predates the current 59-row CSV and is not a validation result
-for the current file. The CSV update now triggers a fresh independent run.
+The latest completed comparison before URL pinning tested all 59 current rows
+and reported **59 passed, 0 mismatches**. It still reported
+`certification_ready=false`: Kerala had 5 reference places, Maharashtra 4,
+Gujarat 5, and Rajasthan 5; the then-active gate required 10 rows in every
+state. The stricter current validator additionally requires 3 distinct dates
+per state. A new live comparison is running against the date-pinned CSV; its
+final result must be checked before sign-off. The earlier 44-row report is
+superseded and should not be used as the current inventory.
 
 ## Run
 
