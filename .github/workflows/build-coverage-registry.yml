@@ -1,0 +1,51 @@
+name: Build KAALAM regional candidate registry
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/scripts/build_regional_registry.py"
+      - "backend/app/coverage_registry.py"
+      - ".github/workflows/build-coverage-registry.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: kaalam-coverage-registry
+  cancel-in-progress: false
+
+jobs:
+  build-candidate-registry:
+    name: Fetch and validate Telangana + Andhra Pradesh points
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Fetch official state geodata and build 125 candidates
+        env:
+          PYTHONPATH: backend
+        run: python backend/scripts/build_regional_registry.py
+
+      - name: Commit generated candidate registry
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add backend/data/coverage_registry_candidates.json
+          if git diff --cached --quiet; then
+            echo "Candidate registry is unchanged."
+            exit 0
+          fi
+          git commit -m "Build Telangana and Andhra Pradesh regional candidates"
+          git push origin HEAD:main
