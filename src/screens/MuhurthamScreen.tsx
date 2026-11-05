@@ -236,7 +236,7 @@ export function MuhurthamScreen() {
             <Text style={styles.resultTime}>{active.start_time} – {active.end_time}</Text>
             {!!active.reason && <Text style={styles.reason}>{t(active.reason)}</Text>}
             {!!active.source && <Text style={styles.sourceLabel}>{t("Source")}: {active.source}</Text>}
-            {!!active.source_url && <TouchableOpacity onPress={() => { void Linking.openURL(active.source_url); }} accessibilityRole="link"><Text style={styles.sourceLink}>{t("Open original calendar source")} ↗</Text></TouchableOpacity>}
+            {!!active.source_url && <TouchableOpacity onPress={() => { void Linking.openURL(active.source_url!); }} accessibilityRole="link"><Text style={styles.sourceLink}>{t("Open original calendar source")} ↗</Text></TouchableOpacity>}
             <View style={styles.navigation}>
               <TouchableOpacity disabled={activeResult === 0} onPress={() => setActiveResult(index => Math.max(0, index - 1))} style={[styles.navButton, activeResult === 0 && styles.disabled]}>
                 <Text style={styles.navText}>{t("Previous date")}</Text>
