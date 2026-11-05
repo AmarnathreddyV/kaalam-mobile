@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Text, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Text, StyleSheet, View, TouchableOpacity } from "react-native";
 import { Screen, PageHeading, Panel, LabelValue } from "../components/Screen";
 import { colors } from "../theme/colors";
 import { supabase } from "../auth/supabase";
@@ -67,13 +67,18 @@ export function ProfileScreen() {
       <Text style={styles.footnote}>{t("Change the app language anytime. Your choice is saved automatically.")}</Text>
       <Panel>
         <View style={styles.languageRow}>
-          {(["Telugu", "Hindi", "English", "Tamil", "Malayalam", "Kannada", "Gujarati", "Marathi"] as const).map(item => (
-            <Text key={item} onPress={async () => {
+          {(["English", "Telugu", "Hindi", "Tamil", "Malayalam", "Kannada", "Gujarati", "Marathi"] as const).map(item => (
+            <TouchableOpacity key={item} activeOpacity={0.75} onPress={async () => {
               setLanguage(item);
               const { data } = await supabase.auth.getUser();
-              if (data.user) await supabase.from("profiles").update({ preferred_language: item }).eq("id", data.user.id);
-              setProfile(current => current ? { ...current, preferred_language: item } : current);
-            }} style={[styles.language, language === item && styles.languageActive]}>{item}</Text>
+              if (data.user) {
+                const { error: saveError } = await supabase.from("profiles").update({ preferred_language: item }).eq("id", data.user.id);
+                if (saveError) setError(saveError.message);
+              }
+              setProfile(current => ({ ...(current || {}), preferred_language: item }));
+            }} style={[styles.language, language === item && styles.languageActive]} accessibilityRole="button" accessibilityState={{ selected: language === item }}>
+              <Text style={[styles.languageText, language === item && styles.languageTextActive]}>{item}</Text>
+            </TouchableOpacity>
           ))}
         </View>
       </Panel>
@@ -82,9 +87,11 @@ export function ProfileScreen() {
   );
 }
 const styles = StyleSheet.create({
-  languageRow: { flexDirection: "row", gap: 9 },
-  language: { color: colors.text, borderWidth: 1, borderColor: colors.line, borderRadius: 20, paddingVertical: 9, paddingHorizontal: 13, overflow: "hidden" },
-  languageActive: { color: "#FFFFFF", backgroundColor: "#71370F", borderColor: colors.maroon },
+  languageRow: { flexDirection: "row", flexWrap: "wrap", gap: 10, justifyContent: "flex-start" },
+  language: { minWidth: "30%", alignItems: "center", borderWidth: 1, borderColor: colors.line, borderRadius: 20, paddingVertical: 10, paddingHorizontal: 12 },
+  languageActive: { backgroundColor: "#71370F", borderColor: colors.maroon },
+  languageText: { color: colors.text, fontSize: 12, fontWeight: "600" },
+  languageTextActive: { color: "#FFFFFF" },
   section: { color: colors.gold, fontSize: 9, letterSpacing: 1.4, fontWeight: "700", marginBottom: 4 },
   heading: { color: colors.text, fontSize: 15, fontWeight: "700", marginTop: 25, marginBottom: 13 },
   footnote: { color: colors.muted, fontSize: 11, lineHeight: 17, marginTop: 17 },
