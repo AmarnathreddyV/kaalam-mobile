@@ -47,7 +47,7 @@ function addMonths(date: Date, months: number) {
 function offsetForTimezone(timezone: string, date: Date) {
   const parts = new Intl.DateTimeFormat("en-US", { timeZone: timezone, timeZoneName: "longOffset" }).formatToParts(date);
   const value = parts.find(part => part.type === "timeZoneName")?.value || "GMT+00:00";
-  const match = value.match(/GMT([+-])(\\d{2}):(\\d{2})/);
+  const match = value.match(/GMT([+-])(\d{2}):(\d{2})/);
   if (!match) return 0;
   const sign = match[1] === "-" ? -1 : 1;
   return sign * (Number(match[2]) + Number(match[3]) / 60);
