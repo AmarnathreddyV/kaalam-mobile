@@ -61,8 +61,10 @@ certification.
 
 The latest completed 80-place comparison tested all 10 cities in every state
 for 5 November and reported **80 passed, 0 mismatches**. That run was not
-certifiable because it covered only one date. The current 96-row, three-date
-comparison is running; inspect its final report for mismatches before sign-off.
+certifiable because it covered only one date. The first 96-row, three-date
+comparison met all structural coverage requirements but reported **88 passed
+and 8 failed rows**. A diagnostic rerun now prints the failing row details to
+the CI log; do not certify until all 8 failures are understood and resolved.
 The earlier 59-row and 44-row reports are superseded.
 
 ## Run
