@@ -574,6 +574,7 @@ async def get_daily_panchang_with_timings(
                 "sunrise_sunset": "KAALAM NOAA apparent-sunrise calculation, zenith 90.8333 degrees",
                 "daily_periods": "KAALAM local sunrise/sunset and weekday-based calculation",
                 "provider_calls_per_daily_location": 1,
+                "cache_namespace": "daily-apparent-v1",
             },
             "message": "Panchangam limbs are evaluated just after apparent local sunrise. Daily timing windows are calculated for the selected coordinates. This is not, by itself, an event-specific Muhurtham recommendation.",
         }
