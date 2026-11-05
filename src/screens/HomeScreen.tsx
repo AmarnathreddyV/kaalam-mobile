@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
+import { setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
 import { Screen, SectionTitle, Panel, LabelValue } from "../components/Screen";
 import { colors } from "../theme/colors";
 import { fetchDailyPanchangam, DailyPanchangamResponse } from "../services/panchangam";
@@ -39,6 +40,9 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
   const [error, setError] = useState("");
   const [profileError, setProfileError] = useState("");
   const [loading, setLoading] = useState(true);
+  const songPlayer = useAudioPlayer(null);
+  const songStatus = useAudioPlayerStatus(songPlayer);
+  const [songStarted, setSongStarted] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -73,6 +77,11 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    setAudioModeAsync({ playsInSilentMode: true, shouldPlayInBackground: false }).catch(() => {});
+    return () => { songPlayer.pause(); };
+  }, [songPlayer]);
 
   const p = result?.data?.panchang;
   const translatePanchang = (value?: string) => {
@@ -109,6 +118,30 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
     ["Amrit", "Shubh", "Labh", "Char"].includes(x.name || "")
   );
   const weekday = new Intl.DateTimeFormat("en-US", { weekday: "long" }).format(new Date());
+  const todaySong: Record<string, { title: string; deity: string; source: any }> = {
+    Sunday: { title: "Surya Devotional Prayer", deity: "Lord Surya", source: require("../../assets/audios/surya dev.mp3") },
+    Monday: { title: "Lingashtakam", deity: "Lord Shiva", source: require("../../devotional-song/lingashtakam_lord_shiva.mp3") },
+    Tuesday: { title: "Hanuman Chalisa", deity: "Lord Hanuman", source: require("../../devotional-song/hanuman_chalisa.mp3") },
+    Wednesday: { title: "Ganpati Stotram", deity: "Lord Ganesha", source: require("../../devotional-song/ganpati_stotram.mp3") },
+    Thursday: { title: "Garuda Gamana Tava", deity: "Lord Maha Vishnu", source: require("../../devotional-song/garuda_gamana_tava_sri_maha_vishnu_stotram.mp3") },
+    Friday: { title: "Lakshmi Devotional Prayer", deity: "Goddess Lakshmi", source: require("../../assets/audios/lakshmi devi.mp3") },
+    Saturday: { title: "Sri Venkatesha Suprabhatam", deity: "Lord Venkateswara", source: require("../../devotional-song/sri_venkatesha_suprabhatam.mp3") },
+  };
+  const song = todaySong[weekday] || todaySong.Monday;
+  const toggleTodaySong = () => {
+    if (songStarted) {
+      if (songStatus.playing) songPlayer.pause();
+      else songPlayer.play();
+      return;
+    }
+    setSongStarted(true);
+    try {
+      songPlayer.replace(song.source);
+      songPlayer.play();
+    } catch (playError) {
+      console.error("KAALAM today's song playback failed:", playError);
+    }
+  };
   const weekdayGuidance: Record<string, { deity: string; temple: string; practice: string }> = {
     Sunday: { deity: "Lord Surya · Sunday", temple: "If convenient, visit a Surya or Shiva temple.", practice: "Offer a simple morning prayer to the Sun and begin the day with gratitude." },
     Monday: { deity: "Lord Shiva · Monday", temple: "If convenient, visit a Shiva temple.", practice: "Offer prayers to Lord Shiva; a quiet moment of meditation is also suitable." },
@@ -195,6 +228,20 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
         <Text style={styles.smallNote}>{t("Traditional periods to be mindful of; interpretations and practices vary.")}</Text>
       </Panel>
 
+      <SectionTitle>{t("TODAY'S SONG")}</SectionTitle>
+      <Panel style={styles.todaySongPanel}>
+        <View style={styles.todaySongIcon}><Text style={styles.todaySongMusic}>♫</Text></View>
+        <View style={styles.todaySongInfo}>
+          <Text style={styles.todaySongTitle}>{t(song.title)}</Text>
+          <Text style={styles.todaySongDeity}>{t(song.deity)} · {t(weekday)}</Text>
+          {songStatus.isBuffering && <Text style={styles.smallNote}>{t("Loading audio…")}</Text>}
+          {!!songStatus.error && <Text style={styles.songError}>{String(songStatus.error)}</Text>}
+        </View>
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel={songStatus.playing ? t("Pause today's song") : t("Play today's song")} style={styles.todaySongButton} onPress={toggleTodaySong}>
+          <Text style={styles.todaySongButtonText}>{songStatus.playing ? "Ⅱ" : "▶"}</Text>
+        </TouchableOpacity>
+      </Panel>
+
       <SectionTitle>{t("TODAY'S SPIRITUAL GUIDANCE")}</SectionTitle>
       <Panel>
         {loading ? <View style={styles.state}><ActivityIndicator color={colors.maroon} /><Text style={styles.stateText}>Preparing today's spiritual guidance…</Text></View> : error ? <Text style={styles.horoscope}>{t("Spiritual guidance will appear when today's Panchangam is available.")}</Text> : (
@@ -236,6 +283,15 @@ const styles = StyleSheet.create({
   poojaShortcutTitle: { color: "#FFF7E9", fontSize: 16, fontWeight: "600", letterSpacing: 0.1, letterSpacing: 0.15 },
   poojaShortcutSubtitle: { color: "#F0D8B8", fontSize: 11, marginTop: 6, letterSpacing: 0.15 },
   poojaShortcutArrow: { color: "#F7D99F", fontSize: 9, fontWeight: "800", letterSpacing: 1, marginLeft: 8 },
+  todaySongPanel: { flexDirection: "row", alignItems: "center", gap: 12 },
+  todaySongIcon: { width: 46, height: 46, borderRadius: 23, backgroundColor: "rgba(169,133,69,0.14)", alignItems: "center", justifyContent: "center" },
+  todaySongMusic: { color: colors.maroon, fontSize: 24 },
+  todaySongInfo: { flex: 1 },
+  todaySongTitle: { color: colors.maroonDark, fontSize: 14, fontWeight: "700" },
+  todaySongDeity: { color: colors.muted, fontSize: 11, marginTop: 4 },
+  todaySongButton: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.maroonDark, alignItems: "center", justifyContent: "center" },
+  todaySongButtonText: { color: "#FFFFFF", fontSize: 16, fontWeight: "700" },
+  songError: { color: "#B00020", fontSize: 10, marginTop: 4 },
   date: { color: colors.gold, fontSize: 10, letterSpacing: 2.0, fontWeight: "700", marginTop: 12 },
   greeting: { color: colors.maroonDark, fontSize: 34, fontWeight: "500", fontFamily: "Georgia", letterSpacing: -0.7, marginTop: 16 },
   name: { color: colors.muted, fontSize: 13, lineHeight: 20, marginTop: 8 },
