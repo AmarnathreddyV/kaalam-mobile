@@ -1,0 +1,97 @@
+name: Generate square KAALAM app icons from the approved logo
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "assets/kaalam-logo.png"
+      - ".github/workflows/generate-square-app-icon.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Generate square icon assets without distorting the logo
+        run: |
+          python -m pip install Pillow
+          python - <<'PY'
+          from pathlib import Path
+          from PIL import Image
+
+          source = Path("assets/kaalam-logo.png")
+          logo = Image.open(source).convert("RGBA")
+          if logo.width == 0 or logo.height == 0:
+              raise SystemExit("Source KAALAM logo is empty")
+
+          # Keep the original artwork intact; only scale proportionally and pad.
+          icon_size = 1024
+          margin = 112
+          fitted = logo.copy()
+          fitted.thumbnail((icon_size - 2 * margin, icon_size - 2 * margin), Image.Resampling.LANCZOS)
+
+          background = Image.new("RGBA", (icon_size, icon_size), (247, 243, 235, 255))
+          background.alpha_composite(fitted, ((icon_size - fitted.width) // 2, (icon_size - fitted.height) // 2))
+          background.convert("RGB").save("assets/kaalam-app-icon.png", optimize=True)
+
+          adaptive = Image.new("RGBA", (icon_size, icon_size), (0, 0, 0, 0))
+          adaptive_margin = 172
+          foreground = logo.copy()
+          foreground.thumbnail((icon_size - 2 * adaptive_margin, icon_size - 2 * adaptive_margin), Image.Resampling.LANCZOS)
+          adaptive.alpha_composite(foreground, ((icon_size - foreground.width) // 2, (icon_size - foreground.height) // 2))
+          adaptive.save("assets/kaalam-adaptive-icon.png", optimize=True)
+
+          for path in ("assets/kaalam-app-icon.png", "assets/kaalam-adaptive-icon.png"):
+              with Image.open(path) as image:
+                  if image.size != (1024, 1024):
+                      raise SystemExit(f"{path} is not square: {image.size}")
+          PY
+
+      - name: Configure Expo app icon paths
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          path = Path("app.json")
+          config = json.loads(path.read_text())
+          expo = config["expo"]
+          expo["icon"] = "./assets/kaalam-app-icon.png"
+          expo.setdefault("android", {})["adaptiveIcon"] = {
+              "foregroundImage": "./assets/kaalam-adaptive-icon.png",
+              "backgroundColor": "#F7F3EB"
+          }
+          path.write_text(json.dumps(config, indent=2) + "\n")
+          PY
+
+      - name: Commit generated assets and configuration
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/kaalam-app-icon.png assets/kaalam-adaptive-icon.png app.json
+          if git diff --cached --quiet; then
+            echo "Square icons are already up to date."
+            exit 0
+          fi
+          git commit -m "Generate square KAALAM app icons without stretching the logo"
+          git push
+
+      - name: Upload generated icon preview assets
+        uses: actions/upload-artifact@v4
+        with:
+          name: kaalam-square-app-icons
+          path: |
+            assets/kaalam-app-icon.png
+            assets/kaalam-adaptive-icon.png
+          retention-days: 30
