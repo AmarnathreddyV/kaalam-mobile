@@ -14,6 +14,7 @@ from datetime import timedelta
 from typing import Any
 
 from app.coverage import coverage_for_state, launch_coverage_summary
+from app.solar import daily_timing_windows
 
 import httpx
 
@@ -520,93 +521,68 @@ async def get_daily_panchang_with_timings(
     timezone: float = Query(5.5, ge=-12, le=14),
 ) -> dict[str, Any]:
     """
-    Aggregates real Navamsha Panchang and daily timing routes.
-    This endpoint reports source data; it does not certify
-    event-specific Muhurtham suitability.
+    Build a Telugu Drik daily Panchang using the apparent local sunrise.
+
+    Navamsha supplies the sidereal Panchang limbs. KAALAM calculates apparent
+    sunrise/sunset and all sunrise-derived daily windows locally so they use
+    the same convention as the independent Drik city references.
     """
-    # Never round or replace a user's resolved coordinates for a location-
-    # sensitive Panchang calculation. The regional 250-group plan is only a
-    # coverage/catchment index; it is not a calculation coordinate grid.
-    routes = {
-        "panchang": "panchang/full",
-        "sun_times": "panchang/sun-times",
-        "inauspicious_periods": "panchang/inauspicious-periods",
-        "choghadiya": "panchang/choghadiya",
-        "hora": "panchang/hora",
-        "abhijit_muhurat": "panchang/abhijit-muhurat",
-    }
-
     async def load_daily():
+        try:
+            timing_data = daily_timing_windows(day, latitude, longitude, timezone)
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+        sunrise_value = timing_data["sun_times"]["rise"]["local_datetime"]
+        sunrise = datetime.fromisoformat(sunrise_value)
+        panchang_at = sunrise + timedelta(minutes=1)
+        if panchang_at.second or panchang_at.microsecond:
+            panchang_at = panchang_at.replace(second=0, microsecond=0) + timedelta(minutes=1)
+
         async with httpx.AsyncClient(timeout=30.0) as client:
-            # First obtain local sunrise. The five Panchang limbs must be
-            # calculated just after sunrise so the response represents the
-            # sunrise-based Panchang day, not an arbitrary noon snapshot.
-            sun_times = await fetch_navamsha_route(
-                client, routes["sun_times"], day, latitude, longitude, timezone,
-                hours=12, minutes=0,
+            panchang = await fetch_navamsha_route(
+                client,
+                "panchang/full",
+                day,
+                latitude,
+                longitude,
+                timezone,
+                hours=panchang_at.hour,
+                minutes=panchang_at.minute,
             )
-            sunrise_value = (sun_times.get("rise") or {}).get("local_datetime")
-            if not isinstance(sunrise_value, str):
-                raise HTTPException(
-                    status_code=502,
-                    detail="Navamsha did not return a usable local sunrise time.",
-                )
-            try:
-                sunrise = datetime.fromisoformat(sunrise_value)
-            except ValueError as exc:
-                raise HTTPException(
-                    status_code=502,
-                    detail="Navamsha returned an invalid local sunrise time.",
-                ) from exc
 
-            # Add one minute to avoid evaluating at the exact sunrise boundary.
-            panchang_minute = sunrise.minute + 1
-            panchang_hour = sunrise.hour
-            if panchang_minute >= 60:
-                panchang_minute = 0
-                panchang_hour = (panchang_hour + 1) % 24
-
-            remaining_routes = {
-                key: route for key, route in routes.items()
-                if key != "sun_times"
-            }
-            tasks = {
-                key: fetch_navamsha_route(
-                    client, route, day, latitude, longitude, timezone,
-                    hours=panchang_hour, minutes=panchang_minute,
-                )
-                for key, route in remaining_routes.items()
-            }
-            results = await asyncio.gather(*tasks.values(), return_exceptions=True)
-
-        data: dict[str, Any] = {"sun_times": sun_times}
-        unavailable: dict[str, str] = {}
-        for key, result in zip(tasks.keys(), results):
-            if isinstance(result, Exception):
-                if isinstance(result, httpx.HTTPStatusError):
-                    unavailable[key] = f"Navamsha HTTP {result.response.status_code}"
-                elif isinstance(result, httpx.RequestError):
-                    unavailable[key] = "Navamsha request failed"
-                else:
-                    unavailable[key] = str(result)[:240]
-            else:
-                data[key] = result
-        if "panchang" not in data:
-            raise HTTPException(status_code=502, detail={"message": "Could not retrieve core sunrise-based Panchangam data.", "unavailable": unavailable})
+        data: dict[str, Any] = {
+            **timing_data,
+            "panchang": panchang,
+        }
         return {
-            "provider": "Navamsha", "tradition": "Telugu Drik", "date": day.isoformat(),
-            "location": {"latitude": latitude, "longitude": longitude, "timezone": timezone},
-            "data": data, "unavailable": unavailable, "data_complete": len(data) == len(routes),
+            "provider": "Navamsha",
+            "tradition": "Telugu Drik",
+            "date": day.isoformat(),
+            "location": {
+                "latitude": latitude,
+                "longitude": longitude,
+                "timezone": timezone,
+            },
+            "data": data,
+            "unavailable": {},
+            "data_complete": True,
             "recommendations_ready": False,
-            "panchang_reference": "local_sunrise_plus_one_minute",
-            "message": "Daily Panchangam limbs are evaluated just after local sunrise. Daily timing data is not, by itself, an event-specific Muhurtham recommendation.",
+            "panchang_reference": "apparent_local_sunrise_plus_one_minute",
+            "calculation_metadata": {
+                "panchang_limbs": "Navamsha Lahiri sidereal calculation at apparent local sunrise + 1 minute",
+                "sunrise_sunset": "KAALAM NOAA apparent-sunrise calculation, zenith 90.8333 degrees",
+                "daily_periods": "KAALAM local sunrise/sunset and weekday-based calculation",
+                "provider_calls_per_daily_location": 1,
+            },
+            "message": "Panchangam limbs are evaluated just after apparent local sunrise. Daily timing windows are calculated for the selected coordinates. This is not, by itself, an event-specific Muhurtham recommendation.",
         }
 
-
-    # Six decimal places preserve the geocoder's WGS84 coordinate precision
-    # (~0.11 m latitude resolution) and prevent nearby towns from sharing
-    # potentially different sunrise/tithi boundary results.
-    key = _panchang_cache_key("daily", day, latitude, longitude, timezone, precision=6)
+    # Six decimal places preserve resolved coordinates and prevent nearby
+    # locations from sharing potentially different sunrise/tithi boundaries.
+    key = _panchang_cache_key(
+        "daily", day, latitude, longitude, timezone, precision=6
+    )
     result = await _cached_panchang(key, load_daily)
     if not result.get("data_complete"):
         async with _panchang_cache_lock:
