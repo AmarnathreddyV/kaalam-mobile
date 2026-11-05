@@ -11,6 +11,8 @@ This checklist separates repository work from account/device actions. KAALAM sup
 - EAS development, preview APK and production build profiles are configured in `eas.json`.
 - AI environment-variable documentation now matches the backend implementation (`OPENAI_API_KEY`, optional `OPENAI_MODEL`).
 - README documents the build commands and current limitations.
+- `.gitignore` excludes environment files, signing credentials and generated build artifacts; safe environment templates are included.
+- GitHub Actions runs TypeScript, Expo Doctor, backend compilation and backend unit tests on pushes and pull requests.
 
 ## 1. Local verification (developer machine)
 
@@ -22,6 +24,7 @@ npm install
 npx expo install --fix
 npm run typecheck
 npx expo-doctor
+PYTHONPATH=backend python -m unittest discover -s backend/tests -v
 npx expo start --clear
 ```
 
