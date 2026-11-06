@@ -37,13 +37,13 @@ PLANETARY_ORDER = ("Saturn", "Jupiter", "Mars", "Sun", "Venus", "Mercury", "Moon
 # Drik Panchang Telugu weekday allocation for Dur Muhurtam.
 # Segment numbers are 1-based among 15 equal day/night muhurtas.
 DUR_MUHURTA_DAY_SLOTS = {
-    0: (14,),       # Sunday
-    1: (9, 12),     # Monday
-    2: (4,),        # Tuesday (second period is the 7th night muhurta)
-    3: (8,),        # Wednesday
-    4: (6, 12),     # Thursday
-    5: (4, 9),      # Friday
-    6: (1, 2),      # Saturday
+    6: (14,),       # Sunday
+    0: (9, 12),     # Monday
+    1: (4,),        # Tuesday (second period is the 7th night muhurta)
+    2: (8,),        # Wednesday
+    3: (6, 12),     # Thursday
+    4: (4, 9),      # Friday
+    5: (1, 2),      # Saturday
 }
 DUR_MUHURTA_TUESDAY_NIGHT_SLOT = 7
 WEEKDAY_LORD = {
