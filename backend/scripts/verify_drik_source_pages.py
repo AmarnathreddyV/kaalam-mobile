@@ -169,6 +169,10 @@ def main() -> int:
                 sun_page[0][max(0, match.start()-100):match.end()+180]
                 for match in list(re.finditer(r"Sunrise|Sunset", sun_page[0], re.I))[-6:]
             ] if not isinstance(sun_page, str) and not sun_captcha else [],
+            "panchang_label_contexts": [
+                panchang_page[0][max(0, match.start()-100):match.end()+180]
+                for match in list(re.finditer(r"Tithi|Tithulu|Nakshatra|Nakshatramulu|Yoga|Yogalu|Karana|Karanamulu", panchang_page[0], re.I))[-12:]
+            ] if not isinstance(panchang_page, str) and not panchang_captcha else [],
             "panchang_text_preview": panchang_page[0][:500] if not isinstance(panchang_page, str) else "",
             "sun_text_preview": sun_page[0][:300] if not isinstance(sun_page, str) else "",
             "passed": not errors, "errors": errors,
