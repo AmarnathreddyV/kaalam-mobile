@@ -21,7 +21,9 @@ The current CSV contains **96 reference rows** across **5, 6, and 7 November 202
 | **Total** | **96** | **80** | **3** |
 
 The CSV separates `reference_url` (Panchang limbs) from
-`sun_reference_url` (sunrise/sunset evidence). Both URLs must use an approved
+`sun_reference_url` (sunrise/sunset evidence). The optional
+`nakshatra_reference_url` column stores an additional official Drik reference
+when the Telugu page uses a shortened display name. Both URLs must use an approved
 independent source host. Existing rows point both fields to the same daily
 Panchang page; newly added rows use separate Drik Panchang daily-Panchang and
 sunrise pages. Daily Panchang URLs are date-pinned to their row date (5, 6, or 7 November
@@ -83,7 +85,8 @@ zero fetch failures, and zero CAPTCHA-blocked rows. The verifier includes
 accessible image alt labels, which carry full Nakshatra names on the Telugu
 pages. For Srikakulam/Chicacole, it also verified the canonical
 `Uttara Phalguni` name through the official Drik English daily page for
-GeoNames ID 1255647.
+GeoNames ID 1255647. That URL is now stored explicitly in the optional
+`nakshatra_reference_url` CSV column.
 
 An earlier attempt
 [run 42172441823](https://github.com/AmarnathreddyV/kaalam-mobile/actions/runs/42172441823)
