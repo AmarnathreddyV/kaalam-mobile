@@ -38,6 +38,10 @@ The strict validator requires all eight launch states, at least **10 distinct
 places per state**, and at least **3 distinct dates per state**. It also compares
 sunrise and sunset within 2 minutes and requires exact case-insensitive matches
 for tithi, nakshatra, yoga, and karana, plus the expected KAALAM engine metadata.
+For yoga only, the established Romanization spellings Vishkambha and Vishkumbha
+are normalized as the same Sanskrit name (विष्कम्भ); this is a narrow spelling
+alias, not a fuzzy comparison. All other yoga names and all other Panchang limbs
+remain exact case-insensitive comparisons.
 
 The CSV now meets the validator's structural coverage requirements: 10 unique
 places and 3 distinct dates in each state. Structural coverage is not the same
@@ -63,8 +67,11 @@ The latest completed 80-place comparison tested all 10 cities in every state
 for 5 November and reported **80 passed, 0 mismatches**. That run was not
 certifiable because it covered only one date. The first 96-row, three-date
 comparison met all structural coverage requirements but reported **88 passed
-and 8 failed rows**. A diagnostic rerun now prints the failing row details to
-the CI log; do not certify until all 8 failures are understood and resolved.
+and 8 failed rows**. Diagnostics showed all eight were the same Vishkambha /
+Vishkumbha Romanization difference on 6 November; solar times and the other
+three limbs matched. The validator now applies only this documented yoga
+spelling alias, with unit tests that ensure unrelated yoga and limb names are
+not merged. The full 96-row suite must pass again before certification.
 The earlier 59-row and 44-row reports are superseded.
 
 ## Run
