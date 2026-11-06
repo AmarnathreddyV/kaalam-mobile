@@ -98,26 +98,23 @@ owner-only RLS policies. This is tracked by migration
 
 **Pending owner-level action:** the live project's existing default-privilege
 ACLs still grant broad privileges on future public tables, sequences and
-functions to `anon` and `authenticated` for the `postgres` and
-`supabase_admin` grantor roles. The connected database role could not change
-these ACLs (Postgres returned permission denied), so this was not altered.
-Run the following in Supabase SQL Editor using a role authorized to alter
-these default privileges, then verify with the `pg_default_acl` query:
+functions. The connected database role could not change these ACLs (Postgres
+returned permission denied), so this was not altered. Supabase's current
+guidance documents the following opt-in hardening for the `postgres` grantor
+role. Run it in Supabase SQL Editor with a role authorized to alter default
+privileges, then verify with the `pg_default_acl` query:
 
 ```sql
 ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
-  REVOKE ALL ON TABLES FROM anon, authenticated;
+  REVOKE SELECT, INSERT, UPDATE, DELETE ON TABLES FROM anon, authenticated, service_role;
 ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
-  REVOKE ALL ON SEQUENCES FROM anon, authenticated;
+  REVOKE USAGE, SELECT ON SEQUENCES FROM anon, authenticated, service_role;
 ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
-  REVOKE EXECUTE ON FUNCTIONS FROM anon, authenticated;
-ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public
-  REVOKE ALL ON TABLES FROM anon, authenticated;
-ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public
-  REVOKE ALL ON SEQUENCES FROM anon, authenticated;
-ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public
-  REVOKE EXECUTE ON FUNCTIONS FROM anon, authenticated;
+  REVOKE EXECUTE ON FUNCTIONS FROM anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
+  REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC;
 ```
+
 
 Afterward, explicitly grant only the required privileges to each new API table
 and add appropriate RLS policies. Do not revoke schema USAGE from Supabase API
