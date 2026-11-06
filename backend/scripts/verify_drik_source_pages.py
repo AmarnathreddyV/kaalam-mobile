@@ -33,7 +33,12 @@ class VisibleText(HTMLParser):
         self.skip_depth = 0
 
     def handle_starttag(self, tag, attrs):
-        if tag.lower() in {"script", "style", "noscript", "svg"}:
+        lowered = tag.lower()
+        attributes = dict(attrs)
+        if lowered == "img" and attributes.get("alt") and not self.skip_depth:
+            # Image alt text carries accessible Panchang limb names on Drik pages.
+            self.parts.append(attributes["alt"].strip())
+        if lowered in {"script", "style", "noscript", "svg"}:
             self.skip_depth += 1
 
     def handle_endtag(self, tag):
@@ -106,7 +111,7 @@ def main() -> int:
     cache: dict[str, tuple[str, int] | str] = {}
     # A small bounded pool avoids a very long serial run while keeping traffic
     # modest. Each worker retries at most once and has a strict request timeout.
-    with ThreadPoolExecutor(max_workers=4) as pool:
+    with ThreadPoolExecutor(max_workers=2) as pool:
         futures = {pool.submit(fetch_text, url): url for url in urls}
         for future in as_completed(futures):
             url = futures[future]
