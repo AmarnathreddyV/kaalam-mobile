@@ -78,15 +78,18 @@ value is attached to the correct label.
 
 Recent runs show why the distinction matters:
 - [Run 42172135818](https://github.com/AmarnathreddyV/kaalam-mobile/actions/runs/42172135818)
-  fetched 125 URLs; 91/96 rows contained all expected tokens, while five
-  Telugu-page Nakshatra spellings did not expose the full canonical name
-  `Uttara Phalguni`.
+  fetched 125 URLs; 91/96 rows contained all expected tokens. The five
+  Nakshatra misses were a parser limitation: the Telugu pages carry the full
+  `Uttara Phalguni` name in the Nakshatra image's accessible alt text (for
+  example, the official [Kakinada page](https://www.drikpanchang.com/telugu/panchanga/telugu-day-panchanga.html?date=05%2F11%2F2026&geoname-id=1268561)).
+  The verifier now includes image alt labels in its extracted evidence text.
 - [Run 42172441823](https://github.com/AmarnathreddyV/kaalam-mobile/actions/runs/42172441823)
   fetched 125 URLs; 72/96 rows passed and 24 rows were blocked by Drik's
   reCAPTCHA challenge. The 24 are unverified, not calculation mismatches.
-- The verifier now tries an official Drik English daily page as a fallback for
-  a missing full Nakshatra name, but it cannot do so when the source page is
-  blocked by CAPTCHA.
+- The verifier also has an official Drik English daily-page fallback for a
+  missing full Nakshatra name. The latest rerun with image-alt extraction is
+  [42172742581](https://github.com/AmarnathreddyV/kaalam-mobile/actions/runs/42172742581)
+  and is pending at the time of this update.
 
 The 15 solar-time corrections are documented above. Keep the source workflow
 separate from the accuracy comparison and do not describe token-presence
