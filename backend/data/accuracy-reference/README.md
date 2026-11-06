@@ -6,7 +6,7 @@ from an attributable external Panchang source.
 
 ## Current evidence inventory (5–7 November 2026)
 
-The current CSV contains **96 reference rows** across **5, 6, and 7 November 2026**:
+The current CSV contains **96 reference rows** across **5, 6, and 7 November 2026**. All 96 rows now cite official Drik Panchang hosts and the validator rejects non-Drik source names/hosts:
 
 | State | Reference rows | Unique places | Distinct dates |
 |---|---:|---:|---:|
@@ -69,16 +69,30 @@ also remains open.
 
 ## Automated source-page evidence check
 
-A separate GitHub Actions workflow now fetches the URLs in both reference URL
+A separate GitHub Actions workflow fetches the URLs in both reference URL
 columns and checks whether the expected sunrise/sunset and Panchang limb tokens
-appear in the pages' visible text. It uploads a JSON report and fails closed for
-inaccessible pages or missing tokens. This is a first-stage evidence-presence
-check only: it does not prove that a token is semantically attached to the
-correct label, nor does it replace human review or a structured source parser.
-See `.github/workflows/verify-drik-source-pages.yml` and
-`backend/scripts/verify_drik_source_pages.py`. Do not describe this as full
-source verification unless the report passes and its limitations have been
-reviewed.
+appear in visible page text. It uploads a JSON report and fails closed for
+inaccessible pages, CAPTCHA challenges, or missing tokens. This is a
+first-stage evidence-presence check only: token presence does not prove that a
+value is attached to the correct label.
+
+Recent runs show why the distinction matters:
+- [Run 42172135818](https://github.com/AmarnathreddyV/kaalam-mobile/actions/runs/42172135818)
+  fetched 125 URLs; 91/96 rows contained all expected tokens, while five
+  Telugu-page Nakshatra spellings did not expose the full canonical name
+  `Uttara Phalguni`.
+- [Run 42172441823](https://github.com/AmarnathreddyV/kaalam-mobile/actions/runs/42172441823)
+  fetched 125 URLs; 72/96 rows passed and 24 rows were blocked by Drik's
+  reCAPTCHA challenge. The 24 are unverified, not calculation mismatches.
+- The verifier now tries an official Drik English daily page as a fallback for
+  a missing full Nakshatra name, but it cannot do so when the source page is
+  blocked by CAPTCHA.
+
+The 15 solar-time corrections are documented above. Keep the source workflow
+separate from the accuracy comparison and do not describe token-presence
+success as third-party certification. See
+`.github/workflows/verify-drik-source-pages.yml` and
+`backend/scripts/verify_drik_source_pages.py`.
 
 ## Acceptance gates
 
@@ -91,7 +105,10 @@ Indra/Aindra are normalized as equivalent names; these are narrow spelling
 aliases, not fuzzy comparisons. All other yoga names and all other Panchang
 limbs remain exact case-insensitive comparisons.
 
-The 96-row suite passed this gate in run 42168285807. Keep the gate strict:
+The updated 96-row suite passed this gate in run
+[42172135841](https://github.com/AmarnathreddyV/kaalam-mobile/actions/runs/42172135841)
+after the 15 Drik-derived solar-time reference corrections. It reported
+**96 passed, 0 failed**, with `certification_ready: true`. Keep the gate strict:
 never relax tolerances or manufacture reference rows to make CI green.
 
 ## Separate operational coverage evidence
@@ -110,14 +127,14 @@ accuracy certification.
 
 ## Source verification boundary
 
-The validator checks that both source URLs are HTTPS and use an allowlisted
-host, then compares KAALAM's live output with the expected values stored in
-the CSV. It does **not** currently download and parse every source page to prove
-that each CSV value is present in the page. The reference values and URLs were
-manually transcribed from the cited pages. Treat the URL allowlist as provenance
-metadata, not as automated proof that every source page was re-read during CI.
-A later hardening step should archive source snapshots or add a robust
-source-page parser before making a stronger source-verification claim.
+The independent accuracy validator checks that both source URLs are HTTPS
+and use the official Drik Panchang host allowlist, then compares KAALAM's live
+output with the expected values in the CSV. The separate source-page workflow
+downloads pages and checks visible-text tokens, but does not yet semantically
+bind every value to its field label or retain immutable full-page snapshots.
+CAPTCHA challenges can also prevent automated retrieval. Therefore, URLs and
+manually reviewed screenshots remain part of the evidence record; automated
+source verification is not yet complete.
 
 ## Next certification work
 
