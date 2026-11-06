@@ -7,6 +7,7 @@ unverified/failures; it never treats a URL allowlist as source verification.
 from __future__ import annotations
 
 import csv
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import json
 import re
 import sys
@@ -58,9 +59,9 @@ def time_forms(value: str) -> list[str]:
 def fetch_text(url: str) -> tuple[str, int]:
     request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT, "Accept": "text/html"})
     last_error = ""
-    for attempt in range(3):
+    for attempt in range(2):
         try:
-            with urllib.request.urlopen(request, timeout=35) as response:
+            with urllib.request.urlopen(request, timeout=12) as response:
                 raw = response.read()
                 charset = response.headers.get_content_charset() or "utf-8"
                 parser = VisibleText()
@@ -68,12 +69,12 @@ def fetch_text(url: str) -> tuple[str, int]:
                 return " ".join(parser.parts), response.status
         except urllib.error.HTTPError as exc:
             last_error = f"HTTP {exc.code}"
-            if exc.code not in RETRYABLE or attempt == 2:
+            if exc.code not in RETRYABLE or attempt == 1:
                 raise RuntimeError(last_error) from exc
             time.sleep(min(2 ** attempt, 8))
         except (urllib.error.URLError, TimeoutError, ConnectionError) as exc:
             last_error = f"{type(exc).__name__}: {exc}"
-            if attempt == 2:
+            if attempt == 1:
                 raise RuntimeError(last_error) from exc
             time.sleep(2 ** attempt)
     raise RuntimeError(last_error or "fetch failed")
@@ -88,17 +89,19 @@ def check_tokens(text: str, tokens: dict[str, list[str]]) -> dict[str, bool]:
 def main() -> int:
     with CSV_PATH.open("r", encoding="utf-8-sig", newline="") as stream:
         rows = list(csv.DictReader(stream))
+    urls = sorted({row[field].strip() for row in rows
+                   for field in ("reference_url", "sun_reference_url")})
     cache: dict[str, tuple[str, int] | str] = {}
-    for row in rows:
-        for field in ("reference_url", "sun_reference_url"):
-            url = row[field].strip()
-            if url not in cache:
-                try:
-                    cache[url] = fetch_text(url)
-                except Exception as exc:
-                    cache[url] = f"{type(exc).__name__}: {exc}"
-                # Keep source traffic conservative; repeated URLs are cached.
-                time.sleep(1.1)
+    # A small bounded pool avoids a very long serial run while keeping traffic
+    # modest. Each worker retries at most once and has a strict request timeout.
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        futures = {pool.submit(fetch_text, url): url for url in urls}
+        for future in as_completed(futures):
+            url = futures[future]
+            try:
+                cache[url] = future.result()
+            except Exception as exc:
+                cache[url] = f"{type(exc).__name__}: {exc}"
 
     results = []
     for row in rows:
