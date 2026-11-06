@@ -142,6 +142,11 @@ def structural_errors(rows: list[dict[str, str]]) -> tuple[list[dict], dict]:
             parsed_url = urllib.parse.urlparse((row.get(field) or "").strip())
             if parsed_url.scheme != "https" or parsed_url.hostname not in ALLOWED_REFERENCE_HOSTS:
                 row_errors.append(f"{field}_not_on_allowlist")
+        optional_nakshatra_url = (row.get("nakshatra_reference_url") or "").strip()
+        if optional_nakshatra_url:
+            parsed_url = urllib.parse.urlparse(optional_nakshatra_url)
+            if parsed_url.scheme != "https" or parsed_url.hostname not in ALLOWED_REFERENCE_HOSTS:
+                row_errors.append("nakshatra_reference_url_not_on_allowlist")
         source_name = (row.get("reference_source") or "").strip()
         if not source_name:
             row_errors.append("missing_reference_source")
