@@ -144,6 +144,10 @@ def main() -> int:
             "state": row["state"], "place_name": row["place_name"], "date": row["date"],
             "reference_url": panchang_url, "sun_reference_url": sun_url,
             "panchang_tokens_present": panchang_checks, "sun_tokens_present": sun_checks,
+            "panchang_visible_text_length": len(panchang_page[0]) if not isinstance(panchang_page, str) else 0,
+            "sun_visible_text_length": len(sun_page[0]) if not isinstance(sun_page, str) else 0,
+            "panchang_text_preview": panchang_page[0][:500] if not isinstance(panchang_page, str) else "",
+            "sun_text_preview": sun_page[0][:300] if not isinstance(sun_page, str) else "",
             "passed": not errors, "errors": errors,
         })
 
