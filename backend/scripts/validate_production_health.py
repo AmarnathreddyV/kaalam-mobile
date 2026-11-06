@@ -45,6 +45,8 @@ def main() -> int:
     health_usage = health.get("panchang_usage") or {}
     usage_data = usage.get("panchang") or {}
     shared_cache = health_usage.get("shared_cache_configured")
+    if shared_cache is not True:
+        errors.append("shared_supabase_cache_not_configured")
     report = {
         "api_base": BASE,
         "health_ok": health.get("status") == "ok",
@@ -64,8 +66,6 @@ def main() -> int:
         ],
     }
     print(json.dumps(report, indent=2))
-    if shared_cache is not True:
-        errors.append("shared_supabase_cache_not_configured")
     return 1 if errors else 0
 
 
