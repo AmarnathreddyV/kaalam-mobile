@@ -44,9 +44,12 @@ function AppContent() {
       if (!mounted) return;
       if (error) {
         setSession(null);
-      } else if (data.session?.user.is_anonymous) {
-        // Older development builds created anonymous guest sessions. Clear them
-        // so every account must pass the new phone OTP registration flow.
+      } else if (
+        data.session?.user.is_anonymous &&
+        data.session.user.user_metadata?.kaalam_test_otp !== true
+      ) {
+        // Clear legacy guest sessions, but preserve explicitly marked temporary
+        // fixed-OTP test sessions used by the internal preview APK.
         await supabase.auth.signOut();
         setSession(null);
       } else {
