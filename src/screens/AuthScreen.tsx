@@ -115,7 +115,7 @@ export function AuthScreen() {
         <Image source={require("../../assets/kaalam-logo.png")} style={styles.logo} resizeMode="contain" />
         <Text style={styles.title}>{otpSent ? "Verify your number" : "Continue with phone"}</Text>
         <Text style={styles.subtitle}>
-          {otpSent ? `Enter the 6-digit code sent to ${verifiedPhone}.` : "Create your KAALAM account or sign in securely using your Indian mobile number."}
+          {otpSent ? (TEST_OTP_ENABLED ? `Enter the temporary test code for ${verifiedPhone}.` : `Enter the 6-digit code sent to ${verifiedPhone}.`) : "Create your KAALAM account or sign in securely using your Indian mobile number."}
         </Text>
 
         {!otpSent ? (
@@ -130,7 +130,7 @@ export function AuthScreen() {
                 maxLength={10} style={[styles.input, styles.phoneInput]} />
             </View>
             <TouchableOpacity disabled={busy} onPress={() => sendOtp(false)} style={[styles.button, busy && styles.disabled]}>
-              {busy ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.buttonText}>Send OTP</Text>}
+              {busy ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.buttonText}>{TEST_OTP_ENABLED ? "Continue with test OTP" : "Send OTP"}</Text>}
             </TouchableOpacity>
           </>
         ) : (
@@ -142,11 +142,13 @@ export function AuthScreen() {
             <TouchableOpacity disabled={busy} onPress={verifyOtp} style={[styles.button, busy && styles.disabled]}>
               {busy ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.buttonText}>Verify & Continue</Text>}
             </TouchableOpacity>
-            <TouchableOpacity disabled={busy || resendSeconds > 0} onPress={() => sendOtp(true)} style={styles.textButton}>
-              <Text style={[styles.link, (busy || resendSeconds > 0) && styles.linkDisabled]}>
-                {TEST_OTP_ENABLED ? "Use test code 123456" : resendSeconds > 0 ? `Resend OTP in 00:${String(resendSeconds).padStart(2, "0")}` : "Resend OTP"}
-              </Text>
-            </TouchableOpacity>
+            {!TEST_OTP_ENABLED && (
+              <TouchableOpacity disabled={busy || resendSeconds > 0} onPress={() => sendOtp(true)} style={styles.textButton}>
+                <Text style={[styles.link, (busy || resendSeconds > 0) && styles.linkDisabled]}>
+                  {resendSeconds > 0 ? `Resend OTP in 00:${String(resendSeconds).padStart(2, "0")}` : "Resend OTP"}
+                </Text>
+              </TouchableOpacity>
+            )}
             <TouchableOpacity disabled={busy} onPress={() => { setOtpSent(false); setOtp(""); setMessage(""); setResendSeconds(0); }}>
               <Text style={styles.switchText}>Change phone number</Text>
             </TouchableOpacity>
