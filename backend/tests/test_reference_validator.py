@@ -55,3 +55,15 @@ def test_sun_reference_url_must_be_on_allowlist():
     bad["sun_reference_url"] = "https://example.com/sunrise"
     errors, _ = validator.structural_errors([bad])
     assert any("sun_reference_url_not_on_allowlist" in str(item) for item in errors)
+
+
+def test_vishkambha_romanization_variants_are_equivalent():
+    assert validator.canonical_limb_name("yoga", "Vishkumbha") == validator.canonical_limb_name("yoga", "Vishkambha")
+
+
+def test_yoga_normalization_does_not_merge_other_yogas():
+    assert validator.canonical_limb_name("yoga", "Vishkumbha") != validator.canonical_limb_name("yoga", "Priti")
+
+
+def test_same_spelling_rule_is_not_applied_to_other_limbs():
+    assert validator.canonical_limb_name("nakshatra", "Vishkumbha") != validator.canonical_limb_name("nakshatra", "Vishkambha")
