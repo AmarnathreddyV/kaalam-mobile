@@ -86,6 +86,18 @@ def check_tokens(text: str, tokens: dict[str, list[str]]) -> dict[str, bool]:
             for field, candidates in tokens.items()}
 
 
+def drik_english_daily_url(url: str) -> str:
+    parsed = urllib.parse.urlparse(url)
+    query = urllib.parse.parse_qs(parsed.query)
+    day = (query.get("date") or [""])[0]
+    geoname = (query.get("geoname-id") or [""])[0]
+    if not day or not geoname:
+        return ""
+    return "https://www.drikpanchang.com/panchang/day-panchang.html?" + urllib.parse.urlencode({
+        "date": day, "geoname-id": geoname,
+    })
+
+
 def main() -> int:
     with CSV_PATH.open("r", encoding="utf-8-sig", newline="") as stream:
         rows = list(csv.DictReader(stream))
@@ -148,6 +160,24 @@ def main() -> int:
             sun_checks = check_tokens(sun_page[0], sun_tokens)
             if sun_page[1] != 200:
                 errors.append(f"sun_http_status:{sun_page[1]}")
+        nakshatra_fallback_url = ""
+        nakshatra_fallback_present = False
+        nakshatra_fallback_preview = ""
+        if (not panchang_checks.get("nakshatra", False)
+                and not panchang_captcha and not isinstance(panchang_page, str)):
+            nakshatra_fallback_url = drik_english_daily_url(panchang_url)
+            if nakshatra_fallback_url:
+                try:
+                    fallback_text, fallback_status = fetch_text(nakshatra_fallback_url)
+                    nakshatra_fallback_preview = fallback_text[:500]
+                    if (fallback_status == 200
+                            and "recaptcha" not in fallback_text.casefold()
+                            and normalize(row["expected_nakshatra"]) in normalize(fallback_text)):
+                        nakshatra_fallback_present = True
+                        panchang_checks["nakshatra"] = True
+                    cache[nakshatra_fallback_url] = (fallback_text, fallback_status)
+                except Exception as exc:
+                    cache[nakshatra_fallback_url] = f"{type(exc).__name__}: {exc}"
         if not panchang_captcha and not isinstance(panchang_page, str):
             for key, present in panchang_checks.items():
                 if not present:
@@ -160,6 +190,9 @@ def main() -> int:
             "state": row["state"], "place_name": row["place_name"], "date": row["date"],
             "reference_url": panchang_url, "sun_reference_url": sun_url,
             "panchang_tokens_present": panchang_checks, "sun_tokens_present": sun_checks,
+            "nakshatra_fallback_url": nakshatra_fallback_url,
+            "nakshatra_fallback_present": nakshatra_fallback_present,
+            "nakshatra_fallback_preview": nakshatra_fallback_preview,
             "panchang_visible_text_length": len(panchang_page[0]) if not isinstance(panchang_page, str) else 0,
             "sun_visible_text_length": len(sun_page[0]) if not isinstance(sun_page, str) else 0,
             "panchang_captcha_blocked": panchang_captcha,
