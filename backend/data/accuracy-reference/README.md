@@ -27,11 +27,15 @@ Panchang page; newly added rows use separate Drik Panchang daily-Panchang and
 sunrise pages. Daily Panchang URLs are date-pinned to their row date (5, 6, or 7 November
 2026) so future reruns do not silently compare against a moving "today" page.
 
-**Source exception:** one Srikakulam row (5 November 2026) currently cites
-NityaPanchangam rather than Drik Panchang. It is explicitly identified in the CSV.
-It must be replaced with a date-pinned, verified Drik Panchang reference before
-claiming that every reference row is from Drik Panchang. Do not silently count
-this row as a Drik source.
+**Srikakulam source resolution:** the 5 November 2026 Srikakulam row now cites
+the official Drik Panchang Telugu month-Panchang page for GeoNames ID **1255647**
+(Chicacole, the historical/alternate name for Srikakulam). The selected city
+coordinates match the existing Srikakulam test coordinates (approximately
+18.2949 N, 83.8939 E). The manually transcribed screenshot shows sunrise 05:56,
+sunset 17:20, Ekadashi, Utthara, Aindra, and Balava. The CSV records the canonical
+nakshatra name Uttara Phalguni and Drik's yoga spelling Aindra. The validator
+normalizes Aindra/Indra as a narrow yoga spelling alias. The sunrise value was
+updated from 05:55 to 05:56 to match the visible Drik result.
 
 ## Latest independent comparison result
 
@@ -61,10 +65,10 @@ The strict validator requires all eight launch states, at least **10 distinct
 places per state**, and at least **3 distinct dates per state**. It compares
 sunrise and sunset within 2 minutes and requires exact case-insensitive matches
 for tithi, nakshatra, yoga, and karana, plus the expected KAALAM engine metadata.
-For yoga only, the established Romanization spellings Vishkambha and Vishkumbha
-are normalized as the same Sanskrit name (विष्कम्भ); this is a narrow spelling
-alias, not a fuzzy comparison. All other yoga names and all other Panchang limbs
-remain exact case-insensitive comparisons.
+For yoga only, established spelling variants Vishkambha/Vishkumbha and
+Indra/Aindra are normalized as equivalent names; these are narrow spelling
+aliases, not fuzzy comparisons. All other yoga names and all other Panchang
+limbs remain exact case-insensitive comparisons.
 
 The 96-row suite passed this gate in run 42168285807. Keep the gate strict:
 never relax tolerances or manufacture reference rows to make CI green.
@@ -96,14 +100,12 @@ source-page parser before making a stronger source-verification claim.
 
 ## Next certification work
 
-1. Replace the Srikakulam non-Drik row with a date-pinned Drik Panchang source,
-   then rerun the full comparison.
-2. Add source-page capture/parsing (or a reviewed immutable evidence archive)
+1. Add source-page capture/parsing (or a reviewed immutable evidence archive)
    so expected values are independently auditable rather than only manually
    transcribed.
-3. Expand the date matrix beyond this three-day sample and add more locations,
+2. Expand the date matrix beyond this three-day sample and add more locations,
    especially smaller towns and rural coordinates.
-4. Independently review the calculation convention and tolerances; passing a
+3. Independently review the calculation convention and tolerances; passing a
    publisher comparison alone is not a substitute for a qualified Panchang
    methodology review.
 
