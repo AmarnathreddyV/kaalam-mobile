@@ -88,6 +88,14 @@ def limb_name(value) -> str:
     return ""
 
 
+def canonical_limb_name(limb: str, value: str) -> str:
+    """Normalize documented Romanization variants without merging distinct limbs."""
+    normalized = value.strip().casefold()
+    if limb == "yoga" and normalized in {"vishkambha", "vishkumbha"}:
+        return "vishkambha"
+    return normalized
+
+
 def minutes(value: str) -> int:
     parsed = datetime.strptime(value.strip()[:5], "%H:%M")
     return parsed.hour * 60 + parsed.minute
@@ -235,7 +243,7 @@ def validate_row(row: dict[str, str]) -> dict:
     if response.get("panchang_reference") != "apparent_local_sunrise_plus_one_second":
         errors.append("panchang_not_sampled_at_sunrise_boundary")
     for key in ("tithi", "nakshatra", "yoga", "karana"):
-        if actual[key].casefold() != expected[key].casefold():
+        if canonical_limb_name(key, actual[key]) != canonical_limb_name(key, expected[key]):
             errors.append(f"{key}_mismatch")
     for key in ("sunrise", "sunset"):
         delta = differences[f"{key}_minutes"]
