@@ -76,20 +76,20 @@ inaccessible pages, CAPTCHA challenges, or missing tokens. This is a
 first-stage evidence-presence check only: token presence does not prove that a
 value is attached to the correct label.
 
-Recent runs show why the distinction matters:
-- [Run 42172135818](https://github.com/AmarnathreddyV/kaalam-mobile/actions/runs/42172135818)
-  fetched 125 URLs; 91/96 rows contained all expected tokens. The five
-  Nakshatra misses were a parser limitation: the Telugu pages carry the full
-  `Uttara Phalguni` name in the Nakshatra image's accessible alt text (for
-  example, the official [Kakinada page](https://www.drikpanchang.com/telugu/panchanga/telugu-day-panchanga.html?date=05%2F11%2F2026&geoname-id=1268561)).
-  The verifier now includes image alt labels in its extracted evidence text.
-- [Run 42172441823](https://github.com/AmarnathreddyV/kaalam-mobile/actions/runs/42172441823)
-  fetched 125 URLs; 72/96 rows passed and 24 rows were blocked by Drik's
-  reCAPTCHA challenge. The 24 are unverified, not calculation mismatches.
-- The verifier also has an official Drik English daily-page fallback for a
-  missing full Nakshatra name. The latest rerun with image-alt extraction is
-  [42172742581](https://github.com/AmarnathreddyV/kaalam-mobile/actions/runs/42172742581)
-  and is pending at the time of this update.
+The latest source-page verification
+[run 42172742581](https://github.com/AmarnathreddyV/kaalam-mobile/actions/runs/42172742581)
+completed with **96/96 rows passing**, **126/126 unique source URLs fetched**,
+zero fetch failures, and zero CAPTCHA-blocked rows. The verifier includes
+accessible image alt labels, which carry full Nakshatra names on the Telugu
+pages. For Srikakulam/Chicacole, it also verified the canonical
+`Uttara Phalguni` name through the official Drik English daily page for
+GeoNames ID 1255647.
+
+An earlier attempt
+[run 42172441823](https://github.com/AmarnathreddyV/kaalam-mobile/actions/runs/42172441823)
+was temporarily blocked by reCAPTCHA on 24 rows. That run is retained as
+evidence of the site's intermittent anti-bot behavior; the latest run
+retrieved all source pages successfully.
 
 The 15 solar-time corrections are documented above. Keep the source workflow
 separate from the accuracy comparison and do not describe token-presence
