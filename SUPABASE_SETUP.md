@@ -87,3 +87,40 @@ The cache TTL defaults to 24 hours. Completed daily results are persisted; incom
 
 After adding the key, Render will redeploy. Confirm `shared_cache_configured: true` in the health response, then request the same date and nearby location twice: the second request should increment a cache-hit counter without additional Navamsha calls.
 
+
+## 8. Additional production privilege audit
+
+The connected project has been hardened so `public.profiles` grants no privileges
+to `anon`; `authenticated` has only SELECT, INSERT and UPDATE, with existing
+owner-only RLS policies. This is tracked by migration
+`20261106055313_tighten_profiles_table_grants.sql`. The server-only
+`panchang_cache` table remains inaccessible to `anon` and `authenticated`.
+
+**Pending owner-level action:** the live project's existing default-privilege
+ACLs still grant broad privileges on future public tables, sequences and
+functions to `anon` and `authenticated` for the `postgres` and
+`supabase_admin` grantor roles. The connected database role could not change
+these ACLs (Postgres returned permission denied), so this was not altered.
+Run the following in Supabase SQL Editor using a role authorized to alter
+these default privileges, then verify with the `pg_default_acl` query:
+
+```sql
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
+  REVOKE ALL ON TABLES FROM anon, authenticated;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
+  REVOKE ALL ON SEQUENCES FROM anon, authenticated;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
+  REVOKE EXECUTE ON FUNCTIONS FROM anon, authenticated;
+ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public
+  REVOKE ALL ON TABLES FROM anon, authenticated;
+ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public
+  REVOKE ALL ON SEQUENCES FROM anon, authenticated;
+ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public
+  REVOKE EXECUTE ON FUNCTIONS FROM anon, authenticated;
+```
+
+Afterward, explicitly grant only the required privileges to each new API table
+and add appropriate RLS policies. Do not revoke schema USAGE from Supabase API
+roles. The leaked-password-protection advisor remains because KAALAM is
+configured for phone OTP rather than password sign-in; if password sign-in is
+ever enabled, turn on leaked-password protection before launch.
