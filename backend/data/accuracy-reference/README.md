@@ -37,6 +37,13 @@ nakshatra name Uttara Phalguni and Drik's yoga spelling Aindra. The validator
 normalizes Aindra/Indra as a narrow yoga spelling alias. The sunrise value was
 updated from 05:55 to 05:56 to match the visible Drik result.
 
+**Additional source corrections:** the first automated visible-text inspection
+found 15 solar-time mismatches in the 5 November rows across Kerala,
+Maharashtra, Gujarat, and Rajasthan. The CSV sunrise/sunset expectations for
+those rows have now been corrected to the labeled "Today" values shown on
+their official Drik daily sunrise/sunset pages. This replaces earlier manual
+transcription values; the updated independent comparison is being rerun.
+
 ## Latest independent comparison result
 
 GitHub Actions run
