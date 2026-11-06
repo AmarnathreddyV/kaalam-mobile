@@ -33,6 +33,19 @@ RAHU_SLOT = {6: 7, 0: 1, 1: 6, 2: 4, 3: 5, 4: 3, 5: 2}
 YAMAGANDA_SLOT = {6: 4, 0: 3, 1: 2, 2: 1, 3: 0, 4: 6, 5: 5}
 GULIKA_SLOT = {6: 6, 0: 5, 1: 4, 2: 3, 3: 2, 4: 1, 5: 0}
 PLANETARY_ORDER = ("Saturn", "Jupiter", "Mars", "Sun", "Venus", "Mercury", "Moon")
+
+# Drik Panchang Telugu weekday allocation for Dur Muhurtam.
+# Segment numbers are 1-based among 15 equal day/night muhurtas.
+DUR_MUHURTA_DAY_SLOTS = {
+    0: (14,),       # Sunday
+    1: (9, 12),     # Monday
+    2: (4,),        # Tuesday (second period is the 7th night muhurta)
+    3: (8,),        # Wednesday
+    4: (6, 12),     # Thursday
+    5: (4, 9),      # Friday
+    6: (1, 2),      # Saturday
+}
+DUR_MUHURTA_TUESDAY_NIGHT_SLOT = 7
 WEEKDAY_LORD = {
     0: "Moon", 1: "Mars", 2: "Mercury", 3: "Jupiter",
     4: "Venus", 5: "Saturn", 6: "Sun",
@@ -121,6 +134,20 @@ def _eight_slots(names: tuple[str, ...], start: datetime, end: datetime) -> list
     ]
 
 
+def _fifteenth_slots(start: datetime, end: datetime, segments: tuple[int, ...], name: str = "Dur Muhurtam") -> list[dict[str, Any]]:
+    """Return selected 1-based muhurta segments within a day or night."""
+    slot_seconds = (end - start).total_seconds() / 15.0
+    return [
+        _period(
+            name,
+            start + timedelta(seconds=slot_seconds * (segment - 1)),
+            start + timedelta(seconds=slot_seconds * segment),
+            segment=segment,
+        )
+        for segment in segments
+    ]
+
+
 def daily_timing_windows(day: date, latitude: float, longitude: float,
                          timezone_offset: float) -> dict[str, Any]:
     """Create Drik-convention sunrise-based daily periods without extra API calls."""
@@ -167,11 +194,19 @@ def daily_timing_windows(day: date, latitude: float, longitude: float,
     rahu = eighth(RAHU_SLOT[weekday])
     yama = eighth(YAMAGANDA_SLOT[weekday])
     gulika = eighth(GULIKA_SLOT[weekday])
+    dur_muhurtam = _fifteenth_slots(
+        sunrise, sunset, DUR_MUHURTA_DAY_SLOTS[weekday]
+    )
+    if weekday == 1:  # Tuesday: the additional period is the 7th night muhurta.
+        dur_muhurtam.extend(_fifteenth_slots(
+            sunset, next_sunrise, (DUR_MUHURTA_TUESDAY_NIGHT_SLOT,)
+        ))
     return {
         "sun_times": {
             "rise": {"local_datetime": sunrise.isoformat(timespec="seconds")},
             "set": {"local_datetime": sunset.isoformat(timespec="seconds")},
         },
+        "dur_muhurtam": dur_muhurtam,
         "inauspicious_periods": {
             "rahu_kaal": {"start": rahu["start"], "end": rahu["end"]},
             "yamaganda": {"start": yama["start"], "end": yama["end"]},
