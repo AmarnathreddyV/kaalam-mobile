@@ -33,7 +33,7 @@ REQUIRED_COLUMNS = {
 }
 MIN_UNIQUE_PLACES_PER_STATE = 10
 MIN_DISTINCT_DATES_PER_STATE = 3
-ALLOWED_REFERENCE_HOSTS = {"www.drikpanchang.com", "drikpanchang.com", "nityapanchangam.com"}
+ALLOWED_REFERENCE_HOSTS = {"www.drikpanchang.com", "drikpanchang.com"}
 # Broad state envelopes catch obvious city/state mix-ups without pretending
 # that a rectangular envelope is a precise administrative boundary.
 STATE_BOUNDS = {
@@ -142,8 +142,11 @@ def structural_errors(rows: list[dict[str, str]]) -> tuple[list[dict], dict]:
             parsed_url = urllib.parse.urlparse((row.get(field) or "").strip())
             if parsed_url.scheme != "https" or parsed_url.hostname not in ALLOWED_REFERENCE_HOSTS:
                 row_errors.append(f"{field}_not_on_allowlist")
-        if not (row.get("reference_source") or "").strip():
+        source_name = (row.get("reference_source") or "").strip()
+        if not source_name:
             row_errors.append("missing_reference_source")
+        elif not source_name.casefold().startswith("drik panchang"):
+            row_errors.append("reference_source_must_be_telugu_drik_panchang")
         key = (state, place, day, round(lat, 6), round(lon, 6))
         if key in seen:
             row_errors.append(f"duplicate_reference_of_csv_line_{seen[key]}")
