@@ -91,6 +91,7 @@ export type DailyPanchangamResponse = {
   data: {
     panchang?: PanchangamResponse["data"];
     sun_times?: { rise?: { local_datetime?: string }; set?: { local_datetime?: string } };
+    dur_muhurtam?: DailyTimePeriod[];
     inauspicious_periods?: {
       rahu_kaal?: DailyTimePeriod;
       gulika_kaal?: DailyTimePeriod;
