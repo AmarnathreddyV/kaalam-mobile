@@ -70,3 +70,8 @@ on public.profiles for update
 to authenticated
 using ((select auth.uid()) = id)
 with check ((select auth.uid()) = id);
+
+-- Least-privilege table grants: signed-in users can read/create/update only.
+-- RLS policies above ensure each authenticated user can access only their own row.
+revoke all on table public.profiles from anon, authenticated;
+grant select, insert, update on table public.profiles to authenticated;
