@@ -106,8 +106,12 @@ def drik_english_daily_url(url: str) -> str:
 def main() -> int:
     with CSV_PATH.open("r", encoding="utf-8-sig", newline="") as stream:
         rows = list(csv.DictReader(stream))
-    urls = sorted({row[field].strip() for row in rows
-                   for field in ("reference_url", "sun_reference_url")})
+    urls = sorted({
+        row[field].strip()
+        for row in rows
+        for field in ("reference_url", "sun_reference_url", "nakshatra_reference_url")
+        if (row.get(field) or "").strip()
+    })
     cache: dict[str, tuple[str, int] | str] = {}
     # A small bounded pool avoids a very long serial run while keeping traffic
     # modest. Each worker retries at most once and has a strict request timeout.
@@ -165,13 +169,26 @@ def main() -> int:
             sun_checks = check_tokens(sun_page[0], sun_tokens)
             if sun_page[1] != 200:
                 errors.append(f"sun_http_status:{sun_page[1]}")
-        nakshatra_fallback_url = ""
+        nakshatra_fallback_url = (row.get("nakshatra_reference_url") or "").strip()
         nakshatra_fallback_present = False
         nakshatra_fallback_preview = ""
-        if (not panchang_checks.get("nakshatra", False)
+        if not nakshatra_fallback_url and (
+                not panchang_checks.get("nakshatra", False)
                 and not panchang_captcha and not isinstance(panchang_page, str)):
             nakshatra_fallback_url = drik_english_daily_url(panchang_url)
-            if nakshatra_fallback_url:
+        if nakshatra_fallback_url:
+            fallback_page = cache.get(nakshatra_fallback_url)
+            if isinstance(fallback_page, tuple):
+                fallback_text, fallback_status = fallback_page
+                nakshatra_fallback_preview = fallback_text[:500]
+                if (fallback_status == 200
+                        and "recaptcha" not in fallback_text.casefold()
+                        and normalize(row["expected_nakshatra"]) in normalize(fallback_text)):
+                    nakshatra_fallback_present = True
+                    panchang_checks["nakshatra"] = True
+            elif isinstance(fallback_page, str):
+                nakshatra_fallback_preview = fallback_page
+            else:
                 try:
                     fallback_text, fallback_status = fetch_text(nakshatra_fallback_url)
                     nakshatra_fallback_preview = fallback_text[:500]
@@ -195,6 +212,7 @@ def main() -> int:
             "state": row["state"], "place_name": row["place_name"], "date": row["date"],
             "reference_url": panchang_url, "sun_reference_url": sun_url,
             "panchang_tokens_present": panchang_checks, "sun_tokens_present": sun_checks,
+            "nakshatra_reference_url": (row.get("nakshatra_reference_url") or "").strip(),
             "nakshatra_fallback_url": nakshatra_fallback_url,
             "nakshatra_fallback_present": nakshatra_fallback_present,
             "nakshatra_fallback_preview": nakshatra_fallback_preview,
