@@ -79,9 +79,11 @@ first-stage evidence-presence check only: token presence does not prove that a
 value is attached to the correct label.
 
 The latest source-page verification
-[run 42172742581](https://github.com/AmarnathreddyV/kaalam-mobile/actions/runs/42172742581)
+[run 42173100076](https://github.com/AmarnathreddyV/kaalam-mobile/actions/runs/42173100076)
 completed with **96/96 rows passing**, **126/126 unique source URLs fetched**,
-zero fetch failures, and zero CAPTCHA-blocked rows. The verifier includes
+zero fetch failures, and zero CAPTCHA-blocked rows. The explicit Srikakulam
+Nakshatra reference URL is now stored in the CSV's optional
+`nakshatra_reference_url` column. The verifier includes
 accessible image alt labels, which carry full Nakshatra names on the Telugu
 pages. For Srikakulam/Chicacole, it also verified the canonical
 `Uttara Phalguni` name through the official Drik English daily page for
