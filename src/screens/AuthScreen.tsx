@@ -3,6 +3,9 @@ import { ActivityIndicator, Image, KeyboardAvoidingView, Platform, StyleSheet, T
 import { supabase, supabaseConfigured } from "../auth/supabase";
 import { colors } from "../theme/colors";
 
+const TEST_OTP = "123456";
+const TEST_OTP_ENABLED = __DEV__ || process.env.EXPO_PUBLIC_KAALAM_TEST_OTP_ENABLED === "true";
+
 export function AuthScreen() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -43,6 +46,14 @@ export function AuthScreen() {
     setBusy(true);
     setMessage("");
     try {
+      if (TEST_OTP_ENABLED) {
+        setVerifiedPhone(normalized);
+        setOtpSent(true);
+        setOtp("");
+        setResendSeconds(0);
+        showMessage("Temporary test mode: enter 123456. No SMS will be sent.");
+        return;
+      }
       const { error } = await supabase.auth.signInWithOtp({
         phone: normalized,
         options: {
@@ -69,6 +80,21 @@ export function AuthScreen() {
     setBusy(true);
     setMessage("");
     try {
+      if (TEST_OTP_ENABLED) {
+        if (otp.trim() !== TEST_OTP) throw new Error("Incorrect test code. Enter 123456.");
+        const { error } = await supabase.auth.signInAnonymously({
+          options: {
+            data: {
+              full_name: name.trim(),
+              phone_number: verifiedPhone,
+              kaalam_test_otp: true,
+            },
+          },
+        });
+        if (error) throw error;
+        // App.tsx observes the Supabase auth event and loads the user's profile.
+        return;
+      }
       const { error } = await supabase.auth.verifyOtp({
         phone: verifiedPhone,
         token: otp.trim(),
@@ -118,7 +144,7 @@ export function AuthScreen() {
             </TouchableOpacity>
             <TouchableOpacity disabled={busy || resendSeconds > 0} onPress={() => sendOtp(true)} style={styles.textButton}>
               <Text style={[styles.link, (busy || resendSeconds > 0) && styles.linkDisabled]}>
-                {resendSeconds > 0 ? `Resend OTP in 00:${String(resendSeconds).padStart(2, "0")}` : "Resend OTP"}
+                {TEST_OTP_ENABLED ? "Use test code 123456" : resendSeconds > 0 ? `Resend OTP in 00:${String(resendSeconds).padStart(2, "0")}` : "Resend OTP"}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity disabled={busy} onPress={() => { setOtpSent(false); setOtp(""); setMessage(""); setResendSeconds(0); }}>
