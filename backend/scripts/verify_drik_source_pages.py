@@ -120,9 +120,20 @@ def main() -> int:
             "sunrise": time_forms(row["expected_sunrise_local"]),
             "sunset": time_forms(row["expected_sunset_local"]),
         }
+        panchang_captcha = not isinstance(panchang_page, str) and (
+            "recaptcha" in panchang_page[0].casefold()
+            or "solve captcha" in panchang_page[0].casefold()
+        )
+        sun_captcha = not isinstance(sun_page, str) and (
+            "recaptcha" in sun_page[0].casefold()
+            or "solve captcha" in sun_page[0].casefold()
+        )
         if isinstance(panchang_page, str):
             panchang_checks = {key: False for key in panchang_tokens}
             errors.append(f"panchang_page_unavailable:{panchang_page}")
+        elif panchang_captcha:
+            panchang_checks = {key: False for key in panchang_tokens}
+            errors.append("panchang_page_blocked_by_recaptcha")
         else:
             panchang_checks = check_tokens(panchang_page[0], panchang_tokens)
             if panchang_page[1] != 200:
@@ -130,22 +141,30 @@ def main() -> int:
         if isinstance(sun_page, str):
             sun_checks = {key: False for key in sun_tokens}
             errors.append(f"sun_page_unavailable:{sun_page}")
+        elif sun_captcha:
+            sun_checks = {key: False for key in sun_tokens}
+            errors.append("sun_page_blocked_by_recaptcha")
         else:
             sun_checks = check_tokens(sun_page[0], sun_tokens)
             if sun_page[1] != 200:
                 errors.append(f"sun_http_status:{sun_page[1]}")
-        for key, present in panchang_checks.items():
-            if not present:
-                errors.append(f"panchang_token_not_found:{key}")
-        for key, present in sun_checks.items():
-            if not present:
-                errors.append(f"sun_token_not_found:{key}")
+        if not panchang_captcha and not isinstance(panchang_page, str):
+            for key, present in panchang_checks.items():
+                if not present:
+                    errors.append(f"panchang_token_not_found:{key}")
+        if not sun_captcha and not isinstance(sun_page, str):
+            for key, present in sun_checks.items():
+                if not present:
+                    errors.append(f"sun_token_not_found:{key}")
         results.append({
             "state": row["state"], "place_name": row["place_name"], "date": row["date"],
             "reference_url": panchang_url, "sun_reference_url": sun_url,
             "panchang_tokens_present": panchang_checks, "sun_tokens_present": sun_checks,
             "panchang_visible_text_length": len(panchang_page[0]) if not isinstance(panchang_page, str) else 0,
             "sun_visible_text_length": len(sun_page[0]) if not isinstance(sun_page, str) else 0,
+            "panchang_captcha_blocked": panchang_captcha,
+            "sun_captcha_blocked": sun_captcha,
+            "sun_time_tokens_found": sorted(set(re.findall(r"\b\d{1,2}:\d{2}\s?(?:AM|PM)\b", sun_page[0], re.I))) if not isinstance(sun_page, str) and not sun_captcha else [],
             "panchang_text_preview": panchang_page[0][:500] if not isinstance(panchang_page, str) else "",
             "sun_text_preview": sun_page[0][:300] if not isinstance(sun_page, str) else "",
             "passed": not errors, "errors": errors,
@@ -158,6 +177,7 @@ def main() -> int:
         "test_type": "drik_source_visible_text_token_presence",
         "rows": len(rows), "unique_source_urls": unique_urls, "fetched_source_urls": fetched,
         "passed_rows": len(rows) - len(failed), "failed_rows": len(failed),
+        "rows_blocked_by_captcha": sum(1 for item in results if item["panchang_captcha_blocked"] or item["sun_captcha_blocked"]),
         "source_url_fetch_failures": [
             {"url": url, "error": value} for url, value in cache.items() if isinstance(value, str)
         ],
