@@ -47,7 +47,7 @@ The app normalizes Indian mobile numbers to +91XXXXXXXXXX, accepts valid 10-digi
 
 ## 5. Profile schema and access control
 
-Run supabase/schema.sql in Supabase SQL Editor if the profile table/policies are not already present. profiles.id must equal the authenticated Supabase user ID. RLS restricts each profile to its owner. The profile email field is nullable because KAALAM phone accounts do not require email.
+Run supabase/schema.sql in Supabase SQL Editor if the profile table/policies are not already present. profiles.id must equal the authenticated Supabase user ID. RLS restricts each profile to its owner. The profile email field is nullable because KAALAM phone accounts do not require email. The schema also revokes all direct table privileges from anon and grants authenticated only SELECT, INSERT and UPDATE; service_role remains server-only. The same hardening is tracked in migration 20261106055313.
 
 ## 6. Test before launch
 
