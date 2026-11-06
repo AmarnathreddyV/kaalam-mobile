@@ -165,6 +165,10 @@ def main() -> int:
             "panchang_captcha_blocked": panchang_captcha,
             "sun_captcha_blocked": sun_captcha,
             "sun_time_tokens_found": sorted(set(re.findall(r"\b\d{1,2}:\d{2}\s?(?:AM|PM)\b", sun_page[0], re.I))) if not isinstance(sun_page, str) and not sun_captcha else [],
+            "sun_label_contexts": [
+                sun_page[0][max(0, match.start()-100):match.end()+180]
+                for match in list(re.finditer(r"Sunrise|Sunset", sun_page[0], re.I))[-6:]
+            ] if not isinstance(sun_page, str) and not sun_captcha else [],
             "panchang_text_preview": panchang_page[0][:500] if not isinstance(panchang_page, str) else "",
             "sun_text_preview": sun_page[0][:300] if not isinstance(sun_page, str) else "",
             "passed": not errors, "errors": errors,
