@@ -59,6 +59,20 @@ values were manually transcribed; the validator does not yet fetch and parse
 all reference pages automatically. The single NityaPanchangam source exception
 also remains open.
 
+
+## Automated source-page evidence check
+
+A separate GitHub Actions workflow now fetches the URLs in both reference URL
+columns and checks whether the expected sunrise/sunset and Panchang limb tokens
+appear in the pages' visible text. It uploads a JSON report and fails closed for
+inaccessible pages or missing tokens. This is a first-stage evidence-presence
+check only: it does not prove that a token is semantically attached to the
+correct label, nor does it replace human review or a structured source parser.
+See `.github/workflows/verify-drik-source-pages.yml` and
+`backend/scripts/verify_drik_source_pages.py`. Do not describe this as full
+source verification unless the report passes and its limitations have been
+reviewed.
+
 ## Acceptance gates
 
 The strict validator requires all eight launch states, at least **10 distinct
