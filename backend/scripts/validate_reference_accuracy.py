@@ -93,6 +93,8 @@ def canonical_limb_name(limb: str, value: str) -> str:
     normalized = value.strip().casefold()
     if limb == "yoga" and normalized in {"vishkambha", "vishkumbha"}:
         return "vishkambha"
+    if limb == "yoga" and normalized in {"indra", "aindra"}:
+        return "indra"
     return normalized
 
 
