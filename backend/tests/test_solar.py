@@ -88,5 +88,31 @@ class ApparentSunriseReferenceTests(unittest.TestCase):
         self.assert_time_within_two_minutes(abhijit_start, "11:18")
 
 
+    def test_friday_dur_muhurtam_matches_telugu_drik_hyderabad(self):
+        result = daily_timing_windows(date(2026, 11, 6), 17.360589, 78.4740613, 5.5)
+        periods = result["dur_muhurtam"]
+        self.assertEqual([item["segment"] for item in periods], [4, 9])
+        self.assert_time_within_two_minutes(periods[0]["start"][11:16], "08:34")
+        self.assert_time_within_two_minutes(periods[0]["end"][11:16], "09:20")
+        self.assert_time_within_two_minutes(periods[1]["start"][11:16], "12:23")
+        self.assert_time_within_two_minutes(periods[1]["end"][11:16], "13:08")
+
+    def test_dur_muhurtam_weekday_counts_and_tuesday_night_period(self):
+        expected_counts = [1, 2, 2, 1, 2, 2, 2]  # Sunday through Saturday
+        start_day = date(2026, 11, 8)  # Sunday
+        for offset, expected_count in enumerate(expected_counts):
+            day = start_day + __import__("datetime").timedelta(days=offset)
+            with self.subTest(weekday=day.strftime("%A")):
+                result = daily_timing_windows(day, 17.360589, 78.4740613, 5.5)
+                periods = result["dur_muhurtam"]
+                self.assertEqual(len(periods), expected_count)
+                self.assertTrue(all(item["end"] > item["start"] for item in periods))
+                if day.weekday() == 1:  # Tuesday
+                    self.assertEqual(periods[-1]["segment"], 7)
+                    self.assertGreater(periods[-1]["start"], result["sun_times"]["set"]["local_datetime"])
+                else:
+                    self.assertTrue(all(item["start"][:10] == day.isoformat() for item in periods))
+
+
 if __name__ == "__main__":
     unittest.main()

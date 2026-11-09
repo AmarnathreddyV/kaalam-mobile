@@ -3,6 +3,9 @@ import { ActivityIndicator, Image, KeyboardAvoidingView, Platform, StyleSheet, T
 import { supabase, supabaseConfigured } from "../auth/supabase";
 import { colors } from "../theme/colors";
 
+const TEST_OTP = "123456";
+const TEST_OTP_ENABLED = __DEV__ || process.env.EXPO_PUBLIC_KAALAM_TEST_OTP_ENABLED === "true";
+
 export function AuthScreen() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -43,6 +46,14 @@ export function AuthScreen() {
     setBusy(true);
     setMessage("");
     try {
+      if (TEST_OTP_ENABLED) {
+        setVerifiedPhone(normalized);
+        setOtpSent(true);
+        setOtp("");
+        setResendSeconds(0);
+        showMessage("Temporary test mode: enter 123456. No SMS will be sent.");
+        return;
+      }
       const { error } = await supabase.auth.signInWithOtp({
         phone: normalized,
         options: {
@@ -69,6 +80,24 @@ export function AuthScreen() {
     setBusy(true);
     setMessage("");
     try {
+      if (TEST_OTP_ENABLED) {
+        if (otp.trim() !== TEST_OTP) throw new Error("Incorrect test code. Enter 123456.");
+        const apiBase = (process.env.EXPO_PUBLIC_API_BASE_URL || "https://kaalam-mobile.onrender.com").replace(/\/+$/, "");
+        const response = await fetch(`${apiBase}/api/auth/preview-phone-login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone: verifiedPhone, otp: otp.trim(), full_name: name.trim() }),
+        });
+        const body = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(body.detail || "Preview login failed. Please try again.");
+        const { error } = await supabase.auth.setSession({
+          access_token: body.access_token,
+          refresh_token: body.refresh_token,
+        });
+        if (error) throw error;
+        // App.tsx observes the authenticated phone user's session and loads its profile.
+        return;
+      }
       const { error } = await supabase.auth.verifyOtp({
         phone: verifiedPhone,
         token: otp.trim(),
@@ -89,7 +118,7 @@ export function AuthScreen() {
         <Image source={require("../../assets/kaalam-logo.png")} style={styles.logo} resizeMode="contain" />
         <Text style={styles.title}>{otpSent ? "Verify your number" : "Continue with phone"}</Text>
         <Text style={styles.subtitle}>
-          {otpSent ? `Enter the 6-digit code sent to ${verifiedPhone}.` : "Create your KAALAM account or sign in securely using your Indian mobile number."}
+          {otpSent ? (TEST_OTP_ENABLED ? `Enter the temporary test code for ${verifiedPhone}.` : `Enter the 6-digit code sent to ${verifiedPhone}.`) : "Create your KAALAM account or sign in securely using your Indian mobile number."}
         </Text>
 
         {!otpSent ? (
@@ -104,7 +133,7 @@ export function AuthScreen() {
                 maxLength={10} style={[styles.input, styles.phoneInput]} />
             </View>
             <TouchableOpacity disabled={busy} onPress={() => sendOtp(false)} style={[styles.button, busy && styles.disabled]}>
-              {busy ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.buttonText}>Send OTP</Text>}
+              {busy ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.buttonText}>{TEST_OTP_ENABLED ? "Continue with test OTP" : "Send OTP"}</Text>}
             </TouchableOpacity>
           </>
         ) : (
@@ -116,11 +145,13 @@ export function AuthScreen() {
             <TouchableOpacity disabled={busy} onPress={verifyOtp} style={[styles.button, busy && styles.disabled]}>
               {busy ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.buttonText}>Verify & Continue</Text>}
             </TouchableOpacity>
-            <TouchableOpacity disabled={busy || resendSeconds > 0} onPress={() => sendOtp(true)} style={styles.textButton}>
-              <Text style={[styles.link, (busy || resendSeconds > 0) && styles.linkDisabled]}>
-                {resendSeconds > 0 ? `Resend OTP in 00:${String(resendSeconds).padStart(2, "0")}` : "Resend OTP"}
-              </Text>
-            </TouchableOpacity>
+            {!TEST_OTP_ENABLED && (
+              <TouchableOpacity disabled={busy || resendSeconds > 0} onPress={() => sendOtp(true)} style={styles.textButton}>
+                <Text style={[styles.link, (busy || resendSeconds > 0) && styles.linkDisabled]}>
+                  {resendSeconds > 0 ? `Resend OTP in 00:${String(resendSeconds).padStart(2, "0")}` : "Resend OTP"}
+                </Text>
+              </TouchableOpacity>
+            )}
             <TouchableOpacity disabled={busy} onPress={() => { setOtpSent(false); setOtp(""); setMessage(""); setResendSeconds(0); }}>
               <Text style={styles.switchText}>Change phone number</Text>
             </TouchableOpacity>

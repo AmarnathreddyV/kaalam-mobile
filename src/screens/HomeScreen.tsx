@@ -316,6 +316,7 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
         <LabelValue label={t("Rahu Kalam")} value={timeRange(daily?.inauspicious_periods?.rahu_kaal)} />
         <LabelValue label={t("Yamagandam")} value={timeRange(daily?.inauspicious_periods?.yamaganda)} />
         <LabelValue label={t("Gulika Kalam")} value={timeRange(daily?.inauspicious_periods?.gulika_kaal)} last />
+        {(daily?.dur_muhurtam || []).map((period, index) => <LabelValue key={`dur-muhurtam-${index}`} label={t("Dur Muhurtam")} value={timeRange(period)} last={index === (daily?.dur_muhurtam?.length || 0) - 1} />)}
         <Text style={styles.smallNote}>{t("Traditional periods to be mindful of; interpretations and practices vary.")}</Text>
       </Panel>
 
