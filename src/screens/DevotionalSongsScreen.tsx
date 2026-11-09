@@ -157,7 +157,6 @@ export function DevotionalSongsScreen() {
 
       <View style={styles.albumGrid}>
         {albums.map((album) => {
-          const selected = activeAlbumId === album.id;
           const isPlaying = playingAlbumId === album.id && status.playing;
           const songCount = album.songs?.length ?? 0;
           return (
