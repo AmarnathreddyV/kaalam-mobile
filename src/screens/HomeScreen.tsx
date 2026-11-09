@@ -3,6 +3,7 @@ import { Alert, Linking, Modal, TextInput, View, Text, TouchableOpacity, StyleSh
 import * as Location from "expo-location";
 import { setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
 import { Screen, SectionTitle, Panel, LabelValue } from "../components/Screen";
+import { LanguagePicker } from "../components/LanguagePicker";
 import { colors } from "../theme/colors";
 import { fetchDailyPanchangam, DailyPanchangamResponse } from "../services/panchangam";
 import { supabase } from "../auth/supabase";
@@ -263,6 +264,7 @@ export function HomeScreen({ onOpenPoojaItems }: { onOpenPoojaItems: () => void 
       <TouchableOpacity style={styles.locationPill} onPress={() => { setManualLocation(locationLabel); setLocationModal(true); }} activeOpacity={0.8}>
         <Text style={styles.locationPillText}>⌖  {locationLabel || t("Choose your location")}  ▾</Text>
       </TouchableOpacity>
+      <LanguagePicker />
       <Text style={styles.date}>{todayLabel(language)}</Text>
       <Text style={styles.greeting}>{t("Namaskaram")}, {name}</Text>
       <Text style={styles.name}>{t("Your day, in alignment.")}</Text>
