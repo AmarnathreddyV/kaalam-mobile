@@ -121,3 +121,25 @@ and add appropriate RLS policies. Do not revoke schema USAGE from Supabase API
 roles. The leaked-password-protection advisor remains because KAALAM is
 configured for phone OTP rather than password sign-in; if password sign-in is
 ever enabled, turn on leaked-password protection before launch.
+
+
+## 9. Internal preview fixed-OTP login (never public production)
+
+The preview APK can use the temporary code `123456` for any valid Indian phone number. Each normalized phone number is provisioned as a distinct, confirmed Supabase Auth phone user. The mobile app never receives the derived account password; the backend derives it using an HMAC secret and returns a normal Supabase session. Profiles remain keyed to the unique Supabase Auth user ID.
+
+Configure these **server-only Render environment variables** for the KAALAM backend while internal preview testing is enabled:
+
+- `SUPABASE_URL=https://zhrooxquwycpnqwuvpsg.supabase.co`
+- `SUPABASE_SERVICE_ROLE_KEY` = the legacy service_role key for this same project (never expose to Expo or GitHub)
+- `SUPABASE_ANON_KEY` = the legacy anon key for this same project
+- `KAALAM_TEST_OTP_ENABLED=true`
+- `KAALAM_TEST_AUTH_SECRET` = a newly generated random secret, at least 32 bytes; keep it only in Render
+
+Generate a secret locally with Python:
+```powershell
+python -c "import secrets; print(secrets.token_urlsafe(48))"
+```
+
+The preview app calls `POST /api/auth/preview-phone-login`; the backend validates the fixed code, creates the phone user if needed, and returns a Supabase session. This preview endpoint is an authentication bypass by design: anyone who knows the fixed code can claim an unregistered phone number. **Do not enable it for public production traffic.** Before public release, set `KAALAM_TEST_OTP_ENABLED=false` (or remove it), deploy the backend, and build the production profile with the normal Supabase SMS OTP flow. Existing phone accounts created during preview should be treated as test accounts and reconciled before launch.
+
+Do not change Supabase anonymous sign-in settings; this flow does not use anonymous users.
