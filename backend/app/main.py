@@ -984,3 +984,79 @@ async def calculate_basic_kundali(request: BirthChartRequest) -> dict[str, Any]:
             "lagna": ascendant.get("zodiac_sign_name"),
         },
     }
+
+
+# --------------------------------------------------
+# INTERNAL PREVIEW PHONE LOGIN (fixed OTP)
+# --------------------------------------------------
+class PreviewPhoneLoginRequest(BaseModel):
+    phone: str = Field(pattern=r"^\\+91[6-9]\\d{9}$")
+    otp: str = Field(pattern=r"^\\d{6}$")
+    full_name: str = Field(default="", max_length=120)
+
+
+@app.post("/api/auth/preview-phone-login")
+async def preview_phone_login(request: PreviewPhoneLoginRequest) -> dict[str, Any]:
+    """Internal-only fixed-OTP login. Creates one distinct Supabase Auth user per phone."""
+    if os.getenv("KAALAM_TEST_OTP_ENABLED", "").lower() != "true":
+        raise HTTPException(status_code=404, detail="Not found.")
+    if not hmac.compare_digest(request.otp, "123456"):
+        raise HTTPException(status_code=401, detail="Incorrect test OTP.")
+    admin_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "").strip()
+    public_key = os.getenv("SUPABASE_ANON_KEY", "").strip()
+    auth_secret = os.getenv("KAALAM_TEST_AUTH_SECRET", "").strip()
+    auth_url = os.getenv("SUPABASE_URL", "").strip().rstrip("/")
+    if not all((admin_key, public_key, auth_secret, auth_url)):
+        raise HTTPException(status_code=503, detail="Preview phone login is not configured on the server.")
+
+    # Derive a stable, server-only password so each phone maps to one persistent
+    # Auth user without exposing a reusable credential to the mobile app.
+    password = hmac.new(auth_secret.encode(), request.phone.encode(), hashlib.sha256).hexdigest()
+    admin_headers = {"apikey": admin_key, "Authorization": f"Bearer {admin_key}", "Content-Type": "application/json"}
+    public_headers = {"apikey": public_key, "Content-Type": "application/json"}
+    async with httpx.AsyncClient(timeout=20.0) as client:
+        # First try signing into an account previously provisioned by this flow.
+        token_response = await client.post(
+            f"{auth_url}/auth/v1/token?grant_type=password",
+            headers=public_headers,
+            json={"phone": request.phone, "password": password},
+        )
+        if token_response.status_code in (400, 401):
+            # No matching preview account yet: provision a confirmed phone user.
+            create_response = await client.post(
+                f"{auth_url}/auth/v1/admin/users",
+                headers=admin_headers,
+                json={
+                    "phone": request.phone,
+                    "phone_confirm": True,
+                    "password": password,
+                    "user_metadata": {
+                        "full_name": request.full_name.strip(),
+                        "kaalam_preview_fixed_otp": True,
+                    },
+                },
+            )
+            if create_response.status_code not in (200, 201):
+                # A concurrent request may have created it; retry password sign-in.
+                token_response = await client.post(
+                    f"{auth_url}/auth/v1/token?grant_type=password",
+                    headers=public_headers,
+                    json={"phone": request.phone, "password": password},
+                )
+                if token_response.status_code not in (200, 201):
+                    raise HTTPException(status_code=409, detail="This number already has an account created through a different sign-in method. Contact the test administrator.")
+            else:
+                token_response = await client.post(
+                    f"{auth_url}/auth/v1/token?grant_type=password",
+                    headers=public_headers,
+                    json={"phone": request.phone, "password": password},
+                )
+        if token_response.status_code not in (200, 201):
+            raise HTTPException(status_code=502, detail="Could not create a preview login session.")
+        session = token_response.json()
+    return {
+        "access_token": session["access_token"],
+        "refresh_token": session["refresh_token"],
+        "token_type": session.get("token_type", "bearer"),
+        "expires_in": session.get("expires_in", 3600),
+    }
