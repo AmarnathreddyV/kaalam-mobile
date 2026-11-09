@@ -16,18 +16,24 @@ type Album = {
   id: string;
   deity: string;
   category: "Deity" | "Festival";
-  title?: string;
-  source?: number;
+  songs?: { id: string; title: string; source: number }[];
   image?: number;
 };
 
 const albums: Album[] = [
-  { id: "venkateswara", deity: "Sri Venkateswara Swamy", category: "Deity", title: "Sri Venkatesha Suprabhatam", source: require("../../devotional-song/sri_venkatesha_suprabhatam.mp3"), image: require("../../assets/venkateswara swamy/images.jpg") },
-  { id: "hanuman", deity: "Lord Hanuman", category: "Deity", title: "Hanuman Chalisa", source: require("../../devotional-song/hanuman_chalisa.mp3"), image: require("../../assets/hanuman/images.jpg") },
+  { id: "venkateswara", deity: "Sri Venkateswara Swamy", category: "Deity", songs: [
+    { id: "suprabhatam", title: "Sri Venkatesha Suprabhatam", source: require("../../devotional-song/sri_venkatesha_suprabhatam.mp3") },
+    { id: "yedukondala-vasa", title: "Yedukondala Vasa, Sri Venkatesa", source: require("../../devotional-song/yedukondala_vasa_sri_venkatesa.mp3") },
+    { id: "edukondala-venkateswara", title: "Edukondala Venkateswara", source: require("../../devotional-song/edukondala_venkateswara.mp3") },
+    { id: "venkatesha-stotram-1", title: "Sri Venkatesha Stotram", source: require("../../devotional-song/sri_venkatesha_stotram.mp3") },
+    { id: "venkatesha-stotram-2", title: "Venkatesha Stotram", source: require("../../devotional-song/venkatesha_stotram.mp3") },
+    { id: "lord-venkateswara", title: "Lord Venkateswara", source: require("../../devotional-song/lord_venkateswara.mp3") },
+  ], image: require("../../assets/venkateswara swamy/images.jpg") },
+  { id: "hanuman", deity: "Lord Hanuman", category: "Deity", songs: [{ id: "hanuman-chalisa", title: "Hanuman Chalisa", source: require("../../devotional-song/hanuman_chalisa.mp3") }], image: require("../../assets/hanuman/images.jpg") },
   { id: "murugan", deity: "Lord Murugan", category: "Deity" },
   { id: "sriram", deity: "Lord Sri Rama", category: "Deity" },
-  { id: "shiva", deity: "Lord Shiva", category: "Deity", title: "Lingashtakam", source: require("../../devotional-song/lingashtakam_lord_shiva.mp3"), image: require("../../assets/lord shiva/images.jpg") },
-  { id: "ganesha", deity: "Lord Ganesha", category: "Deity", title: "Ganpati Stotram", source: require("../../devotional-song/ganpati_stotram.mp3"), image: require("../../assets/ganesh/6c08416196ba6fcee370dc04547a94cb.jpg") },
+  { id: "shiva", deity: "Lord Shiva", category: "Deity", songs: [{ id: "lingashtakam", title: "Lingashtakam", source: require("../../devotional-song/lingashtakam_lord_shiva.mp3") }], image: require("../../assets/lord shiva/images.jpg") },
+  { id: "ganesha", deity: "Lord Ganesha", category: "Deity", songs: [{ id: "ganpati-stotram", title: "Ganpati Stotram", source: require("../../devotional-song/ganpati_stotram.mp3") }], image: require("../../assets/ganesh/6c08416196ba6fcee370dc04547a94cb.jpg") },
   { id: "durga", deity: "Goddess Durga", category: "Deity" },
   { id: "bhadrakali", deity: "Bhadrakali Devi", category: "Deity" },
   { id: "lakshmi", deity: "Goddess Lakshmi", category: "Deity", image: require("../../assets/lakshmi devi/images.jpg") },
@@ -40,10 +46,10 @@ const albums: Album[] = [
   { id: "shiva-parvathi", deity: "Shiva & Parvathi", category: "Deity" },
   { id: "jagannath", deity: "Puri Jagannath", category: "Deity" },
   { id: "peddamma", deity: "Peddamma Thalli", category: "Deity" },
-  { id: "saibaba", deity: "Sai Baba", category: "Deity", title: "Aarti Sai Baba", source: require("../../devotional-song/aarti_saibaba.mp3"), image: require("../../assets/sai baba/images.jpg") },
+  { id: "saibaba", deity: "Sai Baba", category: "Deity", songs: [{ id: "aarti-sai-baba", title: "Aarti Sai Baba", source: require("../../devotional-song/aarti_saibaba.mp3") }], image: require("../../assets/sai baba/images.jpg") },
   { id: "varahi", deity: "Varahi Ammavaru", category: "Deity" },
   { id: "bhu-varahi", deity: "Bhu Varahi Ammavaru", category: "Deity" },
-  { id: "vishnu", deity: "Vishnu Murthy", category: "Deity", title: "Garuda Gamana Tava", source: require("../../devotional-song/garuda_gamana_tava_sri_maha_vishnu_stotram.mp3"), image: require("../../assets/venkateswara swamy/images (1).jpg") },
+  { id: "vishnu", deity: "Vishnu Murthy", category: "Deity", songs: [{ id: "garuda-gamana", title: "Garuda Gamana Tava", source: require("../../devotional-song/garuda_gamana_tava_sri_maha_vishnu_stotram.mp3") }], image: require("../../assets/venkateswara swamy/images (1).jpg") },
 ];
 
 export function DevotionalSongsScreen() {
@@ -52,25 +58,28 @@ export function DevotionalSongsScreen() {
   const status = useAudioPlayerStatus(player);
   const [activeAlbumId, setActiveAlbumId] = useState<string | null>(null);
   const [playingAlbumId, setPlayingAlbumId] = useState<string | null>(null);
+  const [playingTrackId, setPlayingTrackId] = useState<string | null>(null);
 
   useEffect(() => {
     setAudioModeAsync({ playsInSilentMode: true, shouldPlayInBackground: false }).catch(() => {});
     return () => { player.pause(); };
   }, [player]);
 
-  const playAlbumSong = (albumId: string) => {
+  const playAlbumSong = (albumId: string, trackId: string) => {
     const album = albums.find((item) => item.id === albumId);
-    if (!album?.source) return;
+    const track = album?.songs?.find((item) => item.id === trackId);
+    if (!track) return;
 
-    if (playingAlbumId === albumId) {
+    if (playingAlbumId === albumId && playingTrackId === trackId) {
       if (status.playing) player.pause();
       else player.play();
       return;
     }
 
     setPlayingAlbumId(albumId);
+    setPlayingTrackId(trackId);
     try {
-      player.replace(album.source);
+      player.replace(track.source);
       player.play();
     } catch (error) {
       console.error("KAALAM devotional audio playback failed:", error);
@@ -98,6 +107,7 @@ export function DevotionalSongsScreen() {
         {albums.map((album) => {
           const selected = activeAlbumId === album.id;
           const isPlaying = playingAlbumId === album.id && status.playing;
+          const songCount = album.songs?.length ?? 0;
           return (
             <TouchableOpacity
               key={album.id}
@@ -121,9 +131,9 @@ export function DevotionalSongsScreen() {
                 <Text numberOfLines={2} style={styles.deityName}>{t(album.deity)}</Text>
                 <Text style={styles.category}>{t(album.category)}</Text>
                 <View style={styles.albumBottom}>
-                  <Text style={styles.trackCount}>{album.source ? t("1 song") : t("Songs coming soon")}</Text>
+                  <Text style={styles.trackCount}>{songCount ? `${songCount} songs` : t("Songs coming soon")}</Text>
                   <View style={[styles.playButton, !album.source && styles.pendingButton]}>
-                    <Text style={styles.playGlyph}>{album.source ? (isPlaying ? "Ⅱ" : "▶") : "+"}</Text>
+                    <Text style={styles.playGlyph}>{songCount ? (isPlaying ? "Ⅱ" : "▶") : "+"}</Text>
                   </View>
                 </View>
               </View>
@@ -136,19 +146,24 @@ export function DevotionalSongsScreen() {
         <View style={styles.albumDetail}>
           <Text style={styles.detailEyebrow}>{t("SELECTED ALBUM")}</Text>
           <Text style={styles.detailDeity}>{t(selectedAlbum.deity)}</Text>
-          {selectedAlbum.source && selectedAlbum.title ? (
-            <TouchableOpacity activeOpacity={0.82} onPress={() => playAlbumSong(selectedAlbum.id)} style={styles.trackRow}>
-              <View style={styles.trackNumber}><Text style={styles.trackNumberText}>01</Text></View>
-              <View style={styles.trackInfo}>
-                <Text style={styles.detailTrackTitle}>{t(selectedAlbum.title)}</Text>
-                <Text style={styles.detailTrackSubtitle}>{t(selectedAlbum.deity)}</Text>
-                {playingAlbumId === selectedAlbum.id && status.isBuffering && <Text style={styles.state}>{t("Loading audio…")}</Text>}
-                {playingAlbumId === selectedAlbum.id && status.error && <Text style={styles.errorText}>{t(String(status.error))}</Text>}
-              </View>
-              <View style={styles.detailPlayButton}>
-                <Text style={styles.detailPlayGlyph}>{playingAlbumId === selectedAlbum.id && status.playing ? "Ⅱ" : "▶"}</Text>
-              </View>
-            </TouchableOpacity>
+          {selectedAlbum.songs?.length ? (
+            selectedAlbum.songs.map((track, index) => {
+              const isCurrentTrack = playingAlbumId === selectedAlbum.id && playingTrackId === track.id;
+              return (
+                <TouchableOpacity key={track.id} activeOpacity={0.82} onPress={() => playAlbumSong(selectedAlbum.id, track.id)} style={styles.trackRow}>
+                  <View style={styles.trackNumber}><Text style={styles.trackNumberText}>{String(index + 1).padStart(2, "0")}</Text></View>
+                  <View style={styles.trackInfo}>
+                    <Text style={styles.detailTrackTitle}>{t(track.title)}</Text>
+                    <Text style={styles.detailTrackSubtitle}>{t(selectedAlbum.deity)}</Text>
+                    {isCurrentTrack && status.isBuffering && <Text style={styles.state}>{t("Loading audio…")}</Text>}
+                    {isCurrentTrack && status.error && <Text style={styles.errorText}>{t(String(status.error))}</Text>}
+                  </View>
+                  <View style={styles.detailPlayButton}>
+                    <Text style={styles.detailPlayGlyph}>{isCurrentTrack && status.playing ? "Ⅱ" : "▶"}</Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            })
           ) : (
             <View style={styles.pendingTrack}>
               <Text style={styles.pendingTrackTitle}>{t("Songs will be added to this album later.")}</Text>
