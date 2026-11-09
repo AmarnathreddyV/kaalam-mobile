@@ -82,17 +82,20 @@ export function AuthScreen() {
     try {
       if (TEST_OTP_ENABLED) {
         if (otp.trim() !== TEST_OTP) throw new Error("Incorrect test code. Enter 123456.");
-        const { error } = await supabase.auth.signInAnonymously({
-          options: {
-            data: {
-              full_name: name.trim(),
-              phone_number: verifiedPhone,
-              kaalam_test_otp: true,
-            },
-          },
+        const apiBase = (process.env.EXPO_PUBLIC_API_BASE_URL || "https://kaalam-mobile.onrender.com").replace(/\\/$/, "");
+        const response = await fetch(`${apiBase}/api/auth/preview-phone-login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone: verifiedPhone, otp: otp.trim(), full_name: name.trim() }),
+        });
+        const body = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(body.detail || "Preview login failed. Please try again.");
+        const { error } = await supabase.auth.setSession({
+          access_token: body.access_token,
+          refresh_token: body.refresh_token,
         });
         if (error) throw error;
-        // App.tsx observes the Supabase auth event and loads the user's profile.
+        // App.tsx observes the authenticated phone user's session and loads its profile.
         return;
       }
       const { error } = await supabase.auth.verifyOtp({
