@@ -29,7 +29,7 @@ const albums: Album[] = [
     { id: "venkatesha-stotram-2", title: "Venkatesha Stotram", source: require("../../devotional-song/venkatesha_stotram.mp3") },
     { id: "lord-venkateswara", title: "Lord Venkateswara", source: require("../../devotional-song/lord_venkateswara.mp3") },
   ], image: require("../../assets/venkateswara swamy/images.jpg") },
-  { id: "hanuman", deity: "Lord Hanuman", category: "Deity", songs: [{ id: "hanuman-chalisa", title: "Hanuman Chalisa", source: require("../../devotional-song/hanuman_chalisa.mp3") }], image: require("../../assets/hanuman/images.jpg") },
+  { id: "hanuman", deity: "Lord Hanuman", category: "Deity", songs: [{ id: "hanuman-chalisa", title: "Hanuman Chalisa", source: require("../../devotional-song/hanuman_chalisa.mp3") }, { id: "hanuman-dandakam", title: "Sri Hanuman Dandakam", source: require("../../devotional-song/sri_hanuman_dandakam.mp3") }], image: require("../../assets/hanuman/images.jpg") },
   { id: "murugan", deity: "Lord Murugan", category: "Deity" },
   { id: "sriram", deity: "Lord Sri Rama", category: "Deity" },
   { id: "shiva", deity: "Lord Shiva", category: "Deity", songs: [{ id: "lingashtakam", title: "Lingashtakam", source: require("../../devotional-song/lingashtakam_lord_shiva.mp3") }], image: require("../../assets/lord shiva/images.jpg") },
