@@ -89,63 +89,12 @@ export function DevotionalSongsScreen() {
 
   const selectedAlbum = albums.find((album) => album.id === activeAlbumId);
 
-  return (
-    <ScrollView style={styles.root} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-      <PageHeading
-        title={t("Devotional Albums")}
-        subtitle={t("Browse devotional albums for the deities and traditions you love. Songs can be added later.")}
-      />
-
-      <Panel style={styles.intro}>
-        <Text style={styles.introTitle}>{t("A moment of devotion")}</Text>
-        <Text style={styles.introText}>
-          {t("Explore the KAALAM devotional collection. Album artwork and songs can be added or updated over time.")}
-        </Text>
-        <Text style={styles.collectionCount}>{albums.length} {t("albums")}</Text>
-      </Panel>
-
-      <View style={styles.albumGrid}>
-        {albums.map((album) => {
-          const selected = activeAlbumId === album.id;
-          const isPlaying = playingAlbumId === album.id && status.playing;
-          const songCount = album.songs?.length ?? 0;
-          return (
-            <TouchableOpacity
-              key={album.id}
-              activeOpacity={0.86}
-              accessibilityRole="button"
-              accessibilityLabel={t(album.deity) + " album"}
-              accessibilityState={{ selected }}
-              onPress={() => setActiveAlbumId(selected ? null : album.id)}
-              style={[styles.albumCard, selected && styles.albumCardSelected]}
-            >
-              {album.image ? (
-                <Image source={album.image} style={styles.albumImage} resizeMode="cover" />
-              ) : (
-                <View style={styles.artPlaceholder}>
-                  <Text style={styles.placeholderOm}>ॐ</Text>
-                  <Text style={styles.placeholderName}>{t(album.deity)}</Text>
-                  <Text style={styles.placeholderCaption}>{t("Artwork coming soon")}</Text>
-                </View>
-              )}
-              <View style={styles.albumMeta}>
-                <Text numberOfLines={2} style={styles.deityName}>{t(album.deity)}</Text>
-                <Text style={styles.category}>{t(album.category)}</Text>
-                <View style={styles.albumBottom}>
-                  <Text style={styles.trackCount}>{songCount ? `${songCount} songs` : t("Songs coming soon")}</Text>
-                  <View style={[styles.playButton, !album.source && styles.pendingButton]}>
-                    <Text style={styles.playGlyph}>{songCount ? (isPlaying ? "Ⅱ" : "▶") : "+"}</Text>
-                  </View>
-                </View>
-              </View>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
-
-      {selectedAlbum && (
+  if (selectedAlbum) {
+    return (
+      <ScrollView style={styles.root} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.albumDetail}>
-          <Text style={styles.detailEyebrow}>{t("SELECTED ALBUM")}</Text>
+          <TouchableOpacity onPress={() => setActiveAlbumId(null)} activeOpacity={0.75} style={styles.backButton} accessibilityRole="button" accessibilityLabel={t("Back to albums")}><Text style={styles.backButtonText}>‹  {t("Back to albums")}</Text></TouchableOpacity>
+          <Text style={styles.detailEyebrow}>{t("ALBUM")}</Text>
           <Text style={styles.detailDeity}>{t(selectedAlbum.deity)}</Text>
           {selectedAlbum.songs?.length ? (
             selectedAlbum.songs.map((track, index) => {
@@ -185,8 +134,66 @@ export function DevotionalSongsScreen() {
               </View>
             ))}
           </View>
+        
         </View>
-      )}
+      </ScrollView>
+    );
+  }
+
+  return (
+    <ScrollView style={styles.root} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <PageHeading
+        title={t("Devotional Albums")}
+        subtitle={t("Browse devotional albums for the deities and traditions you love.")}
+      />
+
+      <Panel style={styles.intro}>
+        <Text style={styles.introTitle}>{t("A moment of devotion")}</Text>
+        <Text style={styles.introText}>
+          {t("Explore the KAALAM devotional collection. Album artwork and songs can be added or updated over time.")}
+        </Text>
+        <Text style={styles.collectionCount}>{albums.length} {t("albums")}</Text>
+      </Panel>
+
+      <View style={styles.albumGrid}>
+        {albums.map((album) => {
+          const selected = activeAlbumId === album.id;
+          const isPlaying = playingAlbumId === album.id && status.playing;
+          const songCount = album.songs?.length ?? 0;
+          return (
+            <TouchableOpacity
+              key={album.id}
+              activeOpacity={0.86}
+              accessibilityRole="button"
+              accessibilityLabel={t(album.deity) + " album"}
+              onPress={() => setActiveAlbumId(album.id)}
+              style={styles.albumCard}
+            >
+              {album.image ? (
+                <Image source={album.image} style={styles.albumImage} resizeMode="cover" />
+              ) : (
+                <View style={styles.artPlaceholder}>
+                  <Text style={styles.placeholderOm}>ॐ</Text>
+                  <Text style={styles.placeholderName}>{t(album.deity)}</Text>
+                  <Text style={styles.placeholderCaption}>{t("Artwork coming soon")}</Text>
+                </View>
+              )}
+              <View style={styles.albumMeta}>
+                <Text numberOfLines={2} style={styles.deityName}>{t(album.deity)}</Text>
+                <Text style={styles.category}>{t(album.category)}</Text>
+                <View style={styles.albumBottom}>
+                  <Text style={styles.trackCount}>{songCount ? `${songCount} songs` : t("Songs coming soon")}</Text>
+                  <View style={[styles.playButton, !album.source && styles.pendingButton]}>
+                    <Text style={styles.playGlyph}>{songCount ? (isPlaying ? "Ⅱ" : "▶") : "+"}</Text>
+                  </View>
+                </View>
+              </View>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+
+
 
       <Text style={styles.footer}>
         {t("Existing tracks play offline. New albums are listed now; their songs and dedicated artwork can be added later.")}
@@ -204,7 +211,6 @@ const styles = StyleSheet.create({
   collectionCount: { color: colors.gold, fontSize: 11, fontWeight: "700", marginTop: 10 },
   albumGrid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between" },
   albumCard: { width: "48.3%", marginBottom: 14, overflow: "hidden", borderRadius: 13, borderWidth: 1, borderColor: colors.line, backgroundColor: "rgba(250,247,239,0.98)" },
-  albumCardSelected: { borderColor: colors.gold, borderWidth: 2 },
   albumImage: { width: "100%", height: 158, backgroundColor: colors.pale },
   artPlaceholder: { width: "100%", height: 158, backgroundColor: "#3B1820", alignItems: "center", justifyContent: "center", paddingHorizontal: 10, borderBottomWidth: 1, borderBottomColor: "rgba(169,133,69,0.4)" },
   placeholderOm: { color: "#E8C88D", fontSize: 38, fontFamily: "serif" },
@@ -218,7 +224,9 @@ const styles = StyleSheet.create({
   playButton: { width: 30, height: 30, borderRadius: 15, backgroundColor: colors.maroonDark, alignItems: "center", justifyContent: "center", marginLeft: 4 },
   pendingButton: { backgroundColor: colors.gold },
   playGlyph: { color: "#FFFFFF", fontSize: 13, fontWeight: "700" },
-  albumDetail: { marginTop: 7, padding: 15, borderRadius: 12, borderWidth: 1, borderColor: colors.line, backgroundColor: "rgba(250,247,239,0.98)" },
+  albumDetail: { marginTop: 4, padding: 15, borderRadius: 12, borderWidth: 1, borderColor: colors.line, backgroundColor: "rgba(250,247,239,0.98)" },
+  backButton: { alignSelf: "flex-start", paddingVertical: 7, paddingHorizontal: 2, marginBottom: 12 },
+  backButtonText: { color: colors.maroon, fontSize: 13, fontWeight: "700" },
   detailEyebrow: { color: colors.gold, fontSize: 9, fontWeight: "700", letterSpacing: 1.5 },
   detailDeity: { color: colors.maroonDark, fontSize: 19, fontFamily: "Georgia", marginTop: 5, marginBottom: 12 },
   trackRow: { flexDirection: "row", alignItems: "center", paddingVertical: 10, borderTopWidth: 1, borderTopColor: colors.line },
