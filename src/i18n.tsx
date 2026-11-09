@@ -323,10 +323,6 @@ Object.assign(hi, {
 "Cancel":"रद्द करें"
 });
 
-Object.assign(en, {
-  "Change app language":"Change app language","Choose app language":"Choose app language","Stotram":"Stotram","STOTRAM":"STOTRAM",
-  "Read these prayers during pooja. The Sanskrit verses are shown in their traditional wording.":"Read these prayers during pooja. The Sanskrit verses are shown in their traditional wording.","Meaning":"Meaning"
-});
 Object.assign(te, {
   "Change app language":"యాప్ భాషను మార్చండి","Choose app language":"యాప్ భాషను ఎంచుకోండి","Stotram":"స్తోత్రం","STOTRAM":"స్తోత్రం",
   "Read these prayers during pooja. The Sanskrit verses are shown in their traditional wording.":"పూజ సమయంలో ఈ ప్రార్థనలను చదవండి. సంస్కృత శ్లోకాలు సంప్రదాయ రూపంలో ఇవ్వబడ్డాయి.","Meaning":"భావం"
