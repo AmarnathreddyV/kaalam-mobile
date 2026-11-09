@@ -990,8 +990,8 @@ async def calculate_basic_kundali(request: BirthChartRequest) -> dict[str, Any]:
 # INTERNAL PREVIEW PHONE LOGIN (fixed OTP)
 # --------------------------------------------------
 class PreviewPhoneLoginRequest(BaseModel):
-    phone: str = Field(pattern=r"^\\+91[6-9]\\d{9}$")
-    otp: str = Field(pattern=r"^\\d{6}$")
+    phone: str = Field(pattern=r"^\+91[6-9]\d{9}$")
+    otp: str = Field(pattern=r"^\d{6}$")
     full_name: str = Field(default="", max_length=120)
 
 
