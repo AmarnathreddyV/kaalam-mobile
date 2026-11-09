@@ -322,3 +322,36 @@ Object.assign(hi, {
 "Updating…":"अपडेट हो रहा है…",
 "Cancel":"रद्द करें"
 });
+
+Object.assign(en, {
+  "Change app language":"Change app language","Choose app language":"Choose app language","Stotram":"Stotram","STOTRAM":"STOTRAM",
+  "Read these prayers during pooja. The Sanskrit verses are shown in their traditional wording.":"Read these prayers during pooja. The Sanskrit verses are shown in their traditional wording.","Meaning":"Meaning"
+});
+Object.assign(te, {
+  "Change app language":"యాప్ భాషను మార్చండి","Choose app language":"యాప్ భాషను ఎంచుకోండి","Stotram":"స్తోత్రం","STOTRAM":"స్తోత్రం",
+  "Read these prayers during pooja. The Sanskrit verses are shown in their traditional wording.":"పూజ సమయంలో ఈ ప్రార్థనలను చదవండి. సంస్కృత శ్లోకాలు సంప్రదాయ రూపంలో ఇవ్వబడ్డాయి.","Meaning":"భావం"
+});
+Object.assign(hi, {
+  "Change app language":"ऐप की भाषा बदलें","Choose app language":"ऐप की भाषा चुनें","Stotram":"स्तोत्रम्","STOTRAM":"स्तोत्रम्",
+  "Read these prayers during pooja. The Sanskrit verses are shown in their traditional wording.":"पूजा के समय इन प्रार्थनाओं को पढ़ें। संस्कृत श्लोक पारंपरिक रूप में दिए गए हैं।","Meaning":"अर्थ"
+});
+Object.assign(ta, {
+  "Change app language":"செயலி மொழியை மாற்றவும்","Choose app language":"செயலி மொழியைத் தேர்ந்தெடுக்கவும்","Stotram":"ஸ்தோத்திரம்","STOTRAM":"ஸ்தோத்திரம்",
+  "Read these prayers during pooja. The Sanskrit verses are shown in their traditional wording.":"பூஜையின் போது இந்தப் பிரார்த்தனைகளைப் படிக்கவும். சமஸ்கிருத ஸ்லோகங்கள் பாரம்பரிய வடிவில் தரப்பட்டுள்ளன.","Meaning":"பொருள்"
+});
+Object.assign(ml, {
+  "Change app language":"ആപ്പ് ഭാഷ മാറ്റുക","Choose app language":"ആപ്പ് ഭാഷ തിരഞ്ഞെടുക്കുക","Stotram":"സ്തോത്രം","STOTRAM":"സ്തോത്രം",
+  "Read these prayers during pooja. The Sanskrit verses are shown in their traditional wording.":"പൂജയ്ക്കിടെ ഈ പ്രാർത്ഥനകൾ വായിക്കുക. സംസ്കൃത ശ്ലോകങ്ങൾ പരമ്പരാഗത രൂപത്തിൽ നൽകിയിരിക്കുന്നു.","Meaning":"അർത്ഥം"
+});
+Object.assign(kn, {
+  "Change app language":"ಅಪ್ಲಿಕೇಶನ್ ಭಾಷೆ ಬದಲಾಯಿಸಿ","Choose app language":"ಅಪ್ಲಿಕೇಶನ್ ಭಾಷೆ ಆಯ್ಕೆಮಾಡಿ","Stotram":"ಸ್ತೋತ್ರ","STOTRAM":"ಸ್ತೋತ್ರ",
+  "Read these prayers during pooja. The Sanskrit verses are shown in their traditional wording.":"ಪೂಜೆಯ ಸಮಯದಲ್ಲಿ ಈ ಪ್ರಾರ್ಥನೆಗಳನ್ನು ಓದಿ. ಸಂಸ್ಕೃತ ಶ್ಲೋಕಗಳನ್ನು ಸಾಂಪ್ರದಾಯಿಕ ರೂಪದಲ್ಲಿ ನೀಡಲಾಗಿದೆ.","Meaning":"ಅರ್ಥ"
+});
+Object.assign(gu, {
+  "Change app language":"એપની ભાષા બદલો","Choose app language":"એપની ભાષા પસંદ કરો","Stotram":"સ્તોત્ર","STOTRAM":"સ્તોત્ર",
+  "Read these prayers during pooja. The Sanskrit verses are shown in their traditional wording.":"પૂજા દરમિયાન આ પ્રાર્થનાઓ વાંચો. સંસ્કૃત શ્લોકો પરંપરાગત સ્વરૂપમાં આપેલા છે.","Meaning":"અર્થ"
+});
+Object.assign(mr, {
+  "Change app language":"अॅपची भाषा बदला","Choose app language":"अॅपची भाषा निवडा","Stotram":"स्तोत्र","STOTRAM":"स्तोत्र",
+  "Read these prayers during pooja. The Sanskrit verses are shown in their traditional wording.":"पूजेच्या वेळी या प्रार्थना वाचा. संस्कृत श्लोक पारंपरिक स्वरूपात दिले आहेत.","Meaning":"अर्थ"
+});
