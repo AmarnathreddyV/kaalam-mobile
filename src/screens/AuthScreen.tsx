@@ -82,7 +82,7 @@ export function AuthScreen() {
     try {
       if (TEST_OTP_ENABLED) {
         if (otp.trim() !== TEST_OTP) throw new Error("Incorrect test code. Enter 123456.");
-        const apiBase = (process.env.EXPO_PUBLIC_API_BASE_URL || "https://kaalam-mobile.onrender.com").replace(/\\/$/, "");
+        const apiBase = (process.env.EXPO_PUBLIC_API_BASE_URL || "https://kaalam-mobile.onrender.com").replace(/\/+$/, "");
         const response = await fetch(`${apiBase}/api/auth/preview-phone-login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
