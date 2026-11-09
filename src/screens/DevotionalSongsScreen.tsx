@@ -10,6 +10,7 @@ import {
 import { setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
 import { PageHeading, Panel } from "../components/Screen";
 import { colors } from "../theme/colors";
+import { stotramsByAlbum } from "../data/stotrams";
 import { useLanguage } from "../i18n";
 
 type Album = {
@@ -170,6 +171,20 @@ export function DevotionalSongsScreen() {
               <Text style={styles.detailTrackSubtitle}>{t("This album is ready for your devotional audio files.")}</Text>
             </View>
           )}
+
+          <View style={styles.stotramSection}>
+            <Text style={styles.stotramHeading}>{t("Stotram")}</Text>
+            <Text style={styles.stotramIntro}>{t("Read these prayers during pooja. The Sanskrit verses are shown in their traditional wording.")}</Text>
+            {(stotramsByAlbum[selectedAlbum.id] || []).map((stotram, index) => (
+              <View key={stotram.id} style={styles.stotramCard}>
+                <Text style={styles.stotramNumber}>{t("STOTRAM")} {String(index + 1).padStart(2, "0")}</Text>
+                <Text style={styles.stotramTitle}>{t(stotram.title)}</Text>
+                <Text selectable style={styles.stotramText}>{stotram.text}</Text>
+                <Text style={styles.stotramMeaningLabel}>{t("Meaning")}</Text>
+                <Text style={styles.stotramMeaning}>{t(stotram.meaning)}</Text>
+              </View>
+            ))}
+          </View>
         </View>
       )}
 
@@ -218,5 +233,14 @@ const styles = StyleSheet.create({
   pendingTrackTitle: { color: colors.maroonDark, fontSize: 12, fontWeight: "700" },
   state: { color: colors.gold, fontSize: 10, marginTop: 4 },
   errorText: { color: "#B00020", fontSize: 10, marginTop: 4 },
+  stotramSection: { marginTop: 18, paddingTop: 15, borderTopWidth: 1, borderTopColor: colors.line },
+  stotramHeading: { color: colors.maroonDark, fontSize: 18, fontWeight: "700", fontFamily: "Georgia" },
+  stotramIntro: { color: colors.muted, fontSize: 11, lineHeight: 17, marginTop: 5, marginBottom: 10 },
+  stotramCard: { padding: 13, marginTop: 10, borderRadius: 10, backgroundColor: "#F5EFE2", borderWidth: 1, borderColor: colors.line },
+  stotramNumber: { color: colors.gold, fontSize: 9, fontWeight: "800", letterSpacing: 1.2 },
+  stotramTitle: { color: colors.maroonDark, fontSize: 13, fontWeight: "700", marginTop: 6, marginBottom: 9 },
+  stotramText: { color: colors.text, fontSize: 17, lineHeight: 32, textAlign: "left" },
+  stotramMeaningLabel: { color: colors.gold, fontSize: 9, fontWeight: "800", letterSpacing: 1, marginTop: 12 },
+  stotramMeaning: { color: colors.muted, fontSize: 11, lineHeight: 18, marginTop: 4 },
   footer: { color: colors.muted, fontSize: 10, lineHeight: 16, marginTop: 12, paddingHorizontal: 3 },
 });
